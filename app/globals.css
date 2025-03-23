@@ -1,3 +1,25 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: 'ShillaCulture';
+  src: url('/font/SHILLA_CULTURE(B).TTF') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'ShillaCulture';
+  src: url('/font/SHILLA_CULTURE(M).TTF') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'BMJUA';
+  src: url('/font/BMJUA_ttf.ttf') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
