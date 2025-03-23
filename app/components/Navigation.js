@@ -29,25 +29,13 @@ export default function Navigation() {
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative w-[45px] h-[45px] transition-transform duration-300 group-hover:scale-110">
-            <Image
-              src="/shapelogo.png"
-              alt="Shape Logo"
-              fill
-              style={{ objectFit: 'contain' }}
-              sizes="45px"
-              className="drop-shadow-sm"
-              priority
-            />
-          </div>
-
-          <div className="relative w-[180px] h-[45px] transition-all duration-300 group-hover:translate-x-1">
+          <div className="relative w-[110px] h-[45px] transition-all duration-300 group-hover:scale-110">
             <Image
               src="/textlogo1.png"
               alt="Text Logo"
               fill
-              style={{ objectFit: 'contain', objectPosition: 'left' }}
-              sizes="180px"
+              style={{ objectFit: 'contain' }}
+              sizes="110px"
               className="drop-shadow-sm"
               priority
             />
