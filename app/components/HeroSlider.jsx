@@ -50,7 +50,7 @@ export default function HeroSlider() {
   const progressWidth = totalImages > 0 ? ((currentImage + 1) / totalImages) * 100 : 0;
 
   return (
-    <div className="w-full bg-gradient-to-r from-blue-50 to-sky-50 py-12">
+    <div className="w-full bg-gradient-to-r from-blue-50 to-sky-50 py-10">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Content column */}
