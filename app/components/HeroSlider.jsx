@@ -70,8 +70,7 @@ export default function HeroSlider() {
                 <span> 솔루션</span>을 경험하세요
               </span>
               <span className="block text-xl md:text-2xl text-slate-600 font-['ShillaCulture'] font-normal mt-6">
-                35년간 쌓아온 기술 노하우로 고객님의 IT 환경을
-                <br />한 단계 업그레이드해 드립니다
+                35년간 쌓아온 기술 노하우로 고객님의 IT 환경을 한 단계 업그레이드해 드립니다
               </span>
             </h1>
 
