@@ -3,20 +3,32 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
 
+/**
+ * 네비게이션 바 컴포넌트
+ * 사용자 인증 상태에 따라 다른 메뉴 표시
+ */
 export default function Navigation() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  // 메뉴 상태 관리
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // 모바일 메뉴 토글 상태
+  const [scrolled, setScrolled] = useState(false); // 스크롤 상태
 
+  // Auth.js 세션 정보 가져오기
+  const { data: session, status } = useSession();
+  const isLoading = status === 'loading'; // 세션 로딩 중 상태
+
+  // 스크롤 이벤트 리스너
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      setScrolled(window.scrollY > 20); // 스크롤 위치에 따라 네비게이션 스타일 변경
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // 모바일 메뉴 토글 함수
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -44,39 +56,59 @@ export default function Navigation() {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-5 font-['BMJUA']">
-          <a
-            href="#"
-            className="relative text-gray-700 hover:text-[#87CEEB] transition-colors duration-300 font-medium overflow-hidden group"
-          >
-            <span className="relative z-10">로그인하면보임1</span>
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#87CEEB] transition-all duration-300 group-hover:w-full"></span>
-          </a>
-          <a
-            href="#"
-            className="relative text-gray-700 hover:text-[#87CEEB] transition-colors duration-300 font-medium overflow-hidden group"
-          >
-            <span className="relative z-10">로그인하면보임2</span>
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#87CEEB] transition-all duration-300 group-hover:w-full"></span>
-          </a>
-          <a
-            href="#"
-            className="relative text-gray-700 hover:text-[#87CEEB] transition-colors duration-300 font-medium overflow-hidden group"
-          >
-            <span className="relative z-10">로그인하면보임3</span>
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#87CEEB] transition-all duration-300 group-hover:w-full"></span>
-          </a>
-          <Link
-            href="#"
-            className="text-gray-600 hover:text-[#87CEEB] text-sm font-medium px-3 py-1 rounded-full border border-gray-300 hover:border-[#87CEEB] transition-all duration-300 hover:shadow-sm"
-          >
-            로그인
-          </Link>
-          <Link
-            href="#"
-            className="bg-gradient-to-r from-[#87CEEB] to-[#5F9DF7] text-white px-6 py-2.5 rounded-full hover:shadow-lg hover:translate-y-[-2px] transition-all duration-300 font-medium -ml-4"
-          >
-            회원가입
-          </Link>
+          {session ? (
+            // 로그인된 사용자를 위한 메뉴
+            <>
+              <a
+                href="#"
+                className="relative text-gray-700 hover:text-[#87CEEB] transition-colors duration-300 font-medium overflow-hidden group"
+              >
+                <span className="relative z-10">마이페이지</span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#87CEEB] transition-all duration-300 group-hover:w-full"></span>
+              </a>
+              <a
+                href="#"
+                className="relative text-gray-700 hover:text-[#87CEEB] transition-colors duration-300 font-medium overflow-hidden group"
+              >
+                <span className="relative z-10">주문내역</span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#87CEEB] transition-all duration-300 group-hover:w-full"></span>
+              </a>
+              <a
+                href="#"
+                className="relative text-gray-700 hover:text-[#87CEEB] transition-colors duration-300 font-medium overflow-hidden group"
+              >
+                <span className="relative z-10">장바구니</span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#87CEEB] transition-all duration-300 group-hover:w-full"></span>
+              </a>
+              {/* 사용자 환영 메시지 */}
+              <span className="text-sm text-gray-600 font-normal italic">
+                <span className="font-semibold text-[#5F9DF7]">{session.user.name}</span>{' '}
+                환영합니다!
+              </span>
+              <button
+                onClick={() => signOut({ callbackUrl: '/' })}
+                className="text-gray-600 hover:text-[#87CEEB] text-sm font-medium px-3 py-1 rounded-full border border-gray-300 hover:border-[#87CEEB] transition-all duration-300 hover:shadow-sm"
+              >
+                로그아웃
+              </button>
+            </>
+          ) : (
+            // 비로그인 사용자를 위한 메뉴
+            <>
+              <Link
+                href="/login"
+                className="text-gray-600 hover:text-[#87CEEB] text-sm font-medium px-3 py-1 rounded-full border border-gray-300 hover:border-[#87CEEB] transition-all duration-300 hover:shadow-sm"
+              >
+                로그인
+              </Link>
+              <Link
+                href="/signup"
+                className="bg-gradient-to-r from-[#87CEEB] to-[#5F9DF7] text-white px-6 py-2.5 rounded-full hover:shadow-lg hover:translate-y-[-2px] transition-all duration-300 font-medium -ml-4"
+              >
+                회원가입
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -114,30 +146,56 @@ export default function Navigation() {
             </div>
 
             <div className="flex flex-col gap-4 mt-4 font-['BMJUA']">
-              <a
-                href="#"
-                className="text-gray-700 hover:text-[#87CEEB] transition-colors duration-200 py-2 border-b border-gray-100"
-              >
-                로그인하면보임1
-              </a>
-              <a
-                href="#"
-                className="text-gray-700 hover:text-[#87CEEB] transition-colors duration-200 py-2 border-b border-gray-100"
-              >
-                로그인하면보임2
-              </a>
-              <Link
-                href="/signup"
-                className="text-gray-700 hover:text-[#87CEEB] transition-colors duration-200 py-2 border-b border-gray-100"
-              >
-                회원가입
-              </Link>
-              <Link
-                href="/login"
-                className="text-gray-600 hover:text-[#87CEEB] text-sm font-medium w-full py-2 rounded-full border border-gray-300 hover:border-[#87CEEB] transition-all duration-300"
-              >
-                로그인
-              </Link>
+              {session ? (
+                // 로그인된 사용자를 위한 모바일 메뉴
+                <>
+                  {/* 모바일 환영 메시지 */}
+                  <div className="text-sm text-gray-600 font-normal italic mb-2 text-center">
+                    <span className="font-semibold text-[#5F9DF7]">{session.user.name}</span>{' '}
+                    환영합니다!
+                  </div>
+                  <a
+                    href="#"
+                    className="text-gray-700 hover:text-[#87CEEB] transition-colors duration-200 py-2 border-b border-gray-100"
+                  >
+                    마이페이지
+                  </a>
+                  <a
+                    href="#"
+                    className="text-gray-700 hover:text-[#87CEEB] transition-colors duration-200 py-2 border-b border-gray-100"
+                  >
+                    주문내역
+                  </a>
+                  <a
+                    href="#"
+                    className="text-gray-700 hover:text-[#87CEEB] transition-colors duration-200 py-2 border-b border-gray-100"
+                  >
+                    장바구니
+                  </a>
+                  <button
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className="text-gray-600 hover:text-[#87CEEB] text-sm font-medium w-full py-2 rounded-full border border-gray-300 hover:border-[#87CEEB] transition-all duration-300"
+                  >
+                    로그아웃
+                  </button>
+                </>
+              ) : (
+                // 비로그인 사용자를 위한 모바일 메뉴
+                <>
+                  <Link
+                    href="/signup"
+                    className="bg-gradient-to-r from-[#87CEEB] to-[#5F9DF7] text-white px-6 py-2.5 rounded-full hover:shadow-lg hover:translate-y-[-2px] transition-all duration-300 font-medium text-center"
+                  >
+                    회원가입
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="text-gray-600 hover:text-[#87CEEB] text-sm font-medium w-full py-2 rounded-full border border-gray-300 hover:border-[#87CEEB] transition-all duration-300 text-center"
+                  >
+                    로그인
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
