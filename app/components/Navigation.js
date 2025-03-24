@@ -66,13 +66,13 @@ export default function Navigation() {
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#87CEEB] transition-all duration-300 group-hover:w-full"></span>
           </a>
           <Link
-            href="/login"
+            href="#"
             className="text-gray-600 hover:text-[#87CEEB] text-sm font-medium px-3 py-1 rounded-full border border-gray-300 hover:border-[#87CEEB] transition-all duration-300 hover:shadow-sm"
           >
             로그인
           </Link>
           <Link
-            href="/signup"
+            href="#"
             className="bg-gradient-to-r from-[#87CEEB] to-[#5F9DF7] text-white px-6 py-2.5 rounded-full hover:shadow-lg hover:translate-y-[-2px] transition-all duration-300 font-medium -ml-4"
           >
             회원가입
