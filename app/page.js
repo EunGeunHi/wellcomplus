@@ -1,13 +1,41 @@
 import { ArrowUpRight, Zap, Computer, BookOpenCheck, ShieldCheck, MapPin } from 'lucide-react';
 import HeroSlider from './components/HeroSlider';
+import HeroButton from './components/HeroButton';
 
 export default function Home() {
   return (
     <>
       {/* Hero Section */}
-      <section className="hero-gradient pt-5">
-        <HeroSlider />
-      </section>
+      <div className="w-full bg-gradient-to-r from-blue-50 to-sky-50 py-10">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Content column */}
+            <div className="order-2 lg:order-1">
+              <span className="inline-block px-4 py-1 text-sky-700 bg-sky-100 rounded-full text-sm font-medium font-['ShillaCulture'] mb-6">
+                35년 전통의 기술력
+              </span>
+
+              <h1 className="text-slate-800 mb-6">
+                <span className="block text-5xl md:text-7xl font-['BMJUA'] font-medium leading-tight mb-4">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-sky-500">
+                    웰컴
+                  </span>
+                  시스템에서
+                  <br />
+                  <span className="relative">맞춤형</span>
+                  <span> 솔루션</span>을 경험하세요
+                </span>
+                <span className="block text-xl md:text-2xl text-slate-600 font-['ShillaCulture'] font-normal mt-6">
+                  35년간 쌓아온 기술 노하우로 고객님의 IT 환경을 한 단계 업그레이드해 드립니다
+                </span>
+              </h1>
+              <HeroButton />
+            </div>
+            {/* Image column */}
+            <HeroSlider />
+          </div>
+        </div>
+      </div>
 
       {/* Features Section */}
       <section id="features" className="py-20 bg-gradient-to-b from-gray-50 to-white">
@@ -125,27 +153,54 @@ export default function Home() {
               <h3 className="text-xl font-bold mb-4 px-2 text-[#3661EB]">회사 정보</h3>
 
               <div className="space-y-4 flex-grow">
-                <div className="p-4 bg-blue-50 rounded-xl">
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm mr-4">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 text-[#3661EB]"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-blue-50 rounded-xl">
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm mr-4">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5 text-[#3661EB]"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-700">대표자</p>
+                        <p className="text-gray-600">김선식</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-gray-700">대표자</p>
-                      <p className="text-gray-600">김선식</p>
+                  </div>
+
+                  <div className="p-4 bg-blue-50 rounded-xl">
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm mr-4">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5 text-[#3661EB]"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-700">상호</p>
+                        <p className="text-gray-600">웰컴시스템</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -164,13 +219,13 @@ export default function Home() {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                         />
                       </svg>
                     </div>
                     <div>
-                      <p className="font-bold text-gray-700">상호</p>
-                      <p className="text-gray-600">웰컴시스템</p>
+                      <p className="font-bold text-gray-700">사업자번호</p>
+                      <p className="text-gray-600">607-02-70320</p>
                     </div>
                   </div>
                 </div>
@@ -223,11 +278,11 @@ export default function Home() {
                       <div className="mt-1">
                         <div className="flex items-center mb-1">
                           <span className="font-medium w-20 text-gray-700">월~금</span>
-                          <span className="text-gray-600">오전 11시 ~ 오후 8시</span>
+                          <span className="text-gray-600">11시 ~ 20시</span>
                         </div>
                         <div className="flex items-center mb-1">
                           <span className="font-medium w-20 text-gray-700">토요일</span>
-                          <span className="text-gray-600">오전 11시 ~ 오후 6시</span>
+                          <span className="text-gray-600">11시 ~ 18시</span>
                         </div>
                         <div className="flex items-center">
                           <span className="font-medium w-20 text-gray-700">일요일</span>
