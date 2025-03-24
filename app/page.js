@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <>
       {/* Hero Section */}
-      <section className="hero-gradient pt-20">
+      <section className="hero-gradient pt-5">
         <HeroSlider />
       </section>
 

@@ -24,7 +24,7 @@ export default function Navigation() {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'py-2 bg-white/95 backdrop-blur-sm shadow-md' : 'py-4 bg-transparent'
+        scrolled ? 'py-2 bg-white/95 backdrop-blur-sm shadow-md' : 'py-4 bg-white/95'
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
@@ -65,12 +65,18 @@ export default function Navigation() {
             <span className="relative z-10">로그인하면보임3</span>
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#87CEEB] transition-all duration-300 group-hover:w-full"></span>
           </a>
-          <button className="text-gray-600 hover:text-[#87CEEB] text-sm font-medium px-3 py-1 rounded-full border border-gray-300 hover:border-[#87CEEB] transition-all duration-300 hover:shadow-sm">
+          <Link
+            href="/login"
+            className="text-gray-600 hover:text-[#87CEEB] text-sm font-medium px-3 py-1 rounded-full border border-gray-300 hover:border-[#87CEEB] transition-all duration-300 hover:shadow-sm"
+          >
             로그인
-          </button>
-          <button className="bg-gradient-to-r from-[#87CEEB] to-[#5F9DF7] text-white px-6 py-2.5 rounded-full hover:shadow-lg hover:translate-y-[-2px] transition-all duration-300 font-medium -ml-4">
-            바로 주문하기
-          </button>
+          </Link>
+          <Link
+            href="/signup"
+            className="bg-gradient-to-r from-[#87CEEB] to-[#5F9DF7] text-white px-6 py-2.5 rounded-full hover:shadow-lg hover:translate-y-[-2px] transition-all duration-300 font-medium -ml-4"
+          >
+            회원가입
+          </Link>
         </div>
 
         {/* Mobile Menu Button */}
@@ -120,18 +126,18 @@ export default function Navigation() {
               >
                 로그인하면보임2
               </a>
-              <a
-                href="#"
+              <Link
+                href="/signup"
                 className="text-gray-700 hover:text-[#87CEEB] transition-colors duration-200 py-2 border-b border-gray-100"
               >
                 회원가입
-              </a>
-              <button className="text-gray-600 hover:text-[#87CEEB] text-sm font-medium w-full py-2 rounded-full border border-gray-300 hover:border-[#87CEEB] transition-all duration-300">
+              </Link>
+              <Link
+                href="/login"
+                className="text-gray-600 hover:text-[#87CEEB] text-sm font-medium w-full py-2 rounded-full border border-gray-300 hover:border-[#87CEEB] transition-all duration-300"
+              >
                 로그인
-              </button>
-              <button className="bg-gradient-to-r from-[#87CEEB] to-[#5F9DF7] text-white px-6 py-3 rounded-full hover:shadow-md transition font-medium">
-                바로 주문하기
-              </button>
+              </Link>
             </div>
           </div>
         </div>
