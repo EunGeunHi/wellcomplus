@@ -28,7 +28,7 @@ export default function Navigation() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 group">
+        <Link href="/" className="flex items-center gap-1 group">
           <div className="relative w-[110px] h-[45px] transition-all duration-300 group-hover:scale-110">
             <Image
               src="/textlogo1.png"
@@ -43,7 +43,7 @@ export default function Navigation() {
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-5 font-['BMJUA']">
           <a
             href="#"
             className="relative text-gray-700 hover:text-[#87CEEB] transition-colors duration-300 font-medium overflow-hidden group"
@@ -62,21 +62,26 @@ export default function Navigation() {
             href="#"
             className="relative text-gray-700 hover:text-[#87CEEB] transition-colors duration-300 font-medium overflow-hidden group"
           >
-            <span className="relative z-10">회원가입</span>
+            <span className="relative z-10">로그인하면보임3</span>
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#87CEEB] transition-all duration-300 group-hover:w-full"></span>
           </a>
-          <button className="bg-gradient-to-r from-[#87CEEB] to-[#5F9DF7] text-white px-6 py-2.5 rounded-full hover:shadow-lg hover:translate-y-[-2px] transition-all duration-300 font-medium">
+          <button className="text-gray-600 hover:text-[#87CEEB] text-sm font-medium px-3 py-1 rounded-full border border-gray-300 hover:border-[#87CEEB] transition-all duration-300 hover:shadow-sm">
+            로그인
+          </button>
+          <button className="bg-gradient-to-r from-[#87CEEB] to-[#5F9DF7] text-white px-6 py-2.5 rounded-full hover:shadow-lg hover:translate-y-[-2px] transition-all duration-300 font-medium -ml-4">
             바로 주문하기
           </button>
         </div>
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden relative z-50 w-10 h-10 flex items-center justify-center text-gray-700 rounded-full hover:bg-gray-100 transition-colors"
+          className={`md:hidden relative z-50 w-10 h-10 flex items-center justify-center text-gray-700 rounded-full hover:bg-gray-100 transition-colors ${
+            isMenuOpen ? 'opacity-0' : 'opacity-100'
+          }`}
           onClick={toggleMenu}
           aria-label="Toggle menu"
         >
-          {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          <Menu className="w-6 h-6" />
         </button>
 
         {/* Mobile Menu Dropdown */}
@@ -102,7 +107,7 @@ export default function Navigation() {
               </button>
             </div>
 
-            <div className="flex flex-col gap-4 mt-4">
+            <div className="flex flex-col gap-4 mt-4 font-['BMJUA']">
               <a
                 href="#"
                 className="text-gray-700 hover:text-[#87CEEB] transition-colors duration-200 py-2 border-b border-gray-100"
@@ -121,7 +126,10 @@ export default function Navigation() {
               >
                 회원가입
               </a>
-              <button className="bg-gradient-to-r from-[#87CEEB] to-[#5F9DF7] text-white px-6 py-3 rounded-full hover:shadow-md transition mt-4 font-medium">
+              <button className="text-gray-600 hover:text-[#87CEEB] text-sm font-medium w-full py-2 rounded-full border border-gray-300 hover:border-[#87CEEB] transition-all duration-300">
+                로그인
+              </button>
+              <button className="bg-gradient-to-r from-[#87CEEB] to-[#5F9DF7] text-white px-6 py-3 rounded-full hover:shadow-md transition font-medium">
                 바로 주문하기
               </button>
             </div>

@@ -21,12 +21,12 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col">
               <div className="bg-blue-50 p-4 rounded-xl w-16 h-16 flex items-center justify-center mb-6">
                 <Zap className="w-8 h-8 text-[#3661EB]" />
               </div>
-              <h3 className="text-2xl font-bold mb-3">당일 컴퓨터 출고</h3>
+              <h3 className="text-2xl font-bold mb-3 ">당일 컴퓨터 출고</h3>
               <p className="text-gray-600 mb-4 flex-grow">
                 오후 1시 이전 주문 시 당일 발송! 업계 최고 속도로 고객님의 새 컴퓨터를 만나보세요.
               </p>
@@ -115,7 +115,7 @@ export default function Home() {
                   <span className="inline-block w-6 h-6 rounded-full bg-[#3661EB] text-white flex items-center justify-center mr-2">
                     <MapPin className="w-3 h-3" />
                   </span>
-                  부산시 동래구 온천자로 20 (부산컴퓨터도매상가 209호)
+                  부산시 동래구 온천장로 20 (부산컴퓨터도매상가 2층 209호)
                 </p>
               </div>
             </div>
@@ -125,6 +125,31 @@ export default function Home() {
               <h3 className="text-xl font-bold mb-4 px-2 text-[#3661EB]">회사 정보</h3>
 
               <div className="space-y-4 flex-grow">
+                <div className="p-4 bg-blue-50 rounded-xl">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm mr-4">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-[#3661EB]"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-700">대표자</p>
+                      <p className="text-gray-600">김선식</p>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="p-4 bg-blue-50 rounded-xl">
                   <div className="flex items-center">
                     <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm mr-4">
@@ -171,31 +196,6 @@ export default function Home() {
                     <div>
                       <p className="font-bold text-gray-700">전화번호</p>
                       <p className="text-gray-600">010-8781-8871, 051-926-6604</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-blue-50 rounded-xl">
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm mr-4">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 text-[#3661EB]"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-700">대표자</p>
-                      <p className="text-gray-600">김선식</p>
                     </div>
                   </div>
                 </div>
