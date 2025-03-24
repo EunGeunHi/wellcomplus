@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -9,7 +9,7 @@ import Link from 'next/link';
  * 로그인 페이지 컴포넌트
  * Auth.js를 사용하여 사용자 인증을 처리
  */
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -180,5 +180,14 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// 메인 Login 페이지 컴포넌트
+export default function Login() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }
