@@ -8,7 +8,11 @@ import User from '@/models/User';
  * Auth.js(NextAuth) 설정 파일
  * 인증 관련 모든 기능을 처리하는 API 라우트
  */
-const handler = NextAuth({
+
+/**
+ * NextAuth 설정 객체
+ */
+export const authOptions = {
   // 인증 제공자 설정
   providers: [
     CredentialsProvider({
@@ -50,6 +54,7 @@ const handler = NextAuth({
           name: user.name,
           email: user.email,
           image: user.image,
+          authority: user.authority,
         };
       },
     }),
@@ -57,7 +62,7 @@ const handler = NextAuth({
   // 세션 설정
   session: {
     strategy: 'jwt', // JWT 기반 세션 사용
-    maxAge: 7 * 24 * 60 * 60, // 7일 동안 세션 유지
+    maxAge: 7 * 24 * 60 * 60, // 2일 동안 세션 유지
   },
   // 커스텀 페이지 URL 설정
   pages: {
@@ -68,25 +73,39 @@ const handler = NextAuth({
   // 콜백 함수 설정
   callbacks: {
     // JWT 토큰 생성/수정 콜백
-    async jwt({ token, user }) {
-      // 사용자 ID를 토큰에 추가
+    async jwt({ token, user, account }) {
+      // 첫 로그인 시 user 객체에서 정보 복사
       if (user) {
         token.id = user.id;
+        token.authority = user.authority || 'user'; // 기본값 설정
       }
+
       return token;
     },
     // 세션 데이터 설정 콜백
     async session({ session, token }) {
-      // 토큰의 사용자 ID를 세션에 추가
+      // 세션 객체에 user 속성이 없으면 빈 객체로 초기화
+      if (!session.user) {
+        session.user = {};
+      }
+
+      // 토큰의 사용자 ID와 권한을 세션에 추가
       if (token) {
         session.user.id = token.id;
+        session.user.authority = token.authority || 'user'; // 기본값 설정
       }
+
       return session;
     },
   },
   // 암호화에 사용되는 비밀 키 (.env.local에 설정)
   secret: process.env.NEXTAUTH_SECRET,
-});
+};
+
+/**
+ * NextAuth 핸들러
+ */
+const handler = NextAuth(authOptions);
 
 // API 라우트 핸들러 내보내기 (GET, POST 메서드 모두 처리)
 export { handler as GET, handler as POST };

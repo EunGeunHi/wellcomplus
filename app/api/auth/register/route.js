@@ -76,6 +76,7 @@ export async function POST(req) {
       email,
       phoneNumber,
       password: hashedPassword, // 해시된 비밀번호 저장
+      authority: 'user', // 기본 권한은 일반 사용자로 설정
     });
 
     // 사용자 정보 데이터베이스에 저장

@@ -27,6 +27,10 @@ const userSchema = new mongoose.Schema(
     image: {
       type: String, // 프로필 이미지 URL
     },
+    authority: {
+      type: String,
+      default: 'user', // 기본값은 일반 사용자
+    },
   },
   { timestamps: true } // 생성 및 수정 시간 자동 기록
 );
