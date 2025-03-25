@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
-import { isValidPhoneNumber } from '@/app/utils/phoneFormatter';
+import { isValidPhoneNumber } from '@/utils/phoneFormatter';
 
 /**
  * 회원가입 API 엔드포인트

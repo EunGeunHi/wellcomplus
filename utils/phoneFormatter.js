@@ -43,18 +43,3 @@ export const isValidPhoneNumber = (phoneNumber) => {
   // 지역번호(02, 051 등)로 시작하는 전화번호도 허용
   return /^(01[016789]\d{7,8}|02\d{7,8}|0[3-9]\d{7,8})$/.test(onlyNums);
 };
-
-/**
- * 전화번호 입력 핸들러
- * React 컴포넌트의 onChange 이벤트에서 사용
- *
- * @param {Object} e - 이벤트 객체
- * @param {Function} setFormData - 폼 데이터 상태 업데이트 함수
- * @returns {void}
- */
-export const handlePhoneNumberChange = (e, setFormData) => {
-  const { value } = e.target;
-  const formattedValue = formatPhoneNumber(value);
-
-  setFormData((prev) => ({ ...prev, phoneNumber: formattedValue }));
-};

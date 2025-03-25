@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { formatPhoneNumber, isValidPhoneNumber } from '@/app/utils/phoneFormatter';
+import { formatPhoneNumber, isValidPhoneNumber } from '@/utils/phoneFormatter';
 
 /**
  * 회원가입 페이지 컴포넌트
