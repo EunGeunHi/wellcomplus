@@ -59,27 +59,27 @@ export default function Navigation() {
           {session ? (
             // 로그인된 사용자를 위한 메뉴
             <>
-              <a
-                href="#"
+              <Link
+                href="/userpage/application"
                 className="relative text-gray-700 hover:text-[#87CEEB] transition-colors duration-300 font-medium overflow-hidden group"
               >
-                <span className="relative z-10">마이페이지</span>
+                <span className="relative z-10">견적,AS</span>
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#87CEEB] transition-all duration-300 group-hover:w-full"></span>
-              </a>
-              <a
+              </Link>
+              <Link
                 href="#"
                 className="relative text-gray-700 hover:text-[#87CEEB] transition-colors duration-300 font-medium overflow-hidden group"
               >
                 <span className="relative z-10">주문내역</span>
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#87CEEB] transition-all duration-300 group-hover:w-full"></span>
-              </a>
-              <a
+              </Link>
+              <Link
                 href="#"
                 className="relative text-gray-700 hover:text-[#87CEEB] transition-colors duration-300 font-medium overflow-hidden group"
               >
-                <span className="relative z-10">장바구니</span>
+                <span className="relative z-10">마이페이지</span>
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#87CEEB] transition-all duration-300 group-hover:w-full"></span>
-              </a>
+              </Link>
               {/* 사용자 환영 메시지 */}
               <span className="text-sm text-gray-600 font-normal italic">
                 <span className="font-semibold text-[#5F9DF7]">{session.user.name}</span>{' '}
@@ -154,24 +154,24 @@ export default function Navigation() {
                     <span className="font-semibold text-[#5F9DF7]">{session.user.name}</span>{' '}
                     환영합니다!
                   </div>
-                  <a
-                    href="#"
+                  <Link
+                    href="/userpage/application"
                     className="text-gray-700 hover:text-[#87CEEB] transition-colors duration-200 py-2 border-b border-gray-100"
                   >
-                    마이페이지
-                  </a>
-                  <a
+                    견적,AS
+                  </Link>
+                  <Link
                     href="#"
                     className="text-gray-700 hover:text-[#87CEEB] transition-colors duration-200 py-2 border-b border-gray-100"
                   >
                     주문내역
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="#"
                     className="text-gray-700 hover:text-[#87CEEB] transition-colors duration-200 py-2 border-b border-gray-100"
                   >
-                    장바구니
-                  </a>
+                    마이페이지
+                  </Link>
                   <button
                     onClick={() => signOut({ callbackUrl: '/' })}
                     className="text-gray-600 hover:text-[#87CEEB] text-sm font-medium w-full py-2 rounded-full border border-gray-300 hover:border-[#87CEEB] transition-all duration-300"

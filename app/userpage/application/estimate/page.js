@@ -35,7 +35,7 @@ export default function EstimatePage() {
       '- 배틀그라운드를 할 게임용 컴퓨터\n- 간단한 워드작업을 위한 컴퓨터\n- 어도비 프리미어 프로를 사용한 동영상편집용 컴퓨터\n- 게임, 워드, 엑셀, 프리미어 등 다양한 작업을 할 컴퓨터',
     budget: '- 35만원\n- 예산 범위: 100만원 ~ 200만원',
     requirements:
-      '- 그래픽카드는 엔디비아로 해주세요\n- ssd는 삼성 980 pro 2TB로 해주세요\n- 0월 0일까지 컴퓨터 받고 싶어요\n- 가성비로견적, 성능중심으로견적 총 2개로 비교견적해주세요',
+      '- 그래픽카드는 엔디비아로 해주세요\n- ssd는 삼성 980 pro 2TB로 해주세요\n- 0월 0일까지 컴퓨터 받아야 해요\n- 가성비로견적, 성능중심으로견적 총 2개로 비교견적해주세요',
     additional:
       '- 예산에서 +10만원 정도는 괜찮아요\n- 될 수 있으면 최대한 빨리 해주세요\n- 예산이 남으면 가성비좋은 키보드 하나 추가해주세요',
     etc: '궁금한점 또는 컴퓨터 견적에 참고했으면 하는 사항을 자유롭게 작성해주세요',
@@ -61,7 +61,7 @@ export default function EstimatePage() {
       >
         <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8 font-[NanumGothic]">
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-[BMJUA] text-gray-900 mb-4">견적 신청</h1>
+            <h1 className="text-4xl font-[BMJUA] text-gray-900 mb-4">컴퓨터 견적 신청</h1>
             <p className="text-lg text-gray-600">
               <span className="text-blue-600 font-semibold">상세한 작성</span>을 통해 더 정확한
               견적을 받으실 수 있습니다
@@ -262,11 +262,14 @@ export default function EstimatePage() {
                   </div>
 
                   <div className="mt-8">
+                    <p className="text-gray-500 text-sm text-center mb-4 bg-yellow-50/50 py-2 px-4 rounded-lg border border-yellow-100">
+                      ⚠️ 부품 수급상황에 따라 요구사항이 모두 수용되지 않을 수 있습니다.
+                    </p>
                     <button
                       type="submit"
                       className="w-full bg-blue-500 font-[NanumGothic] text-xl font-bold hover:bg-blue-600 text-white py-4 px-6 rounded-lg transition-colors duration-200"
                     >
-                      견적 신청하기
+                      컴퓨터 견적 신청하기
                     </button>
                   </div>
                 </div>

@@ -1,12 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { FaClipboardList, FaTools, FaQuestionCircle } from 'react-icons/fa';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 
 export default function ApplicationPage() {
+  //최상단으로 스크롤 이동 : 메인페이지에서 서비스 신청 버튼 클릭 시 스크롤 아래로 가있는 현상 때문에 추가
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const [hoveredCard, setHoveredCard] = useState(null);
 
   const services = [

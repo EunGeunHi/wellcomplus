@@ -1,7 +1,7 @@
 import { ArrowUpRight, Zap, Computer, BookOpenCheck, ShieldCheck, MapPin } from 'lucide-react';
 import HeroSlider from './components/HeroSlider';
 import HeroButton from './components/HeroButton';
-
+import Link from 'next/link';
 export default function Home() {
   return (
     <>
@@ -99,13 +99,13 @@ export default function Home() {
           </div>
 
           <div className="mt-8 text-center">
-            <a
-              href="#contact"
+            <Link
+              href="/userpage/application"
               className="inline-flex items-center gap-2 bg-[#3661EB] text-white px-8 py-4 rounded-full font-bold hover:bg-[#2b4fc7] transition-colors duration-300"
             >
               무료 견적 상담받기
               <ArrowUpRight className="w-5 h-5" />
-            </a>
+            </Link>
           </div>
         </div>
       </section>
