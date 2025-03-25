@@ -45,7 +45,7 @@ export default function TestPage() {
       <KingOnlySection
         fallback={
           <div className="mb-8 p-4 bg-gray-100 rounded-lg">
-            <p>데이터베이스 연결 테스트는 관리자(king) 권한이 있는 사용자만 볼 수 있습니다.</p>
+            <p>데이터베이스 연결 테스트는 관리자 권한이 있는 사용자만 볼 수 있습니다.</p>
           </div>
         }
       >
