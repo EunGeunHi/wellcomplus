@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { formatPhoneNumber, isValidPhoneNumber } from '@/app/utils/phoneFormatter';
 
 /**
  * 회원가입 페이지 컴포넌트
@@ -15,6 +16,7 @@ export default function SignupPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phoneNumber: '',
     password: '',
     confirmPassword: '',
   });
@@ -27,7 +29,14 @@ export default function SignupPage() {
    */
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // 전화번호인 경우 포맷팅 적용
+    if (name === 'phoneNumber') {
+      const formattedValue = formatPhoneNumber(value);
+      setFormData((prev) => ({ ...prev, [name]: formattedValue }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   /**
@@ -44,6 +53,12 @@ export default function SignupPage() {
       return;
     }
 
+    // 전화번호 유효성 검사
+    if (!isValidPhoneNumber(formData.phoneNumber)) {
+      setError('유효한 전화번호를 입력해주세요.');
+      return;
+    }
+
     try {
       setLoading(true); // 로딩 상태 활성화
 
@@ -56,6 +71,7 @@ export default function SignupPage() {
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
+          phoneNumber: formData.phoneNumber,
           password: formData.password,
         }),
       });
@@ -120,6 +136,27 @@ export default function SignupPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
               placeholder="이메일을 입력하세요"
             />
+          </div>
+
+          {/* 전화번호 입력 필드 */}
+          <div>
+            <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+              전화번호
+            </label>
+            <input
+              id="phoneNumber"
+              name="phoneNumber"
+              type="tel"
+              required
+              value={formData.phoneNumber}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              placeholder="숫자만 입력하세요 (예: 01012345678)"
+              maxLength={13} // 하이픈 포함 최대 길이
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              숫자만 입력하면 자동으로 하이픈(-)이 추가됩니다.
+            </p>
           </div>
 
           {/* 비밀번호 입력 필드 */}

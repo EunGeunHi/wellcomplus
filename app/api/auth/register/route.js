@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
+import { isValidPhoneNumber } from '@/app/utils/phoneFormatter';
 
 /**
  * 회원가입 API 엔드포인트
@@ -10,10 +11,10 @@ import User from '@/models/User';
 export async function POST(req) {
   try {
     // 요청 본문에서 사용자 정보 추출
-    const { name, email, password } = await req.json();
+    const { name, email, phoneNumber, password } = await req.json();
 
     // 필수 필드 검증
-    if (!name || !email || !password) {
+    if (!name || !email || !phoneNumber || !password) {
       return NextResponse.json(
         { success: false, message: '모든 필드를 입력해주세요.' },
         { status: 400 }
@@ -25,6 +26,14 @@ export async function POST(req) {
     if (!emailRegex.test(email)) {
       return NextResponse.json(
         { success: false, message: '유효한 이메일 형식이 아닙니다.' },
+        { status: 400 }
+      );
+    }
+
+    // 전화번호 유효성 검사
+    if (!isValidPhoneNumber(phoneNumber)) {
+      return NextResponse.json(
+        { success: false, message: '유효한 전화번호를 입력해주세요.' },
         { status: 400 }
       );
     }
@@ -49,6 +58,15 @@ export async function POST(req) {
       );
     }
 
+    // 전화번호 중복 확인
+    const existingPhoneUser = await User.findOne({ phoneNumber });
+    if (existingPhoneUser) {
+      return NextResponse.json(
+        { success: false, message: '이미 사용 중인 전화번호입니다.' },
+        { status: 409 } // 충돌 상태 코드
+      );
+    }
+
     // 비밀번호 해싱 (bcrypt 사용, 보안을 위해 평문 저장 방지)
     const hashedPassword = await bcrypt.hash(password, 12); // 12는 salt 라운드 수
 
@@ -56,6 +74,7 @@ export async function POST(req) {
     const newUser = new User({
       name,
       email,
+      phoneNumber,
       password: hashedPassword, // 해시된 비밀번호 저장
     });
 

@@ -16,6 +16,11 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true, // 이메일 중복 방지
     },
+    phoneNumber: {
+      type: String,
+      required: true, // 필수 입력 필드
+      unique: true, // 전화번호 중복 방지
+    },
     password: {
       type: String, // 해시된 비밀번호가 저장됨
     },
