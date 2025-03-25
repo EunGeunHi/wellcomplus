@@ -2,9 +2,12 @@ import { ArrowUpRight, Zap, Computer, BookOpenCheck, ShieldCheck, MapPin } from 
 import HeroSlider from './components/HeroSlider';
 import HeroButton from './components/HeroButton';
 import Link from 'next/link';
+import TestAlert from './components/TestAlert';
+
 export default function Home() {
   return (
     <>
+      <TestAlert />
       {/* Hero Section */}
       <div className="w-full bg-gradient-to-r from-blue-50 to-sky-50 py-10">
         <div className="max-w-7xl mx-auto px-6">
