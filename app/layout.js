@@ -2,6 +2,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Navigation from './components/Navigation';
 import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { AuthProvider } from './components/AuthProvider';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -30,6 +31,7 @@ export default function RootLayout({ children }) {
           <main className="pt-20">{children}</main>
         </AuthProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
