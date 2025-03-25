@@ -8,13 +8,11 @@ export default function HeroSlider() {
   const intervalRef = useRef(null);
 
   const images = [
-    '/mainpageimg/test1.jpg',
-    '/mainpageimg/test2.jpg',
-    '/mainpageimg/test3.jpg',
-    '/mainpageimg/test4.jpg',
-    '/mainpageimg/test5.jpg',
-    '/mainpageimg/test6.jpg',
-    '/mainpageimg/test7.jpg',
+    '/mainpageimg/1.jpg',
+    '/mainpageimg/2.jpg',
+    '/mainpageimg/3.jpg',
+    '/mainpageimg/4.jpg',
+    '/mainpageimg/5.jpg',
   ];
 
   const totalImages = images.length;

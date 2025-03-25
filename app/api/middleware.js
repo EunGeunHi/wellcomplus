@@ -32,7 +32,7 @@ export function withKingAuthAPI(handler) {
     const session = await getServerSession(authOptions);
 
     // 디버깅을 위한 세션 로그 출력
-    console.log('Session in middleware:', JSON.stringify(session));
+    //console.log('Session in middleware:', JSON.stringify(session));
 
     // 인증되지 않은 요청 거부
     if (!session) {
@@ -40,7 +40,7 @@ export function withKingAuthAPI(handler) {
     }
 
     // 권한 확인을 위한 로그
-    console.log('Authority:', session.user?.authority);
+    //console.log('Authority:', session.user?.authority);
 
     // "king" 권한이 없는 요청 거부
     if (!session.user || session.user.authority !== 'king') {
