@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 import Link from 'next/link';
+import LoginFallback from '@/app/components/LoginFallback';
 
 export default function EstimatePage() {
   const [formData, setFormData] = useState({
@@ -43,22 +44,7 @@ export default function EstimatePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 via-sky-100/30 to-white">
-      <LoggedInOnlySection
-        fallback={
-          <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
-            <div className="text-center bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-lg border border-blue-100/50 max-w-md w-full">
-              <h2 className="text-2xl font-[BMJUA] text-gray-900 mb-4">로그인 후 사용해주세요!</h2>
-              <p className="text-gray-600 mb-8">서비스를 이용하기 위해서는 로그인이 필요합니다.</p>
-              <Link
-                href="/login"
-                className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200"
-              >
-                로그인하기
-              </Link>
-            </div>
-          </div>
-        }
-      >
+      <LoggedInOnlySection fallback={<LoginFallback />}>
         <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8 font-[NanumGothic]">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-[BMJUA] text-gray-900 mb-4">컴퓨터 견적 신청</h1>
