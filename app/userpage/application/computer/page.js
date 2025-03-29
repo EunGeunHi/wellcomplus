@@ -93,7 +93,7 @@ export default function EstimatePage() {
                       <h3 className="text-lg font-semibold text-blue-800 mb-1">추가 요구사항</h3>
                       <div className="inline-flex items-center text-xs px-3 py-1 bg-blue-100/50 rounded-full w-fit">
                         <span className="text-blue-700">
-                          ✓ 견적에 반영되면 좋고 아니여도 그만인 것들을 작성해주세요
+                          ✓ 견적에 반영되면 좋고 아니여도 괜찮은 것들을 작성해주세요
                         </span>
                       </div>
                     </div>
@@ -215,14 +215,14 @@ export default function EstimatePage() {
                         htmlFor="ponenumber"
                         className="block text-lg font-[BMJUA] text-gray-900 mb-2"
                       >
-                        폰번호
+                        연락처
                       </label>
                       <textarea
                         id="ponenumber"
                         name="ponenumber"
                         rows={1}
                         className="w-full rounded-lg border border-gray-300 bg-white/50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="(선택) 폰번호를 입력해주세요. 입력하지 않으면 회원가입할 때 입력한 번호로 연락드립니다."
+                        placeholder="(선택) 연락처를 입력해주세요. 입력하지 않으면 회원가입할 때 입력한 번호로 연락드립니다."
                         value={formData.ponenumber}
                         onChange={handleChange}
                       />

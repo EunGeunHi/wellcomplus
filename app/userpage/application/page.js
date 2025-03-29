@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { FaClipboardList, FaTools, FaQuestionCircle } from 'react-icons/fa';
+import { FaTools, FaQuestionCircle, FaLaptop } from 'react-icons/fa';
 import { BsFillPrinterFill } from 'react-icons/bs';
+import { FaComputer } from 'react-icons/fa6';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 import LoginFallback from '@/app/components/LoginFallback';
 
@@ -21,25 +22,32 @@ export default function ApplicationPage() {
       id: 1,
       title: 'PC 견적 신청',
       description: 'PC 구매를 위한 맞춤 견적을 신청하세요',
-      icon: <FaClipboardList className="w-12 h-12" />,
-      link: '/userpage/application/estimate',
+      icon: <FaComputer className="w-12 h-12" />,
+      link: '/userpage/application/computer',
     },
     {
       id: 2,
-      title: '프린터 관련 신청',
+      title: '프린터 견적 신청',
       description: '원하는 프린터를 신청하세요',
       icon: <BsFillPrinterFill className="w-12 h-12" />,
       link: '/userpage/application/printer',
     },
     {
       id: 3,
-      title: 'AS 신청',
-      description: '제품 수리 및 유지보수 서비스를 신청하세요',
-      icon: <FaTools className="w-12 h-12" />,
-      link: '/userpage/application/service',
+      title: '노트북 견적 신청',
+      description: '원하는 노트북을 신청하세요',
+      icon: <FaLaptop className="w-12 h-12" />,
+      link: '/userpage/application/notebook',
     },
     {
       id: 4,
+      title: 'AS 신청',
+      description: '제품 수리 및 유지보수 서비스를 신청하세요',
+      icon: <FaTools className="w-12 h-12" />,
+      link: '/userpage/application/as',
+    },
+    {
+      id: 5,
       title: '기타 문의',
       description: '기타 문의사항을 등록해주세요',
       icon: <FaQuestionCircle className="w-12 h-12" />,
@@ -52,7 +60,7 @@ export default function ApplicationPage() {
       <LoggedInOnlySection fallback={<LoginFallback />}>
         <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
           <div className="text-center font-[BMJUA] mb-16">
-            <h1 className="text-4xl text-gray-900 mb-4">서비스 신청</h1>
+            <h1 className="text-4xl text-gray-900 mb-3">서비스 신청</h1>
             <p className="text-xl text-gray-600">원하시는 서비스를 선택해주세요</p>
           </div>
 

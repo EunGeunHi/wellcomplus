@@ -63,7 +63,7 @@ export default function Navigation() {
                 href="/userpage/application"
                 className="relative text-gray-700 hover:text-[#87CEEB] transition-colors duration-300 font-medium overflow-hidden group"
               >
-                <span className="relative z-10">견적,AS</span>
+                <span className="relative z-10">서비스신청</span>
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#87CEEB] transition-all duration-300 group-hover:w-full"></span>
               </Link>
               <Link
@@ -160,7 +160,7 @@ export default function Navigation() {
                     href="/userpage/application"
                     className="text-gray-700 hover:text-[#87CEEB] transition-colors duration-200 py-2 border-b border-gray-100"
                   >
-                    견적,AS
+                    서비스신청
                   </Link>
                   <Link
                     href="#"
