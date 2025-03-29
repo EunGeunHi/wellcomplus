@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { FaClipboardList, FaTools, FaQuestionCircle } from 'react-icons/fa';
+import { BsFillPrinterFill } from 'react-icons/bs';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 import LoginFallback from '@/app/components/LoginFallback';
 
@@ -18,20 +19,27 @@ export default function ApplicationPage() {
   const services = [
     {
       id: 1,
-      title: '견적 신청',
-      description: '제품 구매를 위한 맞춤 견적을 신청하세요',
+      title: 'PC 견적 신청',
+      description: 'PC 구매를 위한 맞춤 견적을 신청하세요',
       icon: <FaClipboardList className="w-12 h-12" />,
       link: '/userpage/application/estimate',
     },
     {
       id: 2,
+      title: '프린터 관련 신청',
+      description: '원하는 프린터를 신청하세요',
+      icon: <BsFillPrinterFill className="w-12 h-12" />,
+      link: '/userpage/application/printer',
+    },
+    {
+      id: 3,
       title: 'AS 신청',
       description: '제품 수리 및 유지보수 서비스를 신청하세요',
       icon: <FaTools className="w-12 h-12" />,
       link: '/userpage/application/service',
     },
     {
-      id: 3,
+      id: 4,
       title: '기타 문의',
       description: '기타 문의사항을 등록해주세요',
       icon: <FaQuestionCircle className="w-12 h-12" />,
@@ -52,7 +60,7 @@ export default function ApplicationPage() {
             {services.map((service) => (
               <motion.div
                 key={service.id}
-                className="relative bg-white/80 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden"
+                className="relative bg-white/80 rounded-xl shadow-lg overflow-hidden"
                 whileHover={{ scale: 1.03 }}
                 onHoverStart={() => setHoveredCard(service.id)}
                 onHoverEnd={() => setHoveredCard(null)}

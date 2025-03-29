@@ -82,7 +82,8 @@ export default function Navigation() {
               </Link>
               {/* 사용자 환영 메시지 */}
               <span className="text-sm text-gray-600 font-normal italic">
-                <span className="font-semibold text-[#5F9DF7]">{session.user.name}</span>{' '}
+                <span className="font-semibold text-[#5F9DF7]">{session.user.name}</span>
+                <span className="text-xs">님 </span>
                 환영합니다!
               </span>
               <button
@@ -151,7 +152,8 @@ export default function Navigation() {
                 <>
                   {/* 모바일 환영 메시지 */}
                   <div className="text-sm text-gray-600 font-normal italic mb-2 text-center">
-                    <span className="font-semibold text-[#5F9DF7]">{session.user.name}</span>{' '}
+                    <span className="font-semibold text-[#5F9DF7]">{session.user.name}</span>
+                    <span className="text-xs">님</span>
                     환영합니다!
                   </div>
                   <Link
