@@ -26,7 +26,7 @@ export default function EstimatePage() {
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    e.preventDefault(); // 기본 동작 방지(HTML 폼이 제출될 때의 기본 동작은 페이지를 새로고침하는것인데 이것을 방지)
     // API 연동 예정
     console.log(formData);
   };
@@ -222,7 +222,7 @@ export default function EstimatePage() {
                         name="ponenumber"
                         rows={1}
                         className="w-full rounded-lg border border-gray-300 bg-white/50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="(선택) 연락처를 입력해주세요. 입력하지 않으면 회원가입할 때 입력한 번호로 연락드립니다."
+                        placeholder="(선택) 연락처를 입력해주세요. 입력하지 않으면 회원가입할 때 입력한 번호로 연락드립니다"
                         value={formData.ponenumber}
                         onChange={handleChange}
                       />
