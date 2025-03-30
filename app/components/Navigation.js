@@ -67,31 +67,26 @@ export default function Navigation() {
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#87CEEB] transition-all duration-300 group-hover:w-full"></span>
               </Link>
               <Link
-                href="#"
-                className="relative text-gray-700 hover:text-[#87CEEB] transition-colors duration-300 font-medium overflow-hidden group"
-              >
-                <span className="relative z-10">주문내역</span>
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#87CEEB] transition-all duration-300 group-hover:w-full"></span>
-              </Link>
-              <Link
-                href="#"
+                href={`/userpage/${session.user.id}`}
                 className="relative text-gray-700 hover:text-[#87CEEB] transition-colors duration-300 font-medium overflow-hidden group"
               >
                 <span className="relative z-10">마이페이지</span>
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#87CEEB] transition-all duration-300 group-hover:w-full"></span>
               </Link>
               {/* 사용자 환영 메시지 */}
-              <span className="text-sm text-gray-600 font-normal italic">
-                <span className="font-semibold text-[#5F9DF7]">{session.user.name}</span>
-                <span className="text-xs">님 </span>
-                환영합니다!
-              </span>
-              <button
-                onClick={() => signOut({ callbackUrl: '/' })}
-                className="text-gray-600 hover:text-[#87CEEB] text-sm font-medium px-3 py-1 rounded-full border border-gray-300 hover:border-[#87CEEB] transition-all duration-300 hover:shadow-sm"
-              >
-                로그아웃
-              </button>
+              <div className="flex items-center gap-1">
+                <div className="h-6 w-px bg-gray-300 -ml-1 mr-2"></div>
+                <span className="text-sm text-gray-600 font-normal italic">
+                  <span className="font-semibold text-[#5F9DF7]">{session.user.name}</span>
+                  <span className="text-xs">님</span>
+                </span>
+                <button
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  className="text-gray-600 hover:text-[#87CEEB] text-xs font-medium px-2 py-1 rounded-full border border-gray-300 hover:border-[#87CEEB] transition-all duration-300 hover:shadow-sm"
+                >
+                  로그아웃
+                </button>
+              </div>
             </>
           ) : (
             // 비로그인 사용자를 위한 메뉴
@@ -163,13 +158,7 @@ export default function Navigation() {
                     서비스신청
                   </Link>
                   <Link
-                    href="#"
-                    className="text-gray-700 hover:text-[#87CEEB] transition-colors duration-200 py-2 border-b border-gray-100"
-                  >
-                    주문내역
-                  </Link>
-                  <Link
-                    href="#"
+                    href={`/userpage/${session.user.id}`}
                     className="text-gray-700 hover:text-[#87CEEB] transition-colors duration-200 py-2 border-b border-gray-100"
                   >
                     마이페이지

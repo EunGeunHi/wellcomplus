@@ -49,7 +49,6 @@ export default function EstimatePage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: session?.user?.id,
           purpose: formData.purpose,
           budget: formData.budget,
           requirements: formData.requirements,

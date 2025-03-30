@@ -63,31 +63,6 @@ const UserPage = ({ params }) => {
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 font-['NanumGothic'] p-8">
         <div className="max-w-7xl mx-auto flex gap-8 flex-col md:flex-row">
           <div className="w-full md:w-80 flex flex-col gap-6">
-            <div className="bg-white rounded-2xl overflow-hidden relative shadow-lg">
-              <div className="h-20 bg-gradient-to-r from-indigo-600 to-purple-600"></div>
-              <div className="relative flex justify-center -mt-10">
-                <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-md bg-gray-100">
-                  <img
-                    src={`https://api.dicebear.com/7.x/initials/svg?seed=${userData?.name || 'User'}&backgroundColor=4F46E5`}
-                    alt="User avatar"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-              <div className="p-4 pb-8 text-center">
-                <h2 className="text-xl font-bold text-gray-900 mt-2 mb-0.5">
-                  {userData?.name || '사용자'}
-                </h2>
-                <span className="text-sm text-gray-500 block mb-4">
-                  {userData?.authority === 'user' ? '일반 회원' : '관리자'}
-                </span>
-                <button className="flex items-center justify-center gap-2 bg-gray-100 text-gray-600 border-none rounded-md py-2 px-4 text-sm font-medium cursor-pointer transition-all duration-200 w-full hover:bg-gray-200">
-                  <FiEdit size={14} />
-                  프로필 수정
-                </button>
-              </div>
-            </div>
-
             <nav className="bg-white rounded-2xl p-4 shadow-lg flex flex-col gap-2">
               {menuItems.map((item) => (
                 <button
@@ -124,12 +99,6 @@ const UserPage = ({ params }) => {
           </div>
 
           <div className="flex-1 flex flex-col gap-6">
-            <header className="bg-white rounded-2xl p-6 shadow-lg">
-              <h1 className="text-2xl font-bold text-gray-900 m-0">
-                {menuItems.find((item) => item.id === activeMenu)?.label}
-              </h1>
-            </header>
-
             <main className="bg-white rounded-2xl p-8 shadow-lg">{renderContent()}</main>
           </div>
         </div>
@@ -144,8 +113,8 @@ const ProfileContent = ({ userData }) => {
   return (
     <>
       <section className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6 relative pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
-          개인 정보
+        <h2 className="text-3xl font-semibold text-gray-900 mb-6 relative pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
+          프로필
         </h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="flex items-center gap-4 p-5 bg-gray-50 rounded-xl transition-all duration-200 hover:translate-y-[-2px] hover:shadow-md">
@@ -183,42 +152,6 @@ const ProfileContent = ({ userData }) => {
               <div className="text-sm text-gray-500 mb-0.5">가입일</div>
               <div className="text-lg text-gray-900 font-semibold">
                 {formatDate(userData.createdAt)}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6 relative pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
-          계정 활동
-        </h2>
-        <div className="bg-gray-50 rounded-xl p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-base font-semibold text-gray-900 m-0">최근 활동 내역</h3>
-            <a className="text-sm text-indigo-600 cursor-pointer hover:underline">전체보기</a>
-          </div>
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm">
-              <div className="flex items-center justify-center text-base text-indigo-600 bg-indigo-50 w-9 h-9 rounded-lg">
-                <FiShoppingBag />
-              </div>
-              <div className="flex-1">
-                <div className="text-sm text-gray-900 mb-0.5">상품을 구매했습니다</div>
-                <div className="text-xs text-gray-500">
-                  {getRelativeTime('2025-03-27T08:57:15.091Z')}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm">
-              <div className="flex items-center justify-center text-base text-indigo-600 bg-indigo-50 w-9 h-9 rounded-lg">
-                <FiHeart />
-              </div>
-              <div className="flex-1">
-                <div className="text-sm text-gray-900 mb-0.5">위시리스트에 상품을 추가했습니다</div>
-                <div className="text-xs text-gray-500">
-                  {getRelativeTime('2025-03-26T08:57:15.091Z')}
-                </div>
               </div>
             </div>
           </div>
