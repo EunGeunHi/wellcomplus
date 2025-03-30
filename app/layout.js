@@ -4,6 +4,7 @@ import Navigation from './components/Navigation';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { AuthProvider } from './components/AuthProvider';
+import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -32,6 +33,7 @@ export default function RootLayout({ children }) {
         </AuthProvider>
         <Analytics />
         <SpeedInsights />
+        <Toaster position="top-center" />
       </body>
     </html>
   );

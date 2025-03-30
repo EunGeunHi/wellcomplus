@@ -3,10 +3,16 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
-import Link from 'next/link';
+
+import { useRouter } from 'next/navigation';
 import LoginFallback from '@/app/components/LoginFallback';
+import { useSession } from 'next-auth/react';
+import { toast } from 'react-hot-toast';
 
 export default function EstimatePage() {
+  const router = useRouter();
+  const { data: session } = useSession();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     purpose: '',
     budget: '',
@@ -25,10 +31,61 @@ export default function EstimatePage() {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault(); // 기본 동작 방지(HTML 폼이 제출될 때의 기본 동작은 페이지를 새로고침하는것인데 이것을 방지)
-    // API 연동 예정
-    console.log(formData);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // 필수 필드 검증
+    if (!formData.purpose.trim() || !formData.budget.trim() || !formData.requirements.trim()) {
+      toast.error('사용 목적, 예산, 필수 요구사항은 \n필수로 작성해야 합니다.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      const response = await fetch('/api/applications/computer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: session?.user?.id,
+          purpose: formData.purpose,
+          budget: formData.budget,
+          requirements: formData.requirements,
+          additional: formData.additional,
+          etc: formData.etc,
+          phoneNumber: formData.ponenumber,
+          address: formData.address,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('견적 신청 중 오류가 발생했습니다.');
+      }
+
+      toast.success('컴퓨터 견적 신청이 완료되었습니다!');
+      // 폼 초기화
+      setFormData({
+        purpose: '',
+        budget: '',
+        requirements: '',
+        additional: '',
+        etc: '',
+        ponenumber: '',
+        address: '',
+      });
+
+      // 3초 후 메인 페이지로 이동
+      setTimeout(() => {
+        router.push('/');
+      }, 1000);
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      toast.error(error.message || '견적 신청 중 오류가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const examples = {
@@ -253,9 +310,14 @@ export default function EstimatePage() {
                     </p>
                     <button
                       type="submit"
-                      className="w-full bg-blue-500 font-[NanumGothic] text-xl font-bold hover:bg-blue-600 text-white py-4 px-6 rounded-lg transition-colors duration-200"
+                      disabled={isSubmitting}
+                      className={`w-full font-[NanumGothic] text-xl font-bold text-white py-4 px-6 rounded-lg transition-colors duration-200 ${
+                        isSubmitting
+                          ? 'bg-blue-400 cursor-not-allowed'
+                          : 'bg-blue-500 hover:bg-blue-600'
+                      }`}
                     >
-                      컴퓨터 견적 신청하기
+                      {isSubmitting ? '신청 중...' : '컴퓨터 견적 신청하기'}
                     </button>
                   </div>
                 </div>
