@@ -11,7 +11,7 @@ async function handler(req, { session }) {
     const data = await req.json();
 
     // 필수 필드 검증
-    if (!data.purpose || !data.budget || !data.requirements) {
+    if (!data.purpose || !data.requirements) {
       return NextResponse.json({ error: '필수 항목이 누락되었습니다.' }, { status: 400 });
     }
 
@@ -23,14 +23,14 @@ async function handler(req, { session }) {
 
     // 신청서 생성
     const application = await Application.create({
-      type: 'computer',
+      type: 'printer',
       userId: session.user.id,
-      computer_information: {
+      printer_information: {
+        modelName: data.modelName || '',
         purpose: data.purpose,
-        budget: data.budget,
         requirements: data.requirements,
+        modification: data.modification || '',
         additional: data.additional || '',
-        etc: data.etc || '',
         phoneNumber:
           data.phoneNumber?.trim().length > 0 ? data.phoneNumber : user.phoneNumber || '',
         address: data.address || '',

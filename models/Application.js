@@ -11,33 +11,23 @@ const applicationSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
-  purpose: {
-    type: String,
-    default: '',
+  computer_information: {
+    purpose: String,
+    budget: String,
+    requirements: String,
+    additional: String,
+    etc: String,
+    phoneNumber: String,
+    address: String,
   },
-  budget: {
-    type: String,
-    default: '',
-  },
-  requirements: {
-    type: String,
-    default: '',
-  },
-  additional: {
-    type: String,
-    default: '',
-  },
-  etc: {
-    type: String,
-    default: '',
-  },
-  phoneNumber: {
-    type: String,
-    default: '',
-  },
-  address: {
-    type: String,
-    default: '',
+  printer_information: {
+    modelName: String,
+    purpose: String,
+    requirements: String,
+    modification: String,
+    additional: String,
+    phoneNumber: String,
+    address: String,
   },
   status: {
     type: String,

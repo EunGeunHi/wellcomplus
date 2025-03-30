@@ -36,7 +36,7 @@ export default function EstimatePage() {
 
     // 필수 필드 검증
     if (!formData.purpose.trim() || !formData.budget.trim() || !formData.requirements.trim()) {
-      toast.error('사용 목적, 예산, 필수 요구사항은 \n필수로 작성해야 합니다.');
+      toast.error('사용 목적(용도), 예산, 필수 요구사항은 \n필수로 작성해야 합니다.');
       return;
     }
 
@@ -123,7 +123,7 @@ export default function EstimatePage() {
                 <h2 className="text-2xl font-[BMJUA] text-gray-900 mb-6">작성 예시</h2>
                 <div className="space-y-6">
                   <div className="bg-blue-50/50 rounded-lg p-4">
-                    <h3 className="text-lg font-semibold text-blue-800 mb-2">사용 목적</h3>
+                    <h3 className="text-lg font-semibold text-blue-800 mb-2">사용 목적(용도)</h3>
                     <p className="text-gray-600 whitespace-pre-line text-sm">{examples.purpose}</p>
                   </div>
                   <div className="bg-blue-50/50 rounded-lg p-4">
@@ -181,7 +181,7 @@ export default function EstimatePage() {
                         htmlFor="purpose"
                         className="block text-lg font-[BMJUA] text-gray-900 mb-2"
                       >
-                        사용 목적*
+                        사용 목적(용도)*
                       </label>
                       <textarea
                         id="purpose"

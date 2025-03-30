@@ -5,11 +5,17 @@ import { motion } from 'framer-motion';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 import LoginFallback from '@/app/components/LoginFallback';
 
+import { toast } from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
+
 export default function PrinterEstimatePage() {
+  const router = useRouter();
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     modelName: '',
     purpose: '',
-    requiredFeatures: '',
+    requirements: '',
     modification: '',
     additional: '',
     phoneNumber: '',
@@ -24,16 +30,66 @@ export default function PrinterEstimatePage() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // API 연동 예정
-    console.log(formData);
+
+    // 필수 필드 검증
+    if (!formData.purpose.trim() || !formData.requirements.trim()) {
+      toast.error('사용 목적(용도), 필요 기능은 \n필수로 작성해야 합니다.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      const response = await fetch('/api/applications/printer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          modelName: formData.modelName,
+          purpose: formData.purpose,
+          requirements: formData.requirements,
+          modification: formData.modification,
+          additional: formData.additional,
+          phoneNumber: formData.phoneNumber,
+          address: formData.address,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('견적 신청 중 오류가 발생했습니다.');
+      }
+
+      toast.success('프린터 견적 신청이 완료되었습니다!');
+      // 폼 초기화
+      setFormData({
+        modelName: '',
+        purpose: '',
+        requirements: '',
+        modification: '',
+        additional: '',
+        phoneNumber: '',
+        address: '',
+      });
+
+      // 3초 후 메인 페이지로 이동
+      setTimeout(() => {
+        router.push('/');
+      }, 1000);
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      toast.error(error.message || '견적 신청 중 오류가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const examples = {
     modelName: '- HP LaserJet Pro M428\n- Canon PIXMA G3910\n- Epson L4260',
     purpose: '- 사무실 문서 출력용\n- 가정용 사진 출력용\n- 대량 인쇄용',
-    requiredFeatures:
+    requirements:
       '- 무선 연결 기능 필요\n- 자동 양면 인쇄 기능 필요\n- 스캔 기능 필요\n- 팩스 인쇄 기능 필요',
     modification: '- 무한공급기 장착 필요\n- 특수 용지 지원 필요\n- 고용량 카트리지 필요',
     additional: '',
@@ -63,19 +119,19 @@ export default function PrinterEstimatePage() {
                 <h2 className="text-2xl font-[BMJUA] text-gray-900 mb-6">작성 예시</h2>
                 <div className="space-y-6">
                   <div className="bg-blue-50/50 rounded-lg p-4">
-                    <h3 className="text-lg font-semibold text-blue-800 mb-2">원하는 모델명</h3>
+                    <h3 className="text-lg font-semibold text-blue-800 mb-2">모델명</h3>
                     <p className="text-gray-600 whitespace-pre-line text-sm">
                       {examples.modelName}
                     </p>
                   </div>
                   <div className="bg-blue-50/50 rounded-lg p-4">
-                    <h3 className="text-lg font-semibold text-blue-800 mb-2">용도</h3>
+                    <h3 className="text-lg font-semibold text-blue-800 mb-2">사용 목적(용도)</h3>
                     <p className="text-gray-600 whitespace-pre-line text-sm">{examples.purpose}</p>
                   </div>
                   <div className="bg-blue-50/50 rounded-lg p-4">
                     <h3 className="text-lg font-semibold text-blue-800 mb-2">필요 기능</h3>
                     <p className="text-gray-600 whitespace-pre-line text-sm">
-                      {examples.requiredFeatures}
+                      {examples.requirements}
                     </p>
                   </div>
                   <div className="bg-blue-50/50 rounded-lg p-4">
@@ -118,7 +174,7 @@ export default function PrinterEstimatePage() {
                         htmlFor="modelName"
                         className="block text-lg font-[BMJUA] text-gray-900 mb-2"
                       >
-                        원하는 모델명
+                        모델명
                       </label>
                       <textarea
                         id="modelName"
@@ -136,14 +192,14 @@ export default function PrinterEstimatePage() {
                         htmlFor="purpose"
                         className="block text-lg font-[BMJUA] text-gray-900 mb-2"
                       >
-                        용도*
+                        사용 목적(용도)*
                       </label>
                       <textarea
                         id="purpose"
                         name="purpose"
                         rows={3}
                         className="w-full rounded-lg border border-gray-300 bg-white/50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="(필수) 프린터 사용 용도를 작성해주세요"
+                        placeholder="(필수) 프린터 사용 목적을 작성해주세요"
                         value={formData.purpose}
                         onChange={handleChange}
                       />
@@ -151,18 +207,18 @@ export default function PrinterEstimatePage() {
 
                     <div>
                       <label
-                        htmlFor="requiredFeatures"
+                        htmlFor="requirements"
                         className="block text-lg font-[BMJUA] text-gray-900 mb-2"
                       >
                         필요 기능*
                       </label>
                       <textarea
-                        id="requiredFeatures"
-                        name="requiredFeatures"
+                        id="requirements"
+                        name="requirements"
                         rows={4}
                         className="w-full rounded-lg border border-gray-300 bg-white/50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
                         placeholder="(필수) 필요한 프린터 기능을 작성해주세요"
-                        value={formData.requiredFeatures}
+                        value={formData.requirements}
                         onChange={handleChange}
                       />
                     </div>
@@ -241,11 +297,19 @@ export default function PrinterEstimatePage() {
                   </div>
 
                   <div className="mt-8">
+                    <p className="text-gray-500 text-sm text-center mb-4 bg-yellow-50/50 py-2 px-4 rounded-lg border border-yellow-100">
+                      ⚠️ 부품 수급상황에 따라 요구사항이 모두 수용되지 않을 수 있습니다.
+                    </p>
                     <button
                       type="submit"
-                      className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200"
+                      disabled={isSubmitting}
+                      className={`w-full font-[NanumGothic] text-xl font-bold text-white py-4 px-6 rounded-lg transition-colors duration-200 ${
+                        isSubmitting
+                          ? 'bg-blue-400 cursor-not-allowed'
+                          : 'bg-blue-500 hover:bg-blue-600'
+                      }`}
                     >
-                      프린터 견적 신청하기
+                      {isSubmitting ? '신청 중...' : '프린터 견적 신청하기'}
                     </button>
                   </div>
                 </div>
