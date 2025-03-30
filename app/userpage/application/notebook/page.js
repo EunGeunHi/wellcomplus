@@ -4,8 +4,14 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 import LoginFallback from '@/app/components/LoginFallback';
+import { useSession } from 'next-auth/react';
+import { toast } from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
 export default function NotebookEstimatePage() {
+  const router = useRouter();
+  const { data: session } = useSession();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     modelName: '',
     manufacturer: '',
@@ -31,10 +37,59 @@ export default function NotebookEstimatePage() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // API 연동 예정
-    console.log(formData);
+
+    // 필수 필드 검증
+    if (!formData.purpose.trim() || !formData.os) {
+      toast.error('용도와 운영체제는 \n필수로 선택해야 합니다.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      const response = await fetch('/api/applications/notebook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('견적 신청 중 오류가 발생했습니다.');
+      }
+
+      toast.success('노트북 견적 신청이 완료되었습니다!');
+      // 폼 초기화
+      setFormData({
+        modelName: '',
+        manufacturer: '',
+        brand: '',
+        screenSize: '',
+        cpuType: '',
+        gpuType: '',
+        ramSize: '',
+        storageSize: '',
+        os: '',
+        weight: '',
+        priceRange: '',
+        purpose: '',
+        additionalRequests: '',
+        phoneNumber: '',
+      });
+
+      // 3초 후 메인 페이지로 이동
+      setTimeout(() => {
+        router.push('/');
+      }, 1000);
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      toast.error(error.message || '견적 신청 중 오류가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const examples = {
@@ -133,7 +188,6 @@ export default function NotebookEstimatePage() {
                         placeholder="(필수) 노트북을 어떤 용도로 사용하실 계획인지 설명해주세요"
                         value={formData.purpose}
                         onChange={handleChange}
-                        required
                       />
                     </div>
                     <div>
@@ -151,7 +205,6 @@ export default function NotebookEstimatePage() {
                         placeholder="(선택) 원하시는 노트북이 있다면 모델명을 입력해주세요"
                         value={formData.modelName}
                         onChange={handleChange}
-                        required
                       />
                     </div>
 
@@ -170,7 +223,6 @@ export default function NotebookEstimatePage() {
                         placeholder="(선택) 원하시는 제조사가 있다면 입력해주세요"
                         value={formData.manufacturer}
                         onChange={handleChange}
-                        required
                       />
                     </div>
 
@@ -189,7 +241,6 @@ export default function NotebookEstimatePage() {
                         placeholder="(선택) 원하시는 브랜드가 있다면 입력해주세요"
                         value={formData.brand}
                         onChange={handleChange}
-                        required
                       />
                     </div>
 
@@ -208,7 +259,6 @@ export default function NotebookEstimatePage() {
                         placeholder="(선택) 원하시는 화면 크기가 있다면 입력해주세요 (예: 15.6인치)"
                         value={formData.screenSize}
                         onChange={handleChange}
-                        required
                       />
                     </div>
 
@@ -227,7 +277,6 @@ export default function NotebookEstimatePage() {
                         placeholder="(선택) 원하시는 CPU 종류가 있다면 입력해주세요"
                         value={formData.cpuType}
                         onChange={handleChange}
-                        required
                       />
                     </div>
 
@@ -246,7 +295,6 @@ export default function NotebookEstimatePage() {
                         placeholder="(선택) 원하시는 GPU 칩셋이 있다면 입력해주세요"
                         value={formData.gpuType}
                         onChange={handleChange}
-                        required
                       />
                     </div>
 
@@ -265,7 +313,6 @@ export default function NotebookEstimatePage() {
                               className="peer hidden"
                               onChange={handleChange}
                               checked={formData.ramSize === option}
-                              required
                             />
                             <label
                               htmlFor={`ram-${option}`}
@@ -295,7 +342,6 @@ export default function NotebookEstimatePage() {
                               className="peer hidden"
                               onChange={handleChange}
                               checked={formData.storageSize === option}
-                              required
                             />
                             <label
                               htmlFor={`storage-${option}`}
@@ -325,7 +371,6 @@ export default function NotebookEstimatePage() {
                               className="peer hidden"
                               onChange={handleChange}
                               checked={formData.os === option}
-                              required
                             />
                             <label
                               htmlFor={`os-${option}`}
@@ -355,7 +400,6 @@ export default function NotebookEstimatePage() {
                         placeholder="(선택) 원하시는 무게가 있다면 입력해주세요 (예: 1.35kg)"
                         value={formData.weight}
                         onChange={handleChange}
-                        required
                       />
                     </div>
 
@@ -374,7 +418,6 @@ export default function NotebookEstimatePage() {
                         placeholder="(선택) 원하시는 가격대가 있다면 입력해주세요"
                         value={formData.priceRange}
                         onChange={handleChange}
-                        required
                       />
                     </div>
 
@@ -411,17 +454,24 @@ export default function NotebookEstimatePage() {
                         placeholder="(선택) 연락처를 입력해주세요. 입력하지 않으면 회원가입할 때 입력한 번호로 연락드립니다"
                         value={formData.phoneNumber}
                         onChange={handleChange}
-                        required
                       />
                     </div>
                   </div>
 
                   <div className="mt-8">
+                    <p className="text-gray-500 text-sm text-center mb-4 bg-yellow-50/50 py-2 px-4 rounded-lg border border-yellow-100">
+                      ⚠️ 부품 수급상황에 따라 요구사항이 모두 수용되지 않을 수 있습니다.
+                    </p>
                     <button
                       type="submit"
-                      className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200"
+                      disabled={isSubmitting}
+                      className={`w-full font-[NanumGothic] text-xl font-bold text-white py-4 px-6 rounded-lg transition-colors duration-200 ${
+                        isSubmitting
+                          ? 'bg-blue-400 cursor-not-allowed'
+                          : 'bg-blue-500 hover:bg-blue-600'
+                      }`}
                     >
-                      노트북 견적 신청하기
+                      {isSubmitting ? '신청 중...' : '노트북 견적 신청하기'}
                     </button>
                   </div>
                 </div>
