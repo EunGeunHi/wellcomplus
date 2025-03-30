@@ -8,14 +8,19 @@ async function handler(req, { session }) {
   if (req.method !== 'POST') {
     return NextResponse.json({ error: '지원하지 않는 메서드입니다.' }, { status: 405 });
   }
+
   try {
     await connectDB();
 
     const data = await req.json();
+    const { title, content, phoneNumber } = data;
 
     // 필수 필드 검증
-    if (!data.purpose || !data.requirements) {
-      return NextResponse.json({ error: '필수 항목이 누락되었습니다.' }, { status: 400 });
+    if (!title || !content) {
+      return NextResponse.json(
+        { error: '제목과 문의 내용은 필수로 입력해야 합니다.' },
+        { status: 400 }
+      );
     }
 
     // 사용자 정보 조회
@@ -24,29 +29,24 @@ async function handler(req, { session }) {
     //   return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
     // }
 
-    // 신청서 생성
+    // 전화번호 처리
+    const finalPhoneNumber = phoneNumber || user.phoneNumber || '';
+
+    // 문의 생성
     const application = await Application.create({
-      type: 'printer',
+      type: 'inquiry',
       userId: session.user.id,
-      printer_information: {
-        modelName: data.modelName || '',
-        purpose: data.purpose,
-        requirements: data.requirements,
-        modification: data.modification || '',
-        additional: data.additional || '',
-        phoneNumber:
-          data.phoneNumber?.trim().length > 0 ? data.phoneNumber : user.phoneNumber || '',
-        address: data.address || '',
+      inquiry_information: {
+        title,
+        content,
+        phoneNumber: finalPhoneNumber,
       },
     });
 
-    return NextResponse.json(
-      { message: '견적 신청이 완료되었습니다.', application },
-      { status: 201 }
-    );
+    return NextResponse.json({ message: '문의가 등록되었습니다.', application }, { status: 201 });
   } catch (error) {
-    console.error('Application creation error:', error);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    console.error('Error in inquiry submission:', error);
+    return NextResponse.json({ error: '문의 등록 중 오류가 발생했습니다.' }, { status: 500 });
   }
 }
 

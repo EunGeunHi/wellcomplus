@@ -4,13 +4,12 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 import LoginFallback from '@/app/components/LoginFallback';
-import { useSession } from 'next-auth/react';
+
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 
 export default function NotebookEstimatePage() {
   const router = useRouter();
-  const { data: session } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     modelName: '',

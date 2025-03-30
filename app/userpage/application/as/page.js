@@ -4,8 +4,12 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 import LoginFallback from '@/app/components/LoginFallback';
+import { toast } from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
-export default function ASRequestPage() {
+export default function ASApplicationPage() {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     itemType: '',
     description: '',
@@ -20,10 +24,48 @@ export default function ASRequestPage() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // API 연동 예정
-    console.log(formData);
+
+    // 필수 필드 검증
+    if (!formData.itemType.trim() || !formData.description.trim()) {
+      toast.error('제품 종류와 문제 설명은 \n필수로 입력해야 합니다.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      const response = await fetch('/api/applications/as', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('A/S 신청 중 오류가 발생했습니다.');
+      }
+
+      toast.success('A/S 신청이 완료되었습니다!');
+      // 폼 초기화
+      setFormData({
+        itemType: '',
+        description: '',
+        phoneNumber: '',
+      });
+
+      // 1초 후 메인 페이지로 이동
+      setTimeout(() => {
+        router.push('/');
+      }, 1000);
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      toast.error(error.message || 'A/S 신청 중 오류가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const examples = {
@@ -36,9 +78,9 @@ export default function ASRequestPage() {
       <LoggedInOnlySection fallback={<LoginFallback />}>
         <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8 font-[NanumGothic]">
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-[BMJUA] text-gray-900 mb-4">AS 신청</h1>
+            <h1 className="text-4xl font-[BMJUA] text-gray-900 mb-4">A/S 신청</h1>
             <p className="text-lg text-gray-600">
-              <span className="text-blue-600 font-semibold">상세한 작성</span>을 통해 더 빠른 AS
+              <span className="text-blue-600 font-semibold">상세한 작성</span>을 통해 더 빠른 A/S
               처리가 가능합니다
             </p>
           </div>
@@ -55,7 +97,7 @@ export default function ASRequestPage() {
                 <h2 className="text-2xl font-[BMJUA] text-gray-900 mb-6">작성 예시</h2>
                 <div className="space-y-6">
                   <div className="bg-blue-50/50 rounded-lg p-4">
-                    <h3 className="text-lg font-semibold text-blue-800 mb-2">AS 요청 내용</h3>
+                    <h3 className="text-lg font-semibold text-blue-800 mb-2">문제 설명</h3>
                     <p className="text-gray-600 whitespace-pre-line text-sm">
                       {examples.description}
                     </p>
@@ -64,7 +106,7 @@ export default function ASRequestPage() {
               </motion.div>
             </div>
 
-            {/* AS 신청 폼 */}
+            {/* A/S 신청 폼 */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -75,33 +117,25 @@ export default function ASRequestPage() {
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6">
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-lg font-[BMJUA] text-gray-900 mb-4">
-                        AS 품목*
+                      <label
+                        htmlFor="itemType"
+                        className="block text-lg font-[BMJUA] text-gray-900 mb-2"
+                      >
+                        제품 종류*
                       </label>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {['컴퓨터', '프린터', '노트북'].map((item) => (
-                          <div key={item} className="relative">
-                            <input
-                              type="radio"
-                              id={item}
-                              name="itemType"
-                              value={item}
-                              className="peer hidden"
-                              onChange={handleChange}
-                              checked={formData.itemType === item}
-                              required
-                            />
-                            <label
-                              htmlFor={item}
-                              className="block w-full p-4 text-center border-2 rounded-lg cursor-pointer transition-colors
-                                peer-checked:border-blue-500 peer-checked:bg-blue-50
-                                hover:bg-gray-50"
-                            >
-                              {item}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
+                      <select
+                        id="itemType"
+                        name="itemType"
+                        className="w-full rounded-lg border border-gray-300 bg-white/50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+                        value={formData.itemType}
+                        onChange={handleChange}
+                      >
+                        <option value="">제품 종류를 선택해주세요</option>
+                        <option value="computer">컴퓨터</option>
+                        <option value="notebook">노트북</option>
+                        <option value="printer">프린터</option>
+                        <option value="other">기타</option>
+                      </select>
                     </div>
 
                     <div>
@@ -109,17 +143,16 @@ export default function ASRequestPage() {
                         htmlFor="description"
                         className="block text-lg font-[BMJUA] text-gray-900 mb-2"
                       >
-                        AS 요청 내용*
+                        문제 설명*
                       </label>
                       <textarea
                         id="description"
                         name="description"
                         rows={6}
                         className="w-full rounded-lg border border-gray-300 bg-white/50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="(필수) AS가 필요한 증상이나 문제점을 자세히 설명해주세요"
+                        placeholder="(필수) 제품에 발생한 문제를 자세히 설명해주세요"
                         value={formData.description}
                         onChange={handleChange}
-                        required
                       />
                     </div>
 
@@ -138,7 +171,6 @@ export default function ASRequestPage() {
                         placeholder="(선택) 연락처를 입력해주세요. 입력하지 않으면 회원가입할 때 입력한 번호로 연락드립니다"
                         value={formData.phoneNumber}
                         onChange={handleChange}
-                        required
                       />
                     </div>
                   </div>
@@ -146,9 +178,14 @@ export default function ASRequestPage() {
                   <div className="mt-8">
                     <button
                       type="submit"
-                      className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200"
+                      disabled={isSubmitting}
+                      className={`w-full font-[NanumGothic] text-xl font-bold text-white py-4 px-6 rounded-lg transition-colors duration-200 ${
+                        isSubmitting
+                          ? 'bg-blue-400 cursor-not-allowed'
+                          : 'bg-blue-500 hover:bg-blue-600'
+                      }`}
                     >
-                      AS 신청하기
+                      {isSubmitting ? '신청 중...' : 'A/S 신청하기'}
                     </button>
                   </div>
                 </div>

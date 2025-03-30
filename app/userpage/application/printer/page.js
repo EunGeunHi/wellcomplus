@@ -35,7 +35,7 @@ export default function PrinterEstimatePage() {
 
     // 필수 필드 검증
     if (!formData.purpose.trim() || !formData.requirements.trim()) {
-      toast.error('사용 목적(용도), 필요 기능은 \n필수로 작성해야 합니다.');
+      toast.error('사용 목적(용도), 필요 기능은\n필수로 작성해야 합니다.');
       return;
     }
 

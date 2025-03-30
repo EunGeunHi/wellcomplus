@@ -4,8 +4,12 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 import LoginFallback from '@/app/components/LoginFallback';
+import { toast } from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
 export default function InquiryPage() {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -20,10 +24,48 @@ export default function InquiryPage() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // API 연동 예정
-    console.log(formData);
+
+    // 필수 필드 검증
+    if (!formData.title.trim() || !formData.content.trim()) {
+      toast.error('제목과 문의 내용은 \n필수로 입력해야 합니다.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      const response = await fetch('/api/applications/inquiry', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('문의 등록 중 오류가 발생했습니다.');
+      }
+
+      toast.success('문의가 등록되었습니다!');
+      // 폼 초기화
+      setFormData({
+        title: '',
+        content: '',
+        phoneNumber: '',
+      });
+
+      // 1초 후 메인 페이지로 이동
+      setTimeout(() => {
+        router.push('/');
+      }, 1000);
+    } catch (error) {
+      console.error('Error submitting inquiry:', error);
+      toast.error(error.message || '문의 등록 중 오류가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const examples = {
@@ -92,7 +134,6 @@ export default function InquiryPage() {
                         placeholder="(필수) 문의하실 내용의 제목을 입력해주세요"
                         value={formData.title}
                         onChange={handleChange}
-                        required
                       />
                     </div>
 
@@ -111,7 +152,6 @@ export default function InquiryPage() {
                         placeholder="(필수) 문의하실 내용을 자세히 작성해주세요"
                         value={formData.content}
                         onChange={handleChange}
-                        required
                       />
                     </div>
 
@@ -130,7 +170,6 @@ export default function InquiryPage() {
                         placeholder="(선택) 연락처를 입력해주세요. 입력하지 않으면 회원가입할 때 입력한 번호로 연락드립니다"
                         value={formData.phoneNumber}
                         onChange={handleChange}
-                        required
                       />
                     </div>
                   </div>
@@ -138,9 +177,14 @@ export default function InquiryPage() {
                   <div className="mt-8">
                     <button
                       type="submit"
-                      className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200"
+                      disabled={isSubmitting}
+                      className={`w-full font-[NanumGothic] text-xl font-bold text-white py-4 px-6 rounded-lg transition-colors duration-200 ${
+                        isSubmitting
+                          ? 'bg-blue-400 cursor-not-allowed'
+                          : 'bg-blue-500 hover:bg-blue-600'
+                      }`}
                     >
-                      문의하기
+                      {isSubmitting ? '등록 중...' : '문의하기'}
                     </button>
                   </div>
                 </div>

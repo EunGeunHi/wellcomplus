@@ -45,6 +45,16 @@ const applicationSchema = new mongoose.Schema({
     additionalRequests: String,
     phoneNumber: String,
   },
+  as_information: {
+    itemType: String,
+    description: String,
+    phoneNumber: String,
+  },
+  inquiry_information: {
+    title: String,
+    content: String,
+    phoneNumber: String,
+  },
   status: {
     type: String,
     default: 'registration',

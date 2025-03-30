@@ -5,6 +5,9 @@ import User from '@/models/User';
 import { withAuthAPI } from '../../middleware';
 
 async function handler(req, { session }) {
+  if (req.method !== 'POST') {
+    return NextResponse.json({ error: '지원하지 않는 메서드입니다.' }, { status: 405 });
+  }
   try {
     await connectDB();
 
