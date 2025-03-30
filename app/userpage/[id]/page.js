@@ -22,18 +22,33 @@ import LoginFallback from '@/app/components/LoginFallback';
 const UserPage = ({ params }) => {
   const [activeMenu, setActiveMenu] = useState('estimate');
   const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // 실제 환경에서는 API 호출로 대체됩니다
-    const mockUserData = {
-      _id: params.id,
-      name: '창준',
-      email: 'kcj@c.com',
-      phoneNumber: '010-1234-5678',
-      authority: 'user',
-      createdAt: '2025-03-29T08:57:15.091Z',
+    const fetchUserData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/users/${params.id}`);
+
+        if (!response.ok) {
+          throw new Error('사용자 정보를 불러오는데 실패했습니다');
+        }
+
+        const data = await response.json();
+        setUserData(data);
+        setError(null);
+      } catch (err) {
+        console.error('사용자 데이터를 가져오는 중 오류 발생:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     };
-    setUserData(mockUserData);
+
+    if (params.id) {
+      fetchUserData();
+    }
   }, [params.id]);
 
   const menuItems = [
@@ -44,6 +59,11 @@ const UserPage = ({ params }) => {
   ];
 
   const renderContent = () => {
+    // 로딩 중이거나 에러가 있는 경우 처리
+    if (loading) return <div className="p-10 text-center">정보를 불러오는 중입니다...</div>;
+    if (error) return <div className="p-10 text-center text-red-500">{error}</div>;
+    if (!userData) return <div className="p-10 text-center">사용자 정보를 찾을 수 없습니다.</div>;
+
     switch (activeMenu) {
       case 'profile':
         return <ProfileContent userData={userData} />;

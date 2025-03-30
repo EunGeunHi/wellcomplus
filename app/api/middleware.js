@@ -14,7 +14,10 @@ export function withAuthAPI(handler) {
 
     // 인증되지 않은 요청 거부
     if (!session) {
-      return NextResponse.json({ error: '인증되지 않은 요청입니다.' }, { status: 401 });
+      return NextResponse.json(
+        { error: '로그인하지 않아 인증되지 않은 요청입니다.' },
+        { status: 401 }
+      );
     }
 
     // 핸들러에 세션 정보 전달
@@ -36,7 +39,10 @@ export function withKingAuthAPI(handler) {
 
     // 인증되지 않은 요청 거부
     if (!session) {
-      return NextResponse.json({ error: '인증되지 않은 요청입니다.' }, { status: 401 });
+      return NextResponse.json(
+        { error: '로그인하지 않아 인증되지 않은 요청입니다.' },
+        { status: 401 }
+      );
     }
 
     // 권한 확인을 위한 로그
