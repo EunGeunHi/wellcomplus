@@ -68,9 +68,9 @@ const UserPage = ({ params }) => {
       case 'profile':
         return <ProfileContent userData={userData} />;
       case 'estimate':
-        return <EstimateContent />;
+        return <EstimateContent userData={userData} />;
       case 'as':
-        return <AsContent />;
+        return <AsContent userData={userData} />;
       case 'settings':
         return <SettingsContent />;
       default:
@@ -128,7 +128,8 @@ const UserPage = ({ params }) => {
 };
 
 const ProfileContent = ({ userData }) => {
-  if (!userData) return <div>로딩중...</div>;
+  const user = userData?.user || [];
+  if (!user) return <div>로딩중...</div>;
 
   return (
     <>
@@ -143,7 +144,7 @@ const ProfileContent = ({ userData }) => {
             </div>
             <div>
               <div className="text-sm text-gray-500 mb-0.5">이름</div>
-              <div className="text-lg text-gray-900 font-semibold">{userData.name}</div>
+              <div className="text-lg text-gray-900 font-semibold">{user.name}</div>
             </div>
           </div>
           <div className="flex items-center gap-4 p-5 bg-gray-50 rounded-xl transition-all duration-200 hover:translate-y-[-2px] hover:shadow-md">
@@ -152,7 +153,7 @@ const ProfileContent = ({ userData }) => {
             </div>
             <div>
               <div className="text-sm text-gray-500 mb-0.5">이메일</div>
-              <div className="text-lg text-gray-900 font-semibold">{userData.email}</div>
+              <div className="text-lg text-gray-900 font-semibold">{user.email}</div>
             </div>
           </div>
           <div className="flex items-center gap-4 p-5 bg-gray-50 rounded-xl transition-all duration-200 hover:translate-y-[-2px] hover:shadow-md">
@@ -161,7 +162,7 @@ const ProfileContent = ({ userData }) => {
             </div>
             <div>
               <div className="text-sm text-gray-500 mb-0.5">전화번호</div>
-              <div className="text-lg text-gray-900 font-semibold">{userData.phoneNumber}</div>
+              <div className="text-lg text-gray-900 font-semibold">{user.phoneNumber}</div>
             </div>
           </div>
           <div className="flex items-center gap-4 p-5 bg-gray-50 rounded-xl transition-all duration-200 hover:translate-y-[-2px] hover:shadow-md">
@@ -171,7 +172,7 @@ const ProfileContent = ({ userData }) => {
             <div>
               <div className="text-sm text-gray-500 mb-0.5">가입일</div>
               <div className="text-lg text-gray-900 font-semibold">
-                {formatDate(userData.createdAt)}
+                {formatDate(user.createdAt)}
               </div>
             </div>
           </div>
@@ -181,45 +182,297 @@ const ProfileContent = ({ userData }) => {
   );
 };
 
-const EstimateContent = () => (
-  <div>
-    <h2 className="text-xl font-semibold text-gray-900 mb-6 relative pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
-      견적 신청 내역
-    </h2>
-    <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
-      <div className="flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6 text-gray-500">
-        <FiFileText size={40} />
-      </div>
-      <h3 className="text-xl font-semibold text-gray-900 mb-2">견적 신청 내역이 없습니다</h3>
-      <p className="text-sm text-gray-500 mb-6 max-w-xs">
-        아직 견적을 신청한 내역이 없습니다. 견적을 신청해보세요!
-      </p>
-      <button className="bg-indigo-600 text-white border-none rounded-md py-3 px-6 text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-indigo-700">
-        견적 신청하기
-      </button>
-    </div>
-  </div>
-);
+const EstimateContent = ({ userData }) => {
+  const applications = userData?.applications || [];
+  const filteredApplications = applications.filter(
+    (app) => app.type === 'computer' || app.type === 'printer' || app.type === 'notebook'
+  );
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+  const totalPages = Math.ceil(filteredApplications.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentApplications = filteredApplications.slice(startIndex, endIndex);
 
-const AsContent = () => (
-  <div>
-    <h2 className="text-xl font-semibold text-gray-900 mb-6 relative pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
-      AS 및 문의 내역
-    </h2>
-    <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
-      <div className="flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6 text-gray-500">
-        <FiHelpCircle size={40} />
+  if (filteredApplications.length === 0) {
+    return (
+      <div>
+        <h2 className="text-3xl font-semibold text-gray-900 mb-6 relative pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
+          견적 신청 내역
+        </h2>
+        <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
+          <div className="flex items-center justify-center w-20 h-20 bg-indigo-50 rounded-full mb-6 text-indigo-600">
+            <FiFileText size={40} />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">견적 신청 내역이 없습니다</h3>
+          <p className="text-sm text-gray-500 mb-6 max-w-xs">
+            아직 견적을 신청한 내역이 없습니다. 견적을 신청해보세요!
+          </p>
+          <button className="bg-indigo-600 text-white border-none rounded-md py-3 px-6 text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-indigo-700">
+            견적 신청하기
+          </button>
+        </div>
       </div>
-      <h3 className="text-xl font-semibold text-gray-900 mb-2">문의 내역이 없습니다</h3>
-      <p className="text-sm text-gray-500 mb-6 max-w-xs">
-        아직 AS 신청이나 문의 내역이 없습니다. 도움이 필요하시면 문의해 주세요!
-      </p>
-      <button className="bg-indigo-600 text-white border-none rounded-md py-3 px-6 text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-indigo-700">
-        문의하기
-      </button>
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-3xl font-semibold text-gray-900 relative pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
+          견적 신청 내역
+        </h2>
+        <button className="bg-indigo-600 text-white border-none rounded-lg py-2 px-4 text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-indigo-700 flex items-center gap-2">
+          <FiFileText size={16} />
+          견적 신청하기
+        </button>
+      </div>
+      <div className="grid gap-6">
+        {currentApplications.map((application, index) => (
+          <div
+            key={index}
+            className="group bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300 cursor-pointer hover:border-indigo-200"
+            onClick={() => (window.location.href = `#`)}
+          >
+            <div className="flex justify-between items-start">
+              <div className="flex items-start gap-4">
+                <div className="p-3 rounded-lg bg-indigo-50 text-indigo-600">
+                  {application.type === 'computer' ? (
+                    <FiClipboard size={24} />
+                  ) : application.type === 'printer' ? (
+                    <FiFileText size={24} />
+                  ) : (
+                    <FiShoppingBag size={24} />
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors">
+                    {application.type === 'computer'
+                      ? '컴퓨터 견적'
+                      : application.type === 'printer'
+                        ? '프린터 견적'
+                        : '노트북 견적'}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    신청일: {formatDate(application.createdAt)}
+                  </p>
+                </div>
+              </div>
+              <div
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200
+                ${
+                  application.status === 'pending'
+                    ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                    : application.status === 'approved'
+                      ? 'bg-green-50 text-green-700 border border-green-200'
+                      : application.status === 'rejected'
+                        ? 'bg-red-50 text-red-700 border border-red-200'
+                        : 'bg-gray-50 text-gray-700 border border-gray-200'
+                }`}
+              >
+                {application.status === 'pending'
+                  ? '검토중'
+                  : application.status === 'approved'
+                    ? '승인됨'
+                    : application.status === 'rejected'
+                      ? '거절됨'
+                      : '처리중'}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-8">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+              ${
+                currentPage === 1
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+              }`}
+          >
+            이전
+          </button>
+
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index + 1}
+              onClick={() => setCurrentPage(index + 1)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                ${
+                  currentPage === index + 1
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                }`}
+            >
+              {index + 1}
+            </button>
+          ))}
+
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+              ${
+                currentPage === totalPages
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+              }`}
+          >
+            다음
+          </button>
+        </div>
+      )}
     </div>
-  </div>
-);
+  );
+};
+
+const AsContent = ({ userData }) => {
+  const applications = userData?.applications || [];
+  const filteredApplications = applications.filter(
+    (app) => app.type === 'as' || app.type === 'inquiry'
+  );
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+  const totalPages = Math.ceil(filteredApplications.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentApplications = filteredApplications.slice(startIndex, endIndex);
+
+  if (filteredApplications.length === 0) {
+    return (
+      <div>
+        <h2 className="text-3xl font-semibold text-gray-900 mb-6 relative pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
+          AS 및 문의 내역
+        </h2>
+        <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
+          <div className="flex items-center justify-center w-20 h-20 bg-indigo-50 rounded-full mb-6 text-indigo-600">
+            <FiHelpCircle size={40} />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">문의 내역이 없습니다</h3>
+          <p className="text-sm text-gray-500 mb-6 max-w-xs">
+            아직 AS 신청이나 문의 내역이 없습니다. 도움이 필요하시면 문의해 주세요!
+          </p>
+          <button className="bg-indigo-600 text-white border-none rounded-md py-3 px-6 text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-indigo-700">
+            문의하기
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-3xl font-semibold text-gray-900 relative pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
+          AS 및 문의 내역
+        </h2>
+        <button className="bg-indigo-600 text-white border-none rounded-lg py-2 px-4 text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-indigo-700 flex items-center gap-2">
+          <FiHelpCircle size={16} />
+          문의하기
+        </button>
+      </div>
+      <div className="grid gap-6">
+        {currentApplications.map((application, index) => (
+          <div
+            key={index}
+            className="group bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300 cursor-pointer hover:border-indigo-200"
+            onClick={() => (window.location.href = `#`)}
+          >
+            <div className="flex justify-between items-start">
+              <div className="flex items-start gap-4">
+                <div className="p-3 rounded-lg bg-indigo-50 text-indigo-600">
+                  {application.type === 'as' ? (
+                    <FiSettings size={24} />
+                  ) : (
+                    <FiHelpCircle size={24} />
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors">
+                    {application.type === 'as' ? 'AS 신청' : '기타 문의'}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    신청일: {formatDate(application.createdAt)}
+                  </p>
+                </div>
+              </div>
+              <div
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200
+                ${
+                  application.status === 'pending'
+                    ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                    : application.status === 'approved'
+                      ? 'bg-green-50 text-green-700 border border-green-200'
+                      : application.status === 'rejected'
+                        ? 'bg-red-50 text-red-700 border border-red-200'
+                        : 'bg-gray-50 text-gray-700 border border-gray-200'
+                }`}
+              >
+                {application.status === 'pending'
+                  ? '검토중'
+                  : application.status === 'approved'
+                    ? '승인됨'
+                    : application.status === 'rejected'
+                      ? '거절됨'
+                      : '처리중'}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-8">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+              ${
+                currentPage === 1
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+              }`}
+          >
+            이전
+          </button>
+
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index + 1}
+              onClick={() => setCurrentPage(index + 1)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                ${
+                  currentPage === index + 1
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                }`}
+            >
+              {index + 1}
+            </button>
+          ))}
+
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+              ${
+                currentPage === totalPages
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+              }`}
+          >
+            다음
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const SettingsContent = () => (
   <div>
