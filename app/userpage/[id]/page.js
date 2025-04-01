@@ -18,8 +18,10 @@ import {
 import { formatDate, getRelativeTime } from '@/utils/dateFormat';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 import LoginFallback from '@/app/components/LoginFallback';
+import { useParams } from 'next/navigation';
 
-const UserPage = ({ params }) => {
+const UserPage = () => {
+  const params = useParams();
   const [activeMenu, setActiveMenu] = useState('estimate');
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -68,9 +70,9 @@ const UserPage = ({ params }) => {
       case 'profile':
         return <ProfileContent userData={userData} />;
       case 'estimate':
-        return <EstimateContent userData={userData} />;
+        return <EstimateContent userData={userData} userId={params.id} />;
       case 'as':
-        return <AsContent userData={userData} />;
+        return <AsContent userData={userData} userId={params.id} />;
       case 'settings':
         return <SettingsContent />;
       default:
@@ -80,14 +82,14 @@ const UserPage = ({ params }) => {
 
   return (
     <LoggedInOnlySection fallback={<LoginFallback />}>
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 font-['NanumGothic'] p-8">
-        <div className="max-w-7xl mx-auto flex gap-8 flex-col md:flex-row">
-          <div className="w-full md:w-80 flex flex-col gap-6">
-            <nav className="bg-white rounded-2xl p-4 shadow-lg flex flex-col gap-2">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 font-['NanumGothic'] p-4 sm:p-8">
+        <div className="max-w-7xl mx-auto flex gap-4 sm:gap-8 flex-col md:flex-row">
+          <div className="w-full md:w-80 flex flex-col gap-4 sm:gap-6">
+            <nav className="bg-white rounded-xl sm:rounded-2xl p-2 sm:p-4 shadow-lg flex flex-col gap-1 sm:gap-2">
               {menuItems.map((item) => (
                 <button
                   key={item.id}
-                  className={`flex items-center justify-between p-4 w-full border-none rounded-lg text-base cursor-pointer transition-all duration-200 
+                  className={`flex items-center justify-between p-3 sm:p-4 w-full border-none rounded-lg text-sm sm:text-base cursor-pointer transition-all duration-200 
                   ${
                     activeMenu === item.id
                       ? 'bg-indigo-50 text-indigo-600'
@@ -95,8 +97,8 @@ const UserPage = ({ params }) => {
                   }`}
                   onClick={() => setActiveMenu(item.id)}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg">{item.icon}</span>
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <span className="text-base sm:text-lg">{item.icon}</span>
                     {item.label}
                   </div>
                   <FiChevronRight
@@ -111,15 +113,17 @@ const UserPage = ({ params }) => {
                   />
                 </button>
               ))}
-              <button className="flex items-center justify-center gap-3 mt-4 p-4 bg-white text-red-500 border border-red-100 rounded-lg text-base cursor-pointer transition-all duration-200 hover:bg-red-50">
-                <FiLogOut size={18} />
+              <button className="flex items-center justify-center gap-2 sm:gap-3 mt-2 sm:mt-4 p-3 sm:p-4 bg-white text-red-500 border border-red-100 rounded-lg text-sm sm:text-base cursor-pointer transition-all duration-200 hover:bg-red-50">
+                <FiLogOut size={16} className="sm:text-lg" />
                 로그아웃
               </button>
             </nav>
           </div>
 
-          <div className="flex-1 flex flex-col gap-6">
-            <main className="bg-white rounded-2xl p-8 shadow-lg">{renderContent()}</main>
+          <div className="flex-1 flex flex-col gap-4 sm:gap-6">
+            <main className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-lg">
+              {renderContent()}
+            </main>
           </div>
         </div>
       </div>
@@ -133,18 +137,18 @@ const ProfileContent = ({ userData }) => {
 
   return (
     <>
-      <section className="mb-8">
-        <h2 className="text-3xl font-semibold text-gray-900 mb-6 relative pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
+      <section className="mb-6 sm:mb-8">
+        <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-4 sm:mb-6 relative pb-2 sm:pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-8 sm:after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
           프로필
         </h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="flex items-center gap-4 p-5 bg-gray-50 rounded-xl transition-all duration-200 hover:translate-y-[-2px] hover:shadow-md">
-            <div className="flex items-center justify-center text-lg text-indigo-600 bg-indigo-50 w-10 h-10 rounded-lg">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 bg-gray-50 rounded-lg sm:rounded-xl transition-all duration-200 hover:translate-y-[-2px] hover:shadow-md">
+            <div className="flex items-center justify-center text-base sm:text-lg text-indigo-600 bg-indigo-50 w-8 h-8 sm:w-10 sm:h-10 rounded-lg">
               <FiUser />
             </div>
             <div>
-              <div className="text-sm text-gray-500 mb-0.5">이름</div>
-              <div className="text-lg text-gray-900 font-semibold">{user.name}</div>
+              <div className="text-xs sm:text-sm text-gray-500 mb-0.5">이름</div>
+              <div className="text-base sm:text-lg text-gray-900 font-semibold">{user.name}</div>
             </div>
           </div>
           <div className="flex items-center gap-4 p-5 bg-gray-50 rounded-xl transition-all duration-200 hover:translate-y-[-2px] hover:shadow-md">
@@ -182,7 +186,7 @@ const ProfileContent = ({ userData }) => {
   );
 };
 
-const EstimateContent = ({ userData }) => {
+const EstimateContent = ({ userData, userId }) => {
   const applications = userData?.applications || [];
   const filteredApplications = applications.filter(
     (app) => app.type === 'computer' || app.type === 'printer' || app.type === 'notebook'
@@ -218,12 +222,12 @@ const EstimateContent = ({ userData }) => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-semibold text-gray-900 relative pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
+      <div className="flex justify-between items-center mb-6 sm:mb-8">
+        <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 relative pb-2 sm:pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-8 sm:after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
           견적 신청 내역
         </h2>
-        <button className="bg-indigo-600 text-white border-none rounded-lg py-2 px-4 text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-indigo-700 flex items-center gap-2">
-          <FiFileText size={16} />
+        <button className="bg-indigo-600 text-white border-none rounded-lg py-1.5 sm:py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-indigo-700 flex items-center gap-1 sm:gap-2">
+          <FiFileText size={14} className="sm:text-base" />
           견적 신청하기
         </button>
       </div>
@@ -231,35 +235,37 @@ const EstimateContent = ({ userData }) => {
         {currentApplications.map((application, index) => (
           <div
             key={index}
-            className="group bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300 cursor-pointer hover:border-indigo-200"
-            onClick={() => (window.location.href = `#`)}
+            className="group bg-white border border-gray-200 rounded-lg sm:rounded-xl p-4 sm:p-6 hover:shadow-lg transition-all duration-300 cursor-pointer hover:border-indigo-200"
+            onClick={() =>
+              (window.location.href = `/userpage/${userId}/detail?applicationId=${application._id}`)
+            }
           >
             <div className="flex justify-between items-start">
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-lg bg-indigo-50 text-indigo-600">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="p-2 sm:p-3 rounded-lg bg-indigo-50 text-indigo-600">
                   {application.type === 'computer' ? (
-                    <FiClipboard size={24} />
+                    <FiClipboard size={20} className="sm:text-2xl" />
                   ) : application.type === 'printer' ? (
-                    <FiFileText size={24} />
+                    <FiFileText size={20} className="sm:text-2xl" />
                   ) : (
-                    <FiShoppingBag size={24} />
+                    <FiShoppingBag size={20} className="sm:text-2xl" />
                   )}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors">
                     {application.type === 'computer'
                       ? '컴퓨터 견적'
                       : application.type === 'printer'
                         ? '프린터 견적'
                         : '노트북 견적'}
                   </h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs sm:text-sm text-gray-500">
                     신청일: {formatDate(application.createdAt)}
                   </p>
                 </div>
               </div>
               <div
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200
+                className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200
                 ${
                   application.status === 'pending'
                     ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
@@ -331,7 +337,7 @@ const EstimateContent = ({ userData }) => {
   );
 };
 
-const AsContent = ({ userData }) => {
+const AsContent = ({ userData, userId }) => {
   const applications = userData?.applications || [];
   const filteredApplications = applications.filter(
     (app) => app.type === 'as' || app.type === 'inquiry'
@@ -380,8 +386,10 @@ const AsContent = ({ userData }) => {
         {currentApplications.map((application, index) => (
           <div
             key={index}
-            className="group bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300 cursor-pointer hover:border-indigo-200"
-            onClick={() => (window.location.href = `#`)}
+            className="group bg-white border border-gray-200 rounded-lg sm:rounded-xl p-4 sm:p-6 hover:shadow-lg transition-all duration-300 cursor-pointer hover:border-indigo-200"
+            onClick={() =>
+              (window.location.href = `/userpage/${userId}/detail?applicationId=${application._id}`)
+            }
           >
             <div className="flex justify-between items-start">
               <div className="flex items-start gap-4">
