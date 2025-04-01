@@ -16,9 +16,9 @@ async function handler(req, { session }) {
     const { itemType, description, phoneNumber } = data;
 
     // 필수 필드 검증
-    if (!itemType || !description) {
+    if (!itemType || !description || !phoneNumber) {
       return NextResponse.json(
-        { error: '제품 종류와 문제 설명은 필수로 입력해야 합니다.' },
+        { error: '제품 종류, 문제 설명, 연락처는 필수로 입력해야 합니다.' },
         { status: 400 }
       );
     }

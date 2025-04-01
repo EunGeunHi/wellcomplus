@@ -34,8 +34,8 @@ export default function PrinterEstimatePage() {
     e.preventDefault();
 
     // 필수 필드 검증
-    if (!formData.purpose.trim() || !formData.requirements.trim()) {
-      toast.error('사용 목적(용도), 필요 기능은\n필수로 작성해야 합니다.');
+    if (!formData.purpose.trim() || !formData.requirements.trim() || !formData.phoneNumber.trim()) {
+      toast.error('사용 목적(용도), 필요 기능, 연락처는\n필수로 작성해야 합니다.');
       return;
     }
 
@@ -264,14 +264,14 @@ export default function PrinterEstimatePage() {
                         htmlFor="phoneNumber"
                         className="block text-lg font-[BMJUA] text-gray-900 mb-2"
                       >
-                        연락처
+                        연락처*
                       </label>
                       <input
                         type="tel"
                         id="phoneNumber"
                         name="phoneNumber"
                         className="w-full rounded-lg border border-gray-300 bg-white/50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="(선택) 연락처를 입력해주세요. 입력하지 않으면 회원가입할 때 입력한 번호로 연락드립니다"
+                        placeholder="(필수) 해당 번호로 연락을 드리므로 정확하게 입력해주세요."
                         value={formData.phoneNumber}
                         onChange={handleChange}
                       />

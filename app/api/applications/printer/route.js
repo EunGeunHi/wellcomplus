@@ -14,8 +14,11 @@ async function handler(req, { session }) {
     const data = await req.json();
 
     // 필수 필드 검증
-    if (!data.purpose || !data.requirements) {
-      return NextResponse.json({ error: '필수 항목이 누락되었습니다.' }, { status: 400 });
+    if (!data.purpose || !data.requirements || !data.phoneNumber) {
+      return NextResponse.json(
+        { error: '사용 목적, 필요 기능, 연락처는 필수로 입력해야 합니다.' },
+        { status: 400 }
+      );
     }
 
     // 사용자 정보 조회

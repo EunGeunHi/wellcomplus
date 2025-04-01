@@ -6,12 +6,11 @@ import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 
 import { useRouter } from 'next/navigation';
 import LoginFallback from '@/app/components/LoginFallback';
-import { useSession } from 'next-auth/react';
+
 import { toast } from 'react-hot-toast';
 
 export default function EstimatePage() {
   const router = useRouter();
-  const { data: session } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     purpose: '',
@@ -35,8 +34,13 @@ export default function EstimatePage() {
     e.preventDefault();
 
     // 필수 필드 검증
-    if (!formData.purpose.trim() || !formData.budget.trim() || !formData.requirements.trim()) {
-      toast.error('사용 목적(용도), 예산, 필수 요구사항은 \n필수로 작성해야 합니다.');
+    if (
+      !formData.purpose.trim() ||
+      !formData.budget.trim() ||
+      !formData.requirements.trim() ||
+      !formData.ponenumber.trim()
+    ) {
+      toast.error('사용 목적(용도), 예산, 필수 요구사항, 연락처는 필수로 작성해야 합니다.');
       return;
     }
 
@@ -271,14 +275,14 @@ export default function EstimatePage() {
                         htmlFor="ponenumber"
                         className="block text-lg font-[BMJUA] text-gray-900 mb-2"
                       >
-                        연락처
+                        연락처*
                       </label>
                       <textarea
                         id="ponenumber"
                         name="ponenumber"
                         rows={1}
                         className="w-full rounded-lg border border-gray-300 bg-white/50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="(선택) 연락처를 입력해주세요. 입력하지 않으면 회원가입할 때 입력한 번호로 연락드립니다"
+                        placeholder="(필수) 해당 번호로 연락을 드리므로 정확하게 입력해주세요."
                         value={formData.ponenumber}
                         onChange={handleChange}
                       />
