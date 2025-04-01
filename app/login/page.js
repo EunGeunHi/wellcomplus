@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { FcGoogle } from 'react-icons/fc';
 import { RiKakaoTalkFill } from 'react-icons/ri';
+import { SiNaver } from 'react-icons/si';
 
 /**
  * 로그인 페이지 컴포넌트
@@ -112,6 +113,19 @@ function LoginContent() {
     }
   };
 
+  /**
+   * 네이버 로그인 핸들러
+   */
+  const handleNaverSignIn = async () => {
+    setLoading(true);
+    try {
+      await signIn('naver', { callbackUrl });
+    } catch (error) {
+      setFormError('소셜 로그인 중 오류가 발생했습니다.');
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col justify-center items-center py-20 px-4 bg-gray-50">
       <div className="max-w-md w-full bg-white rounded-xl shadow-md overflow-hidden p-8">
@@ -198,7 +212,7 @@ function LoginContent() {
         </form>
 
         {/* 소셜 로그인 구분선 */}
-        <div className="mt-6 relative">
+        <div className="mt-4 relative">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-300"></div>
           </div>
@@ -207,8 +221,21 @@ function LoginContent() {
           </div>
         </div>
 
-        {/* 구글 로그인 버튼 */}
+        {/* 네이버 로그인 버튼 */}
         <div className="mt-4">
+          <button
+            type="button"
+            onClick={handleNaverSignIn}
+            disabled={loading}
+            className="w-full flex justify-center items-center py-2.5 px-4 bg-[#03C75A] rounded-lg hover:bg-[#02B350] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#03C75A] transition-all duration-300"
+          >
+            <SiNaver className="w-4 h-4 mr-2 text-white" />
+            <span className="text-white font-medium">네이버로 계속하기</span>
+          </button>
+        </div>
+
+        {/* 구글 로그인 버튼 */}
+        <div className="mt-2">
           <button
             type="button"
             onClick={handleGoogleSignIn}

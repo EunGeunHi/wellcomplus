@@ -2,6 +2,7 @@ import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import KakaoProvider from 'next-auth/providers/kakao';
+import NaverProvider from 'next-auth/providers/naver';
 import bcrypt from 'bcryptjs';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
@@ -24,6 +25,10 @@ export const authOptions = {
     KakaoProvider({
       clientId: process.env.KAKAO_CLIENT_ID,
       clientSecret: process.env.KAKAO_CLIENT_SECRET,
+    }),
+    NaverProvider({
+      clientId: process.env.NAVER_CLIENT_ID,
+      clientSecret: process.env.NAVER_CLIENT_SECRET,
     }),
     CredentialsProvider({
       name: 'Credentials', // 인증 방식 이름
@@ -95,6 +100,9 @@ export const authOptions = {
       if (user) {
         // Credentials 로그인은 이미 user.id에 MongoDB ID가 있음
         token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+        token.image = user.image;
         token.authority = user.authority || 'user';
       }
 
@@ -105,6 +113,9 @@ export const authOptions = {
           const dbUser = await User.findOne({ email: profile.email });
           if (dbUser) {
             token.id = dbUser._id.toString();
+            token.name = dbUser.name;
+            token.email = dbUser.email;
+            token.image = dbUser.image;
             token.authority = dbUser.authority || 'user';
           }
         } catch (error) {
@@ -127,10 +138,51 @@ export const authOptions = {
 
           if (dbUser) {
             token.id = dbUser._id.toString();
+            token.name = dbUser.name;
+            token.email = dbUser.email;
+            token.image = dbUser.image;
             token.authority = dbUser.authority || 'user';
           }
         } catch (error) {
           console.error('Error fetching Kakao user from DB:', error);
+        }
+      }
+
+      // 네이버 로그인이고 DB에서 사용자 정보를 가져와야 하는 경우
+      if (account?.provider === 'naver' && !token.id) {
+        try {
+          await connectDB();
+          // 네이버는 response 객체 내에 사용자 정보가 있음
+          const naverId = profile.response?.id?.toString();
+
+          // 먼저 providerId로 사용자 찾기
+          let dbUser = await User.findOne({ provider: 'naver', providerId: naverId });
+
+          // providerId로 찾지 못했고 이메일이 있는 경우, 이메일로 찾기
+          if (!dbUser && profile.response?.email) {
+            dbUser = await User.findOne({ email: profile.response.email });
+          }
+
+          if (dbUser) {
+            token.id = dbUser._id.toString();
+            token.name = dbUser.name;
+            token.email = dbUser.email;
+            token.image = dbUser.image;
+            token.authority = dbUser.authority || 'user';
+          } else {
+            // DB에 사용자가 없지만 네이버 프로필 정보가 있는 경우
+            if (profile.response?.name) {
+              token.name = profile.response.name;
+            }
+            if (profile.response?.email) {
+              token.email = profile.response.email;
+            }
+            if (profile.response?.profile_image) {
+              token.image = profile.response.profile_image;
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching Naver user from DB:', error);
         }
       }
 
@@ -143,9 +195,12 @@ export const authOptions = {
         session.user = {};
       }
 
-      // 토큰의 사용자 ID와 권한을 세션에 추가
+      // 토큰의 사용자 정보를 세션에 추가
       if (token) {
         session.user.id = token.id;
+        session.user.name = token.name;
+        session.user.email = token.email;
+        session.user.image = token.image;
         session.user.authority = token.authority || 'user';
       }
 
@@ -253,6 +308,80 @@ export const authOptions = {
         }
       }
 
+      if (account.provider === 'naver') {
+        try {
+          await connectDB();
+
+          // 네이버는 response 객체 내에 사용자 정보가 있음
+          const naverId = profile.response?.id?.toString();
+          const email = profile.response?.email;
+          const name = profile.response?.name;
+          const image = profile.response?.profile_image;
+          const mobile = profile.response?.mobile;
+
+          // 네이버 ID로 사용자 조회
+          let existingUser = await User.findOne({
+            provider: 'naver',
+            providerId: naverId,
+          });
+
+          // 이메일이 있는 경우, 이메일로도 검색
+          if (email && !existingUser) {
+            existingUser = await User.findOne({ email });
+          }
+
+          // 사용자가 없으면 새로 생성
+          if (!existingUser) {
+            const newUser = new User({
+              name: name || '사용자',
+              email,
+              image,
+              phoneNumber: mobile,
+              authority: 'user',
+              provider: 'naver',
+              providerId: naverId,
+            });
+
+            const savedUser = await newUser.save();
+            // MongoDB에서 생성된 ID를 user 객체에 할당
+            user.id = savedUser._id.toString();
+            user.name = savedUser.name;
+          } else {
+            // 기존 사용자가 있는 경우 해당 ID 사용
+            user.id = existingUser._id.toString();
+            user.name = existingUser.name;
+
+            // provider 정보 업데이트 (필요한 경우)
+            if (existingUser.provider !== 'naver') {
+              existingUser.provider = 'naver';
+              existingUser.providerId = naverId;
+
+              // 기존 정보 업데이트
+              if (!existingUser.email && email) {
+                existingUser.email = email;
+              }
+              if (!existingUser.name && name) {
+                existingUser.name = name;
+              }
+              if (!existingUser.image && image) {
+                existingUser.image = image;
+              }
+              if (!existingUser.phoneNumber && mobile) {
+                existingUser.phoneNumber = mobile;
+              }
+
+              await existingUser.save();
+            }
+          }
+
+          return true;
+        } catch (error) {
+          console.error('Error during Naver sign in:', error);
+          return false;
+        }
+      }
+
+      // 기본 로그인 성공 처리
       return true;
     },
   },

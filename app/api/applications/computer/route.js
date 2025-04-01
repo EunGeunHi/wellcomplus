@@ -14,7 +14,7 @@ async function handler(req, { session }) {
     const data = await req.json();
 
     // 필수 필드 검증
-    if (!data.purpose || !data.budget || !data.requirements || !data.ponenumber) {
+    if (!data.purpose || !data.budget || !data.requirements || !data.phoneNumber) {
       return NextResponse.json({ error: '필수 항목이 누락되었습니다.' }, { status: 400 });
     }
 
