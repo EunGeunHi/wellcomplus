@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
+import KakaoProvider from 'next-auth/providers/kakao';
 import bcrypt from 'bcryptjs';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
@@ -19,6 +20,10 @@ export const authOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
+    KakaoProvider({
+      clientId: process.env.KAKAO_CLIENT_ID,
+      clientSecret: process.env.KAKAO_CLIENT_SECRET,
     }),
     CredentialsProvider({
       name: 'Credentials', // 인증 방식 이름
@@ -107,6 +112,28 @@ export const authOptions = {
         }
       }
 
+      // 카카오 로그인이고 DB에서 사용자 정보를 가져와야 하는 경우
+      if (account?.provider === 'kakao' && !token.id) {
+        try {
+          await connectDB();
+          const kakaoId = profile.id?.toString();
+          // 먼저 providerId로 사용자 찾기
+          let dbUser = await User.findOne({ provider: 'kakao', providerId: kakaoId });
+
+          // providerId로 찾지 못했고 이메일이 있는 경우, 이메일로 찾기
+          if (!dbUser && profile.kakao_account?.email) {
+            dbUser = await User.findOne({ email: profile.kakao_account.email });
+          }
+
+          if (dbUser) {
+            token.id = dbUser._id.toString();
+            token.authority = dbUser.authority || 'user';
+          }
+        } catch (error) {
+          console.error('Error fetching Kakao user from DB:', error);
+        }
+      }
+
       return token;
     },
     // 세션 데이터 설정 콜백
@@ -163,6 +190,65 @@ export const authOptions = {
           return true;
         } catch (error) {
           console.error('Error during Google sign in:', error);
+          return false;
+        }
+      }
+
+      if (account.provider === 'kakao') {
+        try {
+          await connectDB();
+
+          // 카카오는 kakao_account 객체 내에 이메일 정보가 있음
+          const email = profile.kakao_account?.email;
+          // 카카오 고유 ID를 활용하여 사용자 구분
+          const kakaoId = profile.id?.toString();
+
+          // 카카오 ID로 우선 사용자 조회
+          let existingUser = await User.findOne({
+            provider: 'kakao',
+            providerId: kakaoId,
+          });
+
+          // 이메일이 있는 경우, 이메일로도 검색
+          if (email && !existingUser) {
+            existingUser = await User.findOne({ email });
+          }
+
+          // 프로필 이미지 정보 가져오기
+          const image = profile.properties?.profile_image;
+
+          // 사용자가 없으면 새로 생성
+          if (!existingUser) {
+            const newUser = new User({
+              name: profile.properties?.nickname || '사용자',
+              email, // 이메일이 없어도 null로 저장됨
+              image,
+              authority: 'user',
+              provider: 'kakao',
+              providerId: kakaoId, // 카카오 ID 저장
+            });
+
+            const savedUser = await newUser.save();
+            // MongoDB에서 생성된 ID를 user 객체에 할당
+            user.id = savedUser._id.toString();
+          } else {
+            // 기존 사용자가 있는 경우 해당 ID 사용
+            user.id = existingUser._id.toString();
+
+            // provider 정보 업데이트 (필요한 경우)
+            if (existingUser.provider !== 'kakao') {
+              existingUser.provider = 'kakao';
+              existingUser.providerId = kakaoId;
+              if (!existingUser.image && image) {
+                existingUser.image = image;
+              }
+              await existingUser.save();
+            }
+          }
+
+          return true;
+        } catch (error) {
+          console.error('Error during Kakao sign in:', error);
           return false;
         }
       }

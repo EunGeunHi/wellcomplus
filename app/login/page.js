@@ -5,6 +5,7 @@ import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { FcGoogle } from 'react-icons/fc';
+import { RiKakaoTalkFill } from 'react-icons/ri';
 
 /**
  * 로그인 페이지 컴포넌트
@@ -92,6 +93,19 @@ function LoginContent() {
     setLoading(true);
     try {
       await signIn('google', { callbackUrl });
+    } catch (error) {
+      setFormError('소셜 로그인 중 오류가 발생했습니다.');
+      setLoading(false);
+    }
+  };
+
+  /**
+   * 카카오 로그인 핸들러
+   */
+  const handleKakaoSignIn = async () => {
+    setLoading(true);
+    try {
+      await signIn('kakao', { callbackUrl });
     } catch (error) {
       setFormError('소셜 로그인 중 오류가 발생했습니다.');
       setLoading(false);
@@ -203,6 +217,19 @@ function LoginContent() {
           >
             <FcGoogle className="w-5 h-5 mr-2" />
             <span className="text-gray-700 font-medium">Google로 계속하기</span>
+          </button>
+        </div>
+
+        {/* 카카오 로그인 버튼 */}
+        <div className="mt-2">
+          <button
+            type="button"
+            onClick={handleKakaoSignIn}
+            disabled={loading}
+            className="w-full flex justify-center items-center py-2.5 px-4 bg-[#FEE500] rounded-lg hover:bg-[#FDD835] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FEE500] transition-all duration-300"
+          >
+            <RiKakaoTalkFill className="w-5 h-5 mr-2 text-[#391B1B]" />
+            <span className="text-[#391B1B] font-medium">카카오로 계속하기</span>
           </button>
         </div>
 

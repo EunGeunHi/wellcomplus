@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { FcGoogle } from 'react-icons/fc';
 import { formatPhoneNumber, isValidPhoneNumber } from '@/utils/phoneFormatter';
+import { RiKakaoTalkFill } from 'react-icons/ri';
 
 /**
  * 회원가입 페이지 컴포넌트
@@ -102,6 +103,19 @@ export default function SignupPage() {
     try {
       // 구글 로그인(회원가입)으로 리다이렉트
       await signIn('google', { callbackUrl: '/' });
+    } catch (error) {
+      setError('소셜 로그인 중 오류가 발생했습니다.');
+      setLoading(false);
+    }
+  };
+
+  /**
+   * 카카오 로그인 핸들러
+   */
+  const handleKakaoSignIn = async () => {
+    setLoading(true);
+    try {
+      await signIn('kakao', { callbackUrl });
     } catch (error) {
       setError('소셜 로그인 중 오류가 발생했습니다.');
       setLoading(false);
@@ -244,6 +258,19 @@ export default function SignupPage() {
           >
             <FcGoogle className="w-5 h-5 mr-2" />
             <span className="text-gray-700 font-medium">Google로 계속하기</span>
+          </button>
+        </div>
+
+        {/* 카카오 로그인 버튼 */}
+        <div className="mt-2">
+          <button
+            type="button"
+            onClick={handleKakaoSignIn}
+            disabled={loading}
+            className="w-full flex justify-center items-center py-2.5 px-4 bg-[#FEE500] rounded-lg hover:bg-[#FDD835] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FEE500] transition-all duration-300"
+          >
+            <RiKakaoTalkFill className="w-5 h-5 mr-2 text-[#391B1B]" />
+            <span className="text-[#391B1B] font-medium">카카오로 계속하기</span>
           </button>
         </div>
 

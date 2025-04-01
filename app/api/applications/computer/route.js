@@ -12,19 +12,17 @@ async function handler(req, { session }) {
     await connectDB();
 
     const data = await req.json();
-    console.log(data);
 
     // 필수 필드 검증
-    if (!data.purpose || !data.budget || !data.requirements) {
+    if (!data.purpose || !data.budget || !data.requirements || !data.ponenumber) {
       return NextResponse.json({ error: '필수 항목이 누락되었습니다.' }, { status: 400 });
     }
 
     // 사용자 정보 조회
     const user = await User.findById(session.user.id);
-    // if (!user) {
-    //   return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
-    // }
-    console.log(user);
+    if (!user) {
+      return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
+    }
 
     // 신청서 생성
     const application = await Application.create({

@@ -13,8 +13,9 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      required: true,
+      required: false, // 카카오 로그인을 위해 필수 필드에서 선택적 필드로 변경
       unique: true, // 이메일 중복 방지
+      sparse: true, // null 값은 unique 제약조건에서 제외
     },
     phoneNumber: {
       type: String,
@@ -37,6 +38,9 @@ const userSchema = new mongoose.Schema(
     provider: {
       type: String, // 로그인 제공자 (google, credentials 등)
       default: 'credentials',
+    },
+    providerId: {
+      type: String, // 소셜 로그인 제공자의 고유 ID
     },
   },
   { timestamps: true } // 생성 및 수정 시간 자동 기록
