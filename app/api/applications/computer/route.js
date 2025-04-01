@@ -12,6 +12,7 @@ async function handler(req, { session }) {
     await connectDB();
 
     const data = await req.json();
+    console.log(data);
 
     // 필수 필드 검증
     if (!data.purpose || !data.budget || !data.requirements) {
@@ -23,6 +24,7 @@ async function handler(req, { session }) {
     // if (!user) {
     //   return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
     // }
+    console.log(user);
 
     // 신청서 생성
     const application = await Application.create({

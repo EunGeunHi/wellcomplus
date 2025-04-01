@@ -1,5 +1,6 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import GoogleProvider from 'next-auth/providers/google';
 import bcrypt from 'bcryptjs';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
@@ -15,6 +16,10 @@ import User from '@/models/User';
 export const authOptions = {
   // 인증 제공자 설정
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
     CredentialsProvider({
       name: 'Credentials', // 인증 방식 이름
       credentials: {
@@ -48,6 +53,12 @@ export const authOptions = {
           return null;
         }
 
+        // provider 정보가 없거나 다른 경우 업데이트
+        if (!user.provider || user.provider !== 'credentials') {
+          user.provider = 'credentials';
+          await user.save();
+        }
+
         // 인증 성공 시 사용자 정보 반환
         return {
           id: user._id.toString(),
@@ -55,6 +66,7 @@ export const authOptions = {
           email: user.email,
           image: user.image,
           authority: user.authority,
+          provider: user.provider,
         };
       },
     }),
@@ -62,7 +74,7 @@ export const authOptions = {
   // 세션 설정
   session: {
     strategy: 'jwt', // JWT 기반 세션 사용
-    maxAge: 7 * 24 * 60 * 60, // 2일 동안 세션 유지
+    maxAge: 7 * 24 * 60 * 60, // 7일 동안 세션 유지
   },
   // 커스텀 페이지 URL 설정
   pages: {
@@ -73,11 +85,26 @@ export const authOptions = {
   // 콜백 함수 설정
   callbacks: {
     // JWT 토큰 생성/수정 콜백
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, profile }) {
       // 첫 로그인 시 user 객체에서 정보 복사
       if (user) {
+        // Credentials 로그인은 이미 user.id에 MongoDB ID가 있음
         token.id = user.id;
-        token.authority = user.authority || 'user'; // 기본값 설정
+        token.authority = user.authority || 'user';
+      }
+
+      // 구글 로그인이고 DB에서 사용자 정보를 가져와야 하는 경우
+      if (account?.provider === 'google' && profile?.email && !token.id) {
+        try {
+          await connectDB();
+          const dbUser = await User.findOne({ email: profile.email });
+          if (dbUser) {
+            token.id = dbUser._id.toString();
+            token.authority = dbUser.authority || 'user';
+          }
+        } catch (error) {
+          console.error('Error fetching Google user from DB:', error);
+        }
       }
 
       return token;
@@ -92,10 +119,55 @@ export const authOptions = {
       // 토큰의 사용자 ID와 권한을 세션에 추가
       if (token) {
         session.user.id = token.id;
-        session.user.authority = token.authority || 'user'; // 기본값 설정
+        session.user.authority = token.authority || 'user';
       }
 
       return session;
+    },
+    // 소셜 로그인 시 사용자 정보 처리
+    async signIn({ user, account, profile }) {
+      if (account.provider === 'google') {
+        try {
+          await connectDB();
+
+          // 이메일로 기존 사용자 찾기
+          const existingUser = await User.findOne({ email: profile.email });
+
+          // 사용자가 없으면 새로 생성
+          if (!existingUser) {
+            const newUser = new User({
+              name: profile.name,
+              email: profile.email,
+              image: profile.picture,
+              authority: 'user',
+              provider: 'google',
+            });
+
+            const savedUser = await newUser.save();
+            // MongoDB에서 생성된 ID를 user 객체에 할당
+            user.id = savedUser._id.toString();
+          } else {
+            // 기존 사용자가 있는 경우 해당 ID 사용
+            user.id = existingUser._id.toString();
+
+            // provider 정보 업데이트 (필요한 경우)
+            if (existingUser.provider !== 'google') {
+              existingUser.provider = 'google';
+              if (!existingUser.image && profile.picture) {
+                existingUser.image = profile.picture;
+              }
+              await existingUser.save();
+            }
+          }
+
+          return true;
+        } catch (error) {
+          console.error('Error during Google sign in:', error);
+          return false;
+        }
+      }
+
+      return true;
     },
   },
   // 암호화에 사용되는 비밀 키 (.env.local에 설정)

@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { signIn } from 'next-auth/react';
+import { FcGoogle } from 'react-icons/fc';
 import { formatPhoneNumber, isValidPhoneNumber } from '@/utils/phoneFormatter';
 
 /**
@@ -89,6 +91,20 @@ export default function SignupPage() {
       setError(error.message); // 오류 메시지 설정
     } finally {
       setLoading(false); // 로딩 상태 비활성화
+    }
+  };
+
+  /**
+   * 구글 회원가입 핸들러
+   */
+  const handleGoogleSignUp = async () => {
+    setLoading(true);
+    try {
+      // 구글 로그인(회원가입)으로 리다이렉트
+      await signIn('google', { callbackUrl: '/' });
+    } catch (error) {
+      setError('소셜 로그인 중 오류가 발생했습니다.');
+      setLoading(false);
     }
   };
 
@@ -207,6 +223,29 @@ export default function SignupPage() {
             {loading ? '처리 중...' : '가입하기'}
           </button>
         </form>
+
+        {/* 소셜 로그인 구분선 */}
+        <div className="mt-6 relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">또는</span>
+          </div>
+        </div>
+
+        {/* 구글 회원가입 버튼 */}
+        <div className="mt-4">
+          <button
+            type="button"
+            onClick={handleGoogleSignUp}
+            disabled={loading}
+            className="w-full flex justify-center items-center py-2.5 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5F9DF7] transition-all duration-300"
+          >
+            <FcGoogle className="w-5 h-5 mr-2" />
+            <span className="text-gray-700 font-medium">Google로 계속하기</span>
+          </button>
+        </div>
 
         {/* 로그인 페이지 링크 */}
         <div className="mt-6 text-center">

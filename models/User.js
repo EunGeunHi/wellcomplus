@@ -18,8 +18,11 @@ const userSchema = new mongoose.Schema(
     },
     phoneNumber: {
       type: String,
-      required: true, // 필수 입력 필드
+      // 소셜 로그인을 위해 필수 필드에서 선택적 필드로 변경
+      required: false,
+      // unique 옵션 유지 (값이 있는 경우 중복 방지)
       unique: true, // 전화번호 중복 방지
+      sparse: true, // null 값은 unique 제약조건에서 제외
     },
     password: {
       type: String, // 해시된 비밀번호가 저장됨
@@ -30,6 +33,10 @@ const userSchema = new mongoose.Schema(
     authority: {
       type: String,
       default: 'user', // 기본값은 일반 사용자
+    },
+    provider: {
+      type: String, // 로그인 제공자 (google, credentials 등)
+      default: 'credentials',
     },
   },
   { timestamps: true } // 생성 및 수정 시간 자동 기록

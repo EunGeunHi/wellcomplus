@@ -25,9 +25,9 @@ async function handler(req, { session }) {
 
     // 사용자 정보 조회
     const user = await User.findById(session.user.id);
-    // if (!user) {
-    //   return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
-    // }
+    if (!user) {
+      return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
+    }
 
     // 전화번호 처리
     const finalPhoneNumber = phoneNumber || user.phoneNumber || '';
