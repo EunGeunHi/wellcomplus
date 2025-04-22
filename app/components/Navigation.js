@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
+import { KingOnlySection } from './ProtectedContent';
 
 /**
  * 네비게이션 바 컴포넌트
@@ -59,6 +60,15 @@ export default function Navigation() {
           {session ? (
             // 로그인된 사용자를 위한 메뉴
             <>
+              <KingOnlySection fallback={<></>}>
+                <Link
+                  href="/manage"
+                  className="relative text-gray-700 hover:text-[#87CEEB] transition-colors duration-300 font-medium overflow-hidden group"
+                >
+                  <span className="relative z-10">관리자 페이지</span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#87CEEB] transition-all duration-300 group-hover:w-full"></span>
+                </Link>
+              </KingOnlySection>
               <Link
                 href="/userpage/application"
                 className="relative text-gray-700 hover:text-[#87CEEB] transition-colors duration-300 font-medium overflow-hidden group"
@@ -151,6 +161,14 @@ export default function Navigation() {
                     <span className="text-xs">님</span>
                     환영합니다!
                   </div>
+                  <KingOnlySection fallback={<></>}>
+                    <Link
+                      href="/manage"
+                      className="text-gray-700 hover:text-[#87CEEB] transition-colors duration-200 py-2 border-b border-gray-100"
+                    >
+                      관리자 페이지
+                    </Link>
+                  </KingOnlySection>
                   <Link
                     href="/userpage/application"
                     className="text-gray-700 hover:text-[#87CEEB] transition-colors duration-200 py-2 border-b border-gray-100"
