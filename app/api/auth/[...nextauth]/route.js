@@ -48,7 +48,7 @@ export const authOptions = {
         await connectDB();
 
         // 이메일로 사용자 검색
-        const user = await User.findOne({ email: credentials.email });
+        const user = await User.findOne({ email: credentials.email, isDeleted: false });
 
         // 사용자가 없으면 null 반환 (인증 실패)
         if (!user) {
@@ -66,8 +66,11 @@ export const authOptions = {
         // provider 정보가 없거나 다른 경우 업데이트
         if (!user.provider || user.provider !== 'credentials') {
           user.provider = 'credentials';
-          await user.save();
         }
+
+        // 최근 로그인 시간 업데이트
+        user.lastLoginAt = new Date();
+        await user.save();
 
         // 인증 성공 시 사용자 정보 반환
         return {
@@ -110,7 +113,7 @@ export const authOptions = {
       if (account?.provider === 'google' && profile?.email && !token.id) {
         try {
           await connectDB();
-          const dbUser = await User.findOne({ email: profile.email });
+          const dbUser = await User.findOne({ email: profile.email, isDeleted: false });
           if (dbUser) {
             token.id = dbUser._id.toString();
             token.name = dbUser.name;
@@ -129,11 +132,15 @@ export const authOptions = {
           await connectDB();
           const kakaoId = profile.id?.toString();
           // 먼저 providerId로 사용자 찾기
-          let dbUser = await User.findOne({ provider: 'kakao', providerId: kakaoId });
+          let dbUser = await User.findOne({
+            provider: 'kakao',
+            providerId: kakaoId,
+            isDeleted: false,
+          });
 
           // providerId로 찾지 못했고 이메일이 있는 경우, 이메일로 찾기
           if (!dbUser && profile.kakao_account?.email) {
-            dbUser = await User.findOne({ email: profile.kakao_account.email });
+            dbUser = await User.findOne({ email: profile.kakao_account.email, isDeleted: false });
           }
 
           if (dbUser) {
@@ -156,11 +163,15 @@ export const authOptions = {
           const naverId = profile.response?.id?.toString();
 
           // 먼저 providerId로 사용자 찾기
-          let dbUser = await User.findOne({ provider: 'naver', providerId: naverId });
+          let dbUser = await User.findOne({
+            provider: 'naver',
+            providerId: naverId,
+            isDeleted: false,
+          });
 
           // providerId로 찾지 못했고 이메일이 있는 경우, 이메일로 찾기
           if (!dbUser && profile.response?.email) {
-            dbUser = await User.findOne({ email: profile.response.email });
+            dbUser = await User.findOne({ email: profile.response.email, isDeleted: false });
           }
 
           if (dbUser) {
@@ -213,7 +224,7 @@ export const authOptions = {
           await connectDB();
 
           // 이메일로 기존 사용자 찾기
-          const existingUser = await User.findOne({ email: profile.email });
+          const existingUser = await User.findOne({ email: profile.email, isDeleted: false });
 
           // 사용자가 없으면 새로 생성
           if (!existingUser) {
@@ -223,6 +234,7 @@ export const authOptions = {
               image: profile.picture,
               authority: 'user',
               provider: 'google',
+              lastLoginAt: new Date(),
             });
 
             const savedUser = await newUser.save();
@@ -238,8 +250,11 @@ export const authOptions = {
               if (!existingUser.image && profile.picture) {
                 existingUser.image = profile.picture;
               }
-              await existingUser.save();
             }
+
+            // 최근 로그인 시간 업데이트
+            existingUser.lastLoginAt = new Date();
+            await existingUser.save();
           }
 
           return true;
@@ -262,11 +277,12 @@ export const authOptions = {
           let existingUser = await User.findOne({
             provider: 'kakao',
             providerId: kakaoId,
+            isDeleted: false,
           });
 
           // 이메일이 있는 경우, 이메일로도 검색
           if (email && !existingUser) {
-            existingUser = await User.findOne({ email });
+            existingUser = await User.findOne({ email, isDeleted: false });
           }
 
           // 프로필 이미지 정보 가져오기
@@ -281,6 +297,7 @@ export const authOptions = {
               authority: 'user',
               provider: 'kakao',
               providerId: kakaoId, // 카카오 ID 저장
+              lastLoginAt: new Date(),
             });
 
             const savedUser = await newUser.save();
@@ -297,8 +314,11 @@ export const authOptions = {
               if (!existingUser.image && image) {
                 existingUser.image = image;
               }
-              await existingUser.save();
             }
+
+            // 최근 로그인 시간 업데이트
+            existingUser.lastLoginAt = new Date();
+            await existingUser.save();
           }
 
           return true;
@@ -323,11 +343,12 @@ export const authOptions = {
           let existingUser = await User.findOne({
             provider: 'naver',
             providerId: naverId,
+            isDeleted: false,
           });
 
           // 이메일이 있는 경우, 이메일로도 검색
           if (email && !existingUser) {
-            existingUser = await User.findOne({ email });
+            existingUser = await User.findOne({ email, isDeleted: false });
           }
 
           // 사용자가 없으면 새로 생성
@@ -340,6 +361,7 @@ export const authOptions = {
               authority: 'user',
               provider: 'naver',
               providerId: naverId,
+              lastLoginAt: new Date(),
             });
 
             const savedUser = await newUser.save();
@@ -369,9 +391,11 @@ export const authOptions = {
               if (!existingUser.phoneNumber && mobile) {
                 existingUser.phoneNumber = mobile;
               }
-
-              await existingUser.save();
             }
+
+            // 최근 로그인 시간 업데이트
+            existingUser.lastLoginAt = new Date();
+            await existingUser.save();
           }
 
           return true;

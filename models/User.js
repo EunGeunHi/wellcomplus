@@ -42,6 +42,14 @@ const userSchema = new mongoose.Schema(
     providerId: {
       type: String, // 소셜 로그인 제공자의 고유 ID
     },
+    lastLoginAt: {
+      type: Date, // 마지막 로그인 날짜 및 시간
+      default: null, // 초기값은 null (로그인 전)
+    },
+    isDeleted: {
+      type: Boolean, // 탈퇴 유무
+      default: false, // 초기값은 false (탈퇴 안함)
+    },
   },
   { timestamps: true } // 생성 및 수정 시간 자동 기록
 );
