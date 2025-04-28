@@ -43,7 +43,7 @@ export function formatDate(dateString, options = {}) {
         day: '2-digit',
       });
 
-      return formatter.format(date).replace(/\./g, '.').replace(/\s+/g, '');
+      return formatter.format(date).replace(/\s+/g, '').replace(/\.$/g, '');
     }
 
     // 기본 형식 ('2023년 5월 21일' 또는 '2023년 5월 21일 오후 3:30' 형식)

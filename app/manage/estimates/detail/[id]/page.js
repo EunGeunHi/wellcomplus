@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { KingOnlySection } from '@/app/components/ProtectedContent';
 import KingFallback from '@/app/components/kingFallback';
 import { formatDate } from '@/utils/dateFormat';
+import { formatNumber } from '@/utils/numberUtils';
 import Link from 'next/link';
 
 export default function EstimateDetailPage() {
@@ -101,12 +102,6 @@ export default function EstimateDetailPage() {
     } finally {
       setIsDeleting(false);
     }
-  };
-
-  // 숫자 포맷팅 함수 (천 단위 쉼표)
-  const formatNumber = (num) => {
-    if (num === undefined || num === null) return '-';
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
   if (loading) {
@@ -394,7 +389,7 @@ export default function EstimateDetailPage() {
                   <p className="text-gray-600">출고일자</p>
                   <p className="font-medium">
                     {estimate.paymentInfo?.releaseDate
-                      ? formatDate(estimate.paymentInfo.releaseDate, { shortFormat: true })
+                      ? formatDate(estimate.paymentInfo.releaseDate)
                       : '-'}
                   </p>
                 </div>
