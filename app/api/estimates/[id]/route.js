@@ -1,33 +1,72 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import Estimate from '@/models/Estimate';
-import { withAuthAPI } from '@/app/api/middleware';
+import { ObjectId } from 'mongodb';
+import { withKingAuthAPI } from '@/app/api/middleware';
+import mongoose from 'mongoose';
 
-export const GET = withAuthAPI(async (req, { params, session }) => {
-  // 관리자(king) 권한이 없으면 접근 불가
-  if (session.user.authority !== 'king') {
-    return NextResponse.json({ error: '접근 권한이 없습니다.' }, { status: 403 });
-  }
-
+// 견적 상세 정보 조회
+export const GET = withKingAuthAPI(async (request, { params, session }) => {
   const { id } = params;
+
+  if (!id || id === 'undefined') {
+    return NextResponse.json({ error: '유효하지 않은 견적 ID입니다.' }, { status: 400 });
+  }
 
   try {
     await connectDB();
 
-    // ID 유효성 검사
-    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-      return NextResponse.json({ error: '유효하지 않은 견적 ID입니다.' }, { status: 400 });
-    }
-
-    const estimate = await Estimate.findById(id).lean();
+    // Mongoose를 사용하여 estimates 컬렉션에 접근
+    const estimate = await mongoose.connection.db.collection('estimates').findOne({
+      _id: new ObjectId(id),
+    });
 
     if (!estimate) {
-      return NextResponse.json({ error: '견적 정보를 찾을 수 없습니다.' }, { status: 404 });
+      return NextResponse.json({ error: '견적을 찾을 수 없습니다.' }, { status: 404 });
     }
 
     return NextResponse.json({ estimate });
   } catch (error) {
-    console.error('견적 상세 조회 중 에러:', error);
-    return NextResponse.json({ error: '서버 에러가 발생했습니다.' }, { status: 500 });
+    console.error('견적 조회 오류:', error);
+    return NextResponse.json({ error: '견적 조회 중 오류가 발생했습니다.' }, { status: 500 });
+  }
+});
+
+// 견적 삭제
+export const DELETE = withKingAuthAPI(async (request, { params, session }) => {
+  const { id } = params;
+
+  if (!id || id === 'undefined') {
+    return NextResponse.json({ error: '유효하지 않은 견적 ID입니다.' }, { status: 400 });
+  }
+
+  try {
+    await connectDB();
+
+    // Mongoose를 사용하여 estimates 컬렉션에 접근
+    // 견적이 존재하는지 확인
+    const estimate = await mongoose.connection.db.collection('estimates').findOne({
+      _id: new ObjectId(id),
+    });
+
+    if (!estimate) {
+      return NextResponse.json({ error: '삭제할 견적을 찾을 수 없습니다.' }, { status: 404 });
+    }
+
+    // 견적 삭제
+    const result = await mongoose.connection.db.collection('estimates').deleteOne({
+      _id: new ObjectId(id),
+    });
+
+    if (result.deletedCount === 0) {
+      return NextResponse.json({ error: '견적 삭제에 실패했습니다.' }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: '견적이 성공적으로 삭제되었습니다.',
+    });
+  } catch (error) {
+    console.error('견적 삭제 오류:', error);
+    return NextResponse.json({ error: '견적 삭제 중 오류가 발생했습니다.' }, { status: 500 });
   }
 });

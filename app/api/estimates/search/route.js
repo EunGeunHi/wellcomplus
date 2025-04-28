@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Estimate from '@/models/Estimate';
-import { withAuthAPI } from '@/app/api/middleware';
+import { withKingAuthAPI } from '@/app/api/middleware';
 
-export const GET = withAuthAPI(async (req, { session }) => {
+export const GET = withKingAuthAPI(async (req, { session }) => {
   // 관리자(king) 권한이 없으면 접근 불가
   if (session.user.authority !== 'king') {
     return NextResponse.json({ error: '접근 권한이 없습니다.' }, { status: 403 });

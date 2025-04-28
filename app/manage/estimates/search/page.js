@@ -25,6 +25,32 @@ export default function EstimateSearchPage() {
     totalPages: 0,
   });
   const [error, setError] = useState(null);
+  const [refreshTimestamp, setRefreshTimestamp] = useState(null);
+
+  // localStorage의 refreshTimestamp 감지하기 위한 효과
+  useEffect(() => {
+    // localStorage에서 타임스탬프 확인
+    const storedTimestamp = localStorage.getItem('estimatesRefreshTimestamp');
+    if (storedTimestamp && (!refreshTimestamp || storedTimestamp > refreshTimestamp)) {
+      setRefreshTimestamp(storedTimestamp);
+      // 즉시 데이터 새로고침
+      const queryKeyword = searchParams.get('keyword') || '';
+      const querySearchType = searchParams.get('searchType') || 'all';
+      const queryEstimateType = searchParams.get('estimateType') || '';
+      const queryContractorStatus = searchParams.get('contractorStatus') || '';
+      const queryPage = parseInt(searchParams.get('page') || '1', 10);
+
+      // 캐시 방지를 위한 추가 파라미터
+      searchEstimates(
+        queryKeyword,
+        querySearchType,
+        queryEstimateType,
+        queryContractorStatus,
+        queryPage,
+        true // forceRefresh
+      );
+    }
+  }, [searchParams]);
 
   // URL 쿼리 파라미터에서 상태 초기화
   useEffect(() => {
@@ -33,6 +59,7 @@ export default function EstimateSearchPage() {
     const queryEstimateType = searchParams.get('estimateType') || '';
     const queryContractorStatus = searchParams.get('contractorStatus') || '';
     const queryPage = parseInt(searchParams.get('page') || '1', 10);
+    const queryRefresh = searchParams.get('refresh'); // 리프레시 파라미터 확인
 
     setKeyword(queryKeyword);
     setSearchType(querySearchType);
@@ -43,13 +70,17 @@ export default function EstimateSearchPage() {
       page: queryPage,
     }));
 
+    // refresh 파라미터가 있으면 캐시를 무시하고 새로 데이터를 가져옴
+    const forceRefresh = !!queryRefresh;
+
     // 모든 경우에 검색 실행 (키워드가 없어도 전체 데이터 조회)
     searchEstimates(
       queryKeyword,
       querySearchType,
       queryEstimateType,
       queryContractorStatus,
-      queryPage
+      queryPage,
+      forceRefresh
     );
   }, [searchParams]);
 
@@ -59,7 +90,8 @@ export default function EstimateSearchPage() {
     searchTypeValue,
     estimateTypeValue,
     contractorStatusValue,
-    page = 1
+    page = 1,
+    forceRefresh = false
   ) => {
     setLoading(true);
     setError(null);
@@ -82,7 +114,21 @@ export default function EstimateSearchPage() {
         queryParams.set('contractorStatus', contractorStatusValue);
       }
 
-      const response = await fetch(`/api/estimates/search?${queryParams.toString()}`);
+      // 캐시 강제 무효화를 위한 파라미터 추가
+      if (forceRefresh) {
+        queryParams.set('_', Date.now().toString());
+      }
+
+      const response = await fetch(`/api/estimates/search?${queryParams.toString()}`, {
+        // 캐시 방지를 위한 헤더 추가
+        headers: forceRefresh
+          ? {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              Pragma: 'no-cache',
+              Expires: '0',
+            }
+          : {},
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
