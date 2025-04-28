@@ -675,6 +675,7 @@ export default function EstimateCreatePage() {
             <table className="min-w-full">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">작업</th>
                   <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">분류</th>
                   <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">상품명</th>
                   <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">수량</th>
@@ -685,12 +686,20 @@ export default function EstimateCreatePage() {
                   <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">총판</th>
                   <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">재조사</th>
                   <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">비고</th>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">작업</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {estimate.tableData.map((item, index) => (
                   <tr key={index}>
+                    <td className="px-3 py-2">
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveProduct(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        삭제
+                      </button>
+                    </td>
                     <td className="px-3 py-2">
                       <input
                         type="text"
@@ -760,15 +769,6 @@ export default function EstimateCreatePage() {
                         onChange={(e) => handleTableDataChange(index, 'remarks', e.target.value)}
                         className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm"
                       />
-                    </td>
-                    <td className="px-3 py-2">
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveProduct(index)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        삭제
-                      </button>
                     </td>
                   </tr>
                 ))}
