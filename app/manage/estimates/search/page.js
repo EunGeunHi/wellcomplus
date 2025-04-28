@@ -249,7 +249,15 @@ export default function EstimateSearchPage() {
   return (
     <KingOnlySection fallback={<KingFallback />}>
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <h1 className="text-2xl font-bold mb-6">견적 검색</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">견적 검색</h1>
+          <Link
+            href="/manage/estimates/create"
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+          >
+            새로운 데이터 추가
+          </Link>
+        </div>
 
         {/* 검색 폼 */}
         <div className="bg-white p-4 rounded-lg shadow mb-6">
