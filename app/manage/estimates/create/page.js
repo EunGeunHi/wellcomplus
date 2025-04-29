@@ -11,6 +11,7 @@ export default function EstimateCreatePage() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [notification, setNotification] = useState({ message: '', show: false, fadeOut: false });
+  const [focusedInput, setFocusedInput] = useState(null);
 
   // 견적 유형 옵션
   const estimateTypeOptions = ['예전데이터', '컴퓨터견적', '프린터견적', '노트북견적', 'AS관련'];
@@ -32,6 +33,16 @@ export default function EstimateCreatePage() {
       manager: '김선식',
     },
     tableData: [], // 상품 데이터
+
+    // 서비스 물품 데이터
+    serviceData: {
+      id: '', // 고유 ID
+      productName: '', // 상품명
+      quantity: 0, // 수량
+      remarks: '', // 비고
+    },
+
+    // 결제 정보
     paymentInfo: {
       laborCost: 0,
       tuningCost: 0,
@@ -341,6 +352,16 @@ export default function EstimateCreatePage() {
     if (confirm('견적 생성을 취소하시겠습니까? 모든 입력 내용이 사라집니다.')) {
       router.back();
     }
+  };
+
+  // 포커스 이벤트 핸들러
+  const handleFocus = (index, field) => {
+    setFocusedInput(`${index}-${field}`);
+  };
+
+  // 포커스 아웃 이벤트 핸들러
+  const handleBlur = () => {
+    setFocusedInput(null);
   };
 
   return (
@@ -824,100 +845,150 @@ export default function EstimateCreatePage() {
             <table className="min-w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">작업</th>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">분류</th>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">상품명</th>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">수량</th>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">현금가</th>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">
+                  <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center w-[40px]">
+                    작업
+                  </th>
+                  <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center w-[100px]">
+                    분류
+                  </th>
+                  <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center w-[200px]">
+                    상품명
+                  </th>
+                  <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center w-[50px]">
+                    수량
+                  </th>
+                  <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center w-[110px]">
+                    현금가
+                  </th>
+                  <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
                     상품코드
                   </th>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">총판</th>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">재조사</th>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">비고</th>
+                  <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
+                    총판
+                  </th>
+                  <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
+                    재조사
+                  </th>
+                  <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
+                    비고
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {estimate.tableData.map((item, index) => (
                   <tr key={index}>
-                    <td className="px-3 py-2">
+                    <td className="px-1 py-1">
                       <button
                         type="button"
                         onClick={() => handleRemoveProduct(index)}
-                        className="text-red-500 hover:text-red-700"
+                        className="text-base text-red-500 hover:text-red-700"
                       >
                         삭제
                       </button>
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-1 py-1">
                       <input
                         type="text"
                         value={item.category || ''}
                         onChange={(e) => handleTableDataChange(index, 'category', e.target.value)}
-                        className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm"
+                        onFocus={() => handleFocus(index, 'category')}
+                        onBlur={handleBlur}
+                        className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
+                          focusedInput === `${index}-category` ? 'w-[150px]' : 'w-full'
+                        }`}
                       />
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-1 py-1">
                       <input
                         type="text"
                         value={item.productName || ''}
                         onChange={(e) =>
                           handleTableDataChange(index, 'productName', e.target.value)
                         }
-                        className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm"
+                        onFocus={() => handleFocus(index, 'productName')}
+                        onBlur={handleBlur}
+                        className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
+                          focusedInput === `${index}-productName` ? 'w-[500px]' : 'w-full'
+                        }`}
                       />
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-1 py-1">
                       <input
                         type="text"
                         value={item.quantity || ''}
                         onChange={(e) => handleTableDataChange(index, 'quantity', e.target.value)}
-                        className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm"
+                        onFocus={() => handleFocus(index, 'quantity')}
+                        onBlur={handleBlur}
+                        className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
+                          focusedInput === `${index}-quantity` ? 'w-[65px]' : 'w-full'
+                        }`}
                       />
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-1 py-1">
                       <input
                         type="text"
                         value={item.price || ''}
                         onChange={(e) => handleTableDataChange(index, 'price', e.target.value)}
-                        className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm"
+                        onFocus={() => handleFocus(index, 'price')}
+                        onBlur={handleBlur}
+                        className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
+                          focusedInput === `${index}-price` ? 'w-[150px]' : 'w-full'
+                        }`}
                       />
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-1 py-1">
                       <input
                         type="text"
                         value={item.productCode || ''}
                         onChange={(e) =>
                           handleTableDataChange(index, 'productCode', e.target.value)
                         }
-                        className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm"
+                        onFocus={() => handleFocus(index, 'productCode')}
+                        onBlur={handleBlur}
+                        className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
+                          focusedInput === `${index}-productCode` ? 'w-[350px]' : 'w-full'
+                        }`}
                       />
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-1 py-1">
                       <input
                         type="text"
                         value={item.distributor || ''}
                         onChange={(e) =>
                           handleTableDataChange(index, 'distributor', e.target.value)
                         }
-                        className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm"
+                        onFocus={() => handleFocus(index, 'distributor')}
+                        onBlur={handleBlur}
+                        className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
+                          focusedInput === `${index}-distributor` ? 'w-[250px]' : 'w-full'
+                        }`}
                       />
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-1 py-1">
                       <input
                         type="text"
                         value={item.reconfirm || ''}
                         onChange={(e) => handleTableDataChange(index, 'reconfirm', e.target.value)}
-                        className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm"
+                        onFocus={() => handleFocus(index, 'reconfirm')}
+                        onBlur={handleBlur}
+                        className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
+                          focusedInput === `${index}-reconfirm` ? 'w-[250px]' : 'w-full'
+                        }`}
                       />
                     </td>
-                    <td className="px-3 py-2">
-                      <input
-                        type="text"
+                    <td className="px-1 py-1">
+                      <textarea
                         value={item.remarks || ''}
                         onChange={(e) => handleTableDataChange(index, 'remarks', e.target.value)}
-                        className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm"
-                      />
+                        onFocus={() => handleFocus(index, 'remarks')}
+                        onBlur={handleBlur}
+                        rows="1"
+                        className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-200 ${
+                          focusedInput === `${index}-remarks`
+                            ? 'w-[250px] h-[60px]'
+                            : 'w-full h-[30px] overflow-hidden'
+                        }`}
+                      ></textarea>
                     </td>
                   </tr>
                 ))}
