@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { KingOnlySection } from '@/app/components/ProtectedContent';
 import KingFallback from '@/app/components/kingFallback';
@@ -61,6 +61,71 @@ export default function EstimateCreatePage() {
     isContractor: false,
     estimateDescription: '',
   });
+
+  // 금액 계산을 위한 useEffect
+  useEffect(() => {
+    calculateValues();
+  }, [estimate.tableData, estimate.paymentInfo]);
+
+  // 금액 계산 함수
+  const calculateValues = () => {
+    try {
+      // 상품 합계 계산
+      const productTotal = estimate.tableData.reduce((total, item) => {
+        // 현금가에서 콤마와 원 제거 후 숫자로 변환
+        const price = item.price
+          ? Number(item.price.toString().replace(/,/g, '').replace('원', ''))
+          : 0;
+        return total + price;
+      }, 0);
+
+      // 추가 비용 계산
+      const additionalCosts =
+        (estimate.paymentInfo.laborCost || 0) +
+        (estimate.paymentInfo.tuningCost || 0) +
+        (estimate.paymentInfo.setupCost || 0) +
+        (estimate.paymentInfo.warrantyFee || 0) +
+        (estimate.paymentInfo.shippingCost || 0);
+
+      // 할인 적용
+      const discountAmount = estimate.paymentInfo.discount || 0;
+
+      // VAT 계산
+      const vatRate = (estimate.paymentInfo.vatRate || 10) / 100;
+      let vatAmount = 0;
+
+      // VAT 포함 여부에 따른 계산
+      const subtotal = productTotal + additionalCosts - discountAmount;
+
+      if (estimate.paymentInfo.includeVat) {
+        // VAT 포함 가격에서 VAT 금액 계산
+        vatAmount = Math.round(subtotal - subtotal / (1 + vatRate));
+      } else {
+        // VAT 별도 계산
+        vatAmount = Math.round(subtotal * vatRate);
+      }
+
+      // 총 구입 금액 (VAT 포함 여부에 따라 다름)
+      const totalPurchase = estimate.paymentInfo.includeVat ? subtotal : subtotal + vatAmount;
+
+      // 계약금 적용하여 최종 결제 금액 계산
+      const deposit = estimate.paymentInfo.deposit || 0;
+      const finalPayment = totalPurchase - deposit;
+
+      // 계산된 값 업데이트
+      setEstimate((prev) => ({
+        ...prev,
+        calculatedValues: {
+          productTotal,
+          vatAmount,
+          totalPurchase,
+          finalPayment,
+        },
+      }));
+    } catch (error) {
+      console.error('금액 계산 중 오류 발생:', error);
+    }
+  };
 
   // 고객 정보 변경 핸들러
   const handleCustomerInfoChange = (e) => {
@@ -1326,22 +1391,30 @@ export default function EstimateCreatePage() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-gray-600">상품/부품 합계:</span>
-                  <span className="font-medium">저장 시 자동 계산</span>
+                  <span className="font-medium">
+                    {formatNumber(estimate.calculatedValues.productTotal || 0)}원
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">VAT 금액:</span>
-                  <span className="font-medium">저장 시 자동 계산</span>
+                  <span className="font-medium">
+                    {formatNumber(estimate.calculatedValues.vatAmount || 0)}원
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">총 구입 금액:</span>
-                  <span className="font-medium">저장 시 자동 계산</span>
+                  <span className="font-medium">
+                    {formatNumber(estimate.calculatedValues.totalPurchase || 0)}원
+                  </span>
                 </div>
                 <div className="pt-2 mt-2 border-t border-gray-200 flex justify-between">
                   <span className="text-gray-800 font-semibold">최종 결제 금액:</span>
-                  <span className="text-blue-600 font-bold text-lg">저장 시 자동 계산</span>
+                  <span className="text-blue-600 font-bold text-lg">
+                    {formatNumber(estimate.calculatedValues.finalPayment || 0)}원
+                  </span>
                 </div>
               </div>
-              <div className="mt-4 text-xs text-gray-500">(금액은 서버에서 자동 계산됩니다)</div>
+              <div className="mt-4 text-xs text-gray-500">(금액은 실시간으로 계산됩니다)</div>
             </div>
           </div>
         </div>
