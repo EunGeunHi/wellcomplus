@@ -157,6 +157,38 @@ export default function EstimateCreatePage() {
     });
   };
 
+  // 결제 정보 금액 버튼 클릭 핸들러
+  const handlePaymentButtonClick = (field, amount) => {
+    // 현재 값이 이미 해당 금액이면 0으로 리셋, 아니면 해당 금액으로 설정
+    const currentAmount = estimate.paymentInfo[field] || 0;
+    const newAmount = currentAmount === amount ? 0 : amount;
+
+    setEstimate({
+      ...estimate,
+      paymentInfo: {
+        ...estimate.paymentInfo,
+        [field]: newAmount,
+        // 직접입력 상태 관리
+        [`${field}DirectInput`]: false,
+      },
+    });
+  };
+
+  // 직접입력 버튼 핸들러
+  const handleDirectInputClick = (field) => {
+    // 직접입력 상태 토글
+    const currentDirectInput = estimate.paymentInfo[`${field}DirectInput`] || false;
+
+    setEstimate({
+      ...estimate,
+      paymentInfo: {
+        ...estimate.paymentInfo,
+        [field]: currentDirectInput ? 0 : estimate.paymentInfo[field], // 직접입력 해제 시 값 초기화
+        [`${field}DirectInput`]: !currentDirectInput,
+      },
+    });
+  };
+
   // 견적 유형 변경 핸들러
   const handleEstimateTypeChange = (e) => {
     setEstimate({
@@ -1257,46 +1289,194 @@ export default function EstimateCreatePage() {
             {/* 결제 세부 정보 */}
             <div className="col-span-2">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">공임비</label>
-                  <input
-                    type="number"
-                    name="laborCost"
-                    value={estimate.paymentInfo.laborCost}
-                    onChange={handlePaymentInfoChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
+                {/* 공임비 */}
+                <div className="border-b">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">공임비</label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {[10000, 20000, 30000, 40000, 50000].map((amount) => (
+                      <button
+                        key={`laborCost-${amount}`}
+                        type="button"
+                        onClick={() => handlePaymentButtonClick('laborCost', amount)}
+                        className={`px-3 py-1 rounded-md text-xs ${
+                          estimate.paymentInfo.laborCost === amount
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-200 text-gray-700'
+                        }`}
+                      >
+                        {amount / 10000}만원
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => handleDirectInputClick('laborCost')}
+                      className={`px-3 py-1 rounded-md text-xs ${
+                        estimate.paymentInfo.laborCostDirectInput
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      직접입력
+                    </button>
+                  </div>
+                  {estimate.paymentInfo.laborCostDirectInput ? (
+                    <input
+                      type="number"
+                      name="laborCost"
+                      value={estimate.paymentInfo.laborCost}
+                      onChange={handlePaymentInfoChange}
+                      className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                  ) : (
+                    <div className="block w-full py-2 px-0">
+                      <span className="text-gray-700">
+                        {formatNumber(estimate.paymentInfo.laborCost || 0)}원
+                      </span>
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">튜닝금액</label>
-                  <input
-                    type="number"
-                    name="tuningCost"
-                    value={estimate.paymentInfo.tuningCost}
-                    onChange={handlePaymentInfoChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
+
+                {/* 튜닝금액 */}
+                <div className="border-b">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">튜닝금액</label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {[10000, 20000, 30000, 40000, 50000].map((amount) => (
+                      <button
+                        key={`tuningCost-${amount}`}
+                        type="button"
+                        onClick={() => handlePaymentButtonClick('tuningCost', amount)}
+                        className={`px-3 py-1 rounded-md text-xs ${
+                          estimate.paymentInfo.tuningCost === amount
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-200 text-gray-700'
+                        }`}
+                      >
+                        {amount / 10000}만원
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => handleDirectInputClick('tuningCost')}
+                      className={`px-3 py-1 rounded-md text-xs ${
+                        estimate.paymentInfo.tuningCostDirectInput
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      직접입력
+                    </button>
+                  </div>
+                  {estimate.paymentInfo.tuningCostDirectInput ? (
+                    <input
+                      type="number"
+                      name="tuningCost"
+                      value={estimate.paymentInfo.tuningCost}
+                      onChange={handlePaymentInfoChange}
+                      className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                  ) : (
+                    <div className="block w-full py-2 px-0">
+                      <span className="text-gray-700">
+                        {formatNumber(estimate.paymentInfo.tuningCost || 0)}원
+                      </span>
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">세팅비</label>
-                  <input
-                    type="number"
-                    name="setupCost"
-                    value={estimate.paymentInfo.setupCost}
-                    onChange={handlePaymentInfoChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
+
+                {/* 세팅비 */}
+                <div className="border-b">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">세팅비</label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {[10000, 20000, 30000, 40000, 50000].map((amount) => (
+                      <button
+                        key={`setupCost-${amount}`}
+                        type="button"
+                        onClick={() => handlePaymentButtonClick('setupCost', amount)}
+                        className={`px-3 py-1 rounded-md text-xs ${
+                          estimate.paymentInfo.setupCost === amount
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-200 text-gray-700'
+                        }`}
+                      >
+                        {amount / 10000}만원
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => handleDirectInputClick('setupCost')}
+                      className={`px-3 py-1 rounded-md text-xs ${
+                        estimate.paymentInfo.setupCostDirectInput
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      직접입력
+                    </button>
+                  </div>
+                  {estimate.paymentInfo.setupCostDirectInput ? (
+                    <input
+                      type="number"
+                      name="setupCost"
+                      value={estimate.paymentInfo.setupCost}
+                      onChange={handlePaymentInfoChange}
+                      className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                  ) : (
+                    <div className="block w-full py-2 px-0">
+                      <span className="text-gray-700">
+                        {formatNumber(estimate.paymentInfo.setupCost || 0)}원
+                      </span>
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">보증관리비</label>
-                  <input
-                    type="number"
-                    name="warrantyFee"
-                    value={estimate.paymentInfo.warrantyFee}
-                    onChange={handlePaymentInfoChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
+
+                {/* 보증관리비 */}
+                <div className="border-b">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">보증관리비</label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {[10000, 20000, 30000, 40000, 50000].map((amount) => (
+                      <button
+                        key={`warrantyFee-${amount}`}
+                        type="button"
+                        onClick={() => handlePaymentButtonClick('warrantyFee', amount)}
+                        className={`px-3 py-1 rounded-md text-xs ${
+                          estimate.paymentInfo.warrantyFee === amount
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-200 text-gray-700'
+                        }`}
+                      >
+                        {amount / 10000}만원
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => handleDirectInputClick('warrantyFee')}
+                      className={`px-3 py-1 rounded-md text-xs ${
+                        estimate.paymentInfo.warrantyFeeDirectInput
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      직접입력
+                    </button>
+                  </div>
+                  {estimate.paymentInfo.warrantyFeeDirectInput ? (
+                    <input
+                      type="number"
+                      name="warrantyFee"
+                      value={estimate.paymentInfo.warrantyFee}
+                      onChange={handlePaymentInfoChange}
+                      className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                  ) : (
+                    <div className="block w-full py-2 px-0">
+                      <span className="text-gray-700">
+                        {formatNumber(estimate.paymentInfo.warrantyFee || 0)}원
+                      </span>
+                    </div>
+                  )}
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">할인</label>
                   <input
@@ -1307,6 +1487,7 @@ export default function EstimateCreatePage() {
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">계약금</label>
                   <input
@@ -1317,6 +1498,28 @@ export default function EstimateCreatePage() {
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">버림 타입</label>
+                  <input
+                    type="text"
+                    name="roundingType"
+                    value={estimate.paymentInfo.roundingType}
+                    onChange={handlePaymentInfoChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">결제 방법</label>
+                  <input
+                    type="text"
+                    name="paymentMethod"
+                    value={estimate.paymentInfo.paymentMethod}
+                    onChange={handlePaymentInfoChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  />
+                </div>
+
                 <div className="flex items-center">
                   <label className="flex items-center space-x-2">
                     <input
@@ -1339,26 +1542,7 @@ export default function EstimateCreatePage() {
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">버림 타입</label>
-                  <input
-                    type="text"
-                    name="roundingType"
-                    value={estimate.paymentInfo.roundingType}
-                    onChange={handlePaymentInfoChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">결제 방법</label>
-                  <input
-                    type="text"
-                    name="paymentMethod"
-                    value={estimate.paymentInfo.paymentMethod}
-                    onChange={handlePaymentInfoChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">배송+설비 비용</label>
                   <input
