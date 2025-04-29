@@ -338,7 +338,10 @@ export default function EstimateCreatePage() {
         lines.forEach((line) => {
           const parts = line.split('\t');
           if (parts.length >= 7) {
-            const category = parts[0];
+            let category = parts[0];
+            if (category === 'SSD') {
+              category = 'SSD/M.2';
+            }
             const productName = parts[1];
             const quantity = parts[2];
             // 현금최저가 합계에서 콤마와 '원' 제거
@@ -937,7 +940,7 @@ export default function EstimateCreatePage() {
               <textarea
                 id="bulkProductInput"
                 rows="1"
-                placeholder="각 상품을 한 줄씩 입력하세요."
+                placeholder="일괄 입력 형식으로 입력해주세요.(다나와, 견적왕)"
                 className="w-[400px] border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
               ></textarea>
               <button

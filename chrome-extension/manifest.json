@@ -1,10 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "다나와 견적 추출",
+  "name": "다나와 견적 추출기",
+  "description": "다나와 견적을 웰컴플러스 견적 시스템에 자동으로 붙여넣기",
   "version": "1.0",
-  "description": "다나와 견적 데이터를 WellcomPlus 견적 시스템으로 가져오는 확장 프로그램",
-  "permissions": ["activeTab", "scripting", "storage", "tabs"],
-  "host_permissions": ["https://shop.danawa.com/*", "http://localhost:3000/*"],
+  "icons": {
+    "16": "images/icon16.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
+  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -13,28 +16,19 @@
       "128": "images/icon128.png"
     }
   },
-  "icons": {
-    "16": "images/icon16.png",
-    "48": "images/icon48.png",
-    "128": "images/icon128.png"
+  "permissions": ["activeTab", "scripting", "storage", "tabs"],
+  "host_permissions": ["https://shop.danawa.com/*", "http://localhost:3000/*"],
+  "background": {
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
       "matches": ["https://shop.danawa.com/virtualestimate/*"],
-      "js": ["js/content.js"]
+      "js": ["content-danawa.js"]
     },
     {
       "matches": ["http://localhost:3000/manage/estimates/create*"],
-      "js": ["js/estimate-form.js"]
-    }
-  ],
-  "background": {
-    "service_worker": "js/background.js"
-  },
-  "web_accessible_resources": [
-    {
-      "resources": ["js/*"],
-      "matches": ["<all_urls>"]
+      "js": ["content-wellcomplus.js"]
     }
   ]
 }

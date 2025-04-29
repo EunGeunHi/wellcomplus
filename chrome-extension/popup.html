@@ -2,75 +2,98 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>다나와 견적 추출</title>
+    <title>다나와 견적 추출기</title>
     <style>
       body {
         width: 300px;
         padding: 15px;
-        font-family: 'Segoe UI', Arial, sans-serif;
+        font-family: 'Malgun Gothic', sans-serif;
       }
-      h1 {
+      h2 {
+        color: #0056b3;
         font-size: 18px;
+        margin-top: 0;
+        text-align: center;
+      }
+      .info {
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        padding: 10px;
         margin-bottom: 15px;
-        color: #333;
+        font-size: 14px;
+        line-height: 1.5;
       }
-      .button {
-        display: block;
-        width: 100%;
-        padding: 10px;
-        background-color: #4285f4;
+      .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      button {
+        background-color: #0e69ca;
         color: white;
         border: none;
         border-radius: 4px;
+        padding: 8px 12px;
+        font-weight: bold;
         cursor: pointer;
-        font-size: 14px;
-        margin-bottom: 10px;
+        transition: background-color 0.2s;
       }
-      .button:hover {
-        background-color: #3367d6;
+      button:hover {
+        background-color: #1e538f;
       }
-      .button:disabled {
-        background-color: #ccc;
+      button:disabled {
+        background-color: #cccccc;
         cursor: not-allowed;
       }
-
-      .buttontion {
-        display: block;
-        width: 100%;
-        padding: 10px;
-        background-color: #3fd839;
+      /* 견적 입력하기 버튼에 연두색 스타일 적용 */
+      #insertBtn {
+        background-color: #54d458; /* 연두색 계열 */
         color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        margin-bottom: 10px;
       }
-      .buttontion:hover {
-        background-color: #2daf29;
+      #insertBtn:hover {
+        background-color: #36a03a; /* 더 진한 연두색으로 호버 효과 */
       }
-      .buttontion:disabled {
-        background-color: #ccc;
-        cursor: not-allowed;
+      #insertBtn:disabled {
+        background-color: #cccccc; /* 비활성화 시에는 회색 */
       }
       .status {
-        margin-top: 10px;
-        padding: 10px;
-        border-radius: 4px;
-        background-color: #f5f5f5;
         font-size: 14px;
-        color: #333;
+        color: #666;
+        margin-top: 15px;
+        text-align: center;
+      }
+      .steps {
+        font-size: 13px;
+        margin-bottom: 10px;
+      }
+      .steps ol {
+        margin: 0;
+        padding-left: 20px;
       }
     </style>
   </head>
   <body>
-    <h1>다나와 견적 추출</h1>
+    <h2>다나와 견적 추출기</h2>
 
-    <button id="extractBtn" class="button">견적 데이터 추출</button>
-    <button id="sendBtn" class="buttontion" disabled>웰컴플러스로 전송</button>
+    <div class="info">
+      다나와 견적 정보를 웰컴플러스 견적 시스템으로 자동 입력해주는 도구입니다.
+    </div>
 
-    <div id="status" class="status">다나와 견적 페이지를 열고 버튼을 클릭하세요.</div>
+    <div class="steps">
+      <ol>
+        <li>다나와 견적 페이지에서 '견적 추출하기' 클릭</li>
+        <li>웰컴플러스 견적 생성 페이지로 이동</li>
+        <li>'견적 입력하기' 클릭</li>
+      </ol>
+    </div>
 
-    <script src="js/popup.js"></script>
+    <div class="actions">
+      <button id="extractBtn">견적 추출하기(복사)</button>
+      <button id="insertBtn" disabled>견적 입력하기(붙여넣기)</button>
+    </div>
+
+    <div class="status" id="status"></div>
+
+    <script src="popup.js"></script>
   </body>
 </html>
