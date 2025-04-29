@@ -84,33 +84,27 @@ export default function EstimateCreatePage() {
         (estimate.paymentInfo.laborCost || 0) +
         (estimate.paymentInfo.tuningCost || 0) +
         (estimate.paymentInfo.setupCost || 0) +
-        (estimate.paymentInfo.warrantyFee || 0) +
-        (estimate.paymentInfo.shippingCost || 0);
+        (estimate.paymentInfo.warrantyFee || 0) -
+        (estimate.paymentInfo.discount || 0);
 
-      // 할인 적용
-      const discountAmount = estimate.paymentInfo.discount || 0;
+      // 총 구입 금액
+      const totalPurchase = productTotal + additionalCosts;
 
       // VAT 계산
       const vatRate = (estimate.paymentInfo.vatRate || 10) / 100;
       let vatAmount = 0;
 
       // VAT 포함 여부에 따른 계산
-      const subtotal = productTotal + additionalCosts - discountAmount;
-
       if (estimate.paymentInfo.includeVat) {
-        // VAT 포함 가격에서 VAT 금액 계산
-        vatAmount = Math.round(subtotal - subtotal / (1 + vatRate));
+        // VAT 체크 함
+        vatAmount = Math.round(totalPurchase * vatRate);
       } else {
-        // VAT 별도 계산
-        vatAmount = Math.round(subtotal * vatRate);
+        // VAT 체크 안함함
+        vatAmount = 0;
       }
 
-      // 총 구입 금액 (VAT 포함 여부에 따라 다름)
-      const totalPurchase = estimate.paymentInfo.includeVat ? subtotal : subtotal + vatAmount;
-
-      // 계약금 적용하여 최종 결제 금액 계산
-      const deposit = estimate.paymentInfo.deposit || 0;
-      const finalPayment = totalPurchase - deposit;
+      //VAT 포함한한 최종 결제 금액 계산
+      const finalPayment = totalPurchase + vatAmount;
 
       // 계산된 값 업데이트
       setEstimate((prev) => ({
