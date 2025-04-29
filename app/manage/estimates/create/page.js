@@ -32,15 +32,10 @@ export default function EstimateCreatePage() {
       os: 'win11',
       manager: '김선식',
     },
+
     tableData: [], // 상품 데이터
 
-    // 서비스 물품 데이터
-    serviceData: {
-      id: '', // 고유 ID
-      productName: '', // 상품명
-      quantity: 0, // 수량
-      remarks: '', // 비고
-    },
+    serviceData: [], // 서비스 물품 데이터
 
     // 결제 정보
     paymentInfo: {
@@ -168,6 +163,62 @@ export default function EstimateCreatePage() {
     setEstimate({
       ...estimate,
       tableData: updatedTableData,
+    });
+  };
+
+  // 서비스 상품 정보 변경 핸들러
+  const handleServiceDataChange = (index, field, value) => {
+    const updatedServiceData = [...estimate.serviceData];
+    updatedServiceData[index] = {
+      ...updatedServiceData[index],
+      [field]: value,
+    };
+
+    setEstimate({
+      ...estimate,
+      serviceData: updatedServiceData,
+    });
+  };
+
+  // 서비스 상품 추가 핸들러
+  const handleAddServiceItem = () => {
+    const newServiceItem = {
+      productName: '',
+      quantity: '',
+      remarks: '',
+    };
+
+    setEstimate({
+      ...estimate,
+      serviceData: [...estimate.serviceData, newServiceItem],
+    });
+  };
+
+  // 빠른 서비스 상품 추가 핸들러
+  const handleQuickAddServiceItem = (itemName) => {
+    const newServiceItem = {
+      productName: itemName,
+      quantity: '1',
+      remarks: '',
+    };
+
+    setEstimate({
+      ...estimate,
+      serviceData: [...estimate.serviceData, newServiceItem],
+    });
+
+    // 알림 메시지 표시
+    showNotification(`'${itemName}' 서비스 상품이 추가되었습니다.`);
+  };
+
+  // 서비스 상품 삭제 핸들러
+  const handleRemoveServiceItem = (index) => {
+    const updatedServiceData = [...estimate.serviceData];
+    updatedServiceData.splice(index, 1);
+
+    setEstimate({
+      ...estimate,
+      serviceData: updatedServiceData,
     });
   };
 
@@ -1001,6 +1052,139 @@ export default function EstimateCreatePage() {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+
+        {/* 서비스 물품 정보 */}
+        <div className="bg-white p-6 rounded-lg shadow mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold pb-2">서비스 물품 정보</h2>
+            <button
+              type="button"
+              onClick={handleAddServiceItem}
+              className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
+            >
+              + 서비스 상품 추가
+            </button>
+          </div>
+
+          <div className="flex gap-4">
+            <div className="w-60">
+              <h3 className="text-sm font-medium text-gray-700 mb-2">자주 사용 상품</h3>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleQuickAddServiceItem('마우스')}
+                  className="bg-blue-100 hover:bg-blue-200 text-blue-800 py-1 px-2 rounded text-sm w-full text-center"
+                >
+                  마우스
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickAddServiceItem('마우스패드')}
+                  className="bg-blue-100 hover:bg-blue-200 text-blue-800 py-1 px-2 rounded text-sm w-full text-center"
+                >
+                  마우스패드
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickAddServiceItem('키보드')}
+                  className="bg-blue-100 hover:bg-blue-200 text-blue-800 py-1 px-2 rounded text-sm w-full text-center"
+                >
+                  키보드
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickAddServiceItem('스피커')}
+                  className="bg-blue-100 hover:bg-blue-200 text-blue-800 py-1 px-2 rounded text-sm w-full text-center"
+                >
+                  스피커
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickAddServiceItem('케이블')}
+                  className="bg-blue-100 hover:bg-blue-200 text-blue-800 py-1 px-2 rounded text-sm w-full text-center"
+                >
+                  케이블
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1">
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
+                        작업
+                      </th>
+                      <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
+                        상품명
+                      </th>
+                      <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center w-[45px]">
+                        수량
+                      </th>
+                      <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
+                        비고
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {estimate.serviceData.map((item, index) => (
+                      <tr key={index}>
+                        <td className="px-1 py-1">
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveServiceItem(index)}
+                            className="text-base text-red-500 hover:text-red-700"
+                          >
+                            삭제
+                          </button>
+                        </td>
+                        <td className="px-1 py-1">
+                          <input
+                            type="text"
+                            value={item.productName || ''}
+                            onChange={(e) =>
+                              handleServiceDataChange(index, 'productName', e.target.value)
+                            }
+                            className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm"
+                          />
+                        </td>
+                        <td className="px-1 py-1">
+                          <input
+                            type="text"
+                            value={item.quantity || ''}
+                            onChange={(e) =>
+                              handleServiceDataChange(index, 'quantity', e.target.value)
+                            }
+                            className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm"
+                          />
+                        </td>
+                        <td className="px-1 py-1">
+                          <textarea
+                            value={item.remarks || ''}
+                            onChange={(e) =>
+                              handleServiceDataChange(index, 'remarks', e.target.value)
+                            }
+                            rows="1"
+                            className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm h-[30px]"
+                          ></textarea>
+                        </td>
+                      </tr>
+                    ))}
+                    {estimate.serviceData.length === 0 && (
+                      <tr>
+                        <td colSpan="4" className="px-3 py-4 text-center text-gray-500">
+                          등록된 서비스 상품이 없습니다. [서비스 상품 추가] 버튼을 클릭하여 서비스
+                          상품을 추가하세요.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
 

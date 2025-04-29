@@ -296,6 +296,33 @@ export default function EstimateDetailPage() {
           </div>
         )}
 
+        {/* 서비스 물품 정보 */}
+        {estimate.serviceData && estimate.serviceData.length > 0 && (
+          <div className="bg-white p-6 rounded-lg shadow mb-6 overflow-x-auto">
+            <h2 className="text-xl font-semibold mb-4 pb-2 border-b">서비스 물품 정보</h2>
+            <table className="min-w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">상품명</th>
+                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">수량</th>
+                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">비고</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {estimate.serviceData.map((item, index) => (
+                  <tr key={index}>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm">
+                      {item.productName || '-'}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.quantity || '-'}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.remarks || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
         {/* 결제 정보 */}
         <div className="bg-white p-6 rounded-lg shadow mb-6">
           <h2 className="text-xl font-semibold mb-4 pb-2 border-b">결제 정보</h2>
