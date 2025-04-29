@@ -10,6 +10,7 @@ import Link from 'next/link';
 export default function EstimateCreatePage() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
+  const [notification, setNotification] = useState({ message: '', show: false, fadeOut: false });
 
   // 견적 유형 옵션
   const estimateTypeOptions = ['예전데이터', '컴퓨터견적', '프린터견적', '노트북견적', 'AS관련'];
@@ -159,6 +160,127 @@ export default function EstimateCreatePage() {
     });
   };
 
+  // 알림 메시지 표시 함수
+  const showNotification = (message) => {
+    // 이미 메시지가 표시 중이라면 먼저 제거
+    if (notification.show) {
+      setNotification({ message: '', show: false, fadeOut: false });
+      setTimeout(() => {
+        showNotificationWithEffect(message);
+      }, 100);
+    } else {
+      showNotificationWithEffect(message);
+    }
+  };
+
+  const showNotificationWithEffect = (message) => {
+    // 메시지 표시
+    setNotification({ message, show: true, fadeOut: false });
+
+    // 2.5초 후 fadeOut 효과 시작
+    setTimeout(() => {
+      setNotification((prev) => ({ ...prev, fadeOut: true }));
+
+      // 0.5초의 fadeOut 효과 후 메시지 완전히 제거
+      setTimeout(() => {
+        setNotification({ message: '', show: false, fadeOut: false });
+      }, 500);
+    }, 2500);
+  };
+
+  // 상품 일괄 입력 처리 핸들러
+  const handleBulkProductInput = () => {
+    const bulkInput = document.getElementById('bulkProductInput').value.trim();
+
+    if (!bulkInput) {
+      showNotification('입력된 데이터가 없습니다.');
+      return;
+    }
+
+    try {
+      const lines = bulkInput.split('\n').filter((line) => line.trim() !== '');
+      const firstLine = lines[0];
+      const tabCount = (firstLine.match(/\t/g) || []).length + 1;
+
+      let newProducts = [];
+
+      // 다나와 형식 (탭이 7개 이상의 데이터)
+      if (tabCount >= 7) {
+        console.log('다나와 형식 감지됨');
+
+        lines.forEach((line) => {
+          const parts = line.split('\t');
+          if (parts.length >= 7) {
+            const category = parts[0];
+            const productName = parts[1];
+            const quantity = parts[2];
+            // 현금최저가 합계에서 콤마와 '원' 제거
+            const price = parts[6].replace(/,/g, '').replace('원', '');
+
+            newProducts.push({
+              category,
+              productName,
+              quantity,
+              price,
+              productCode: '',
+              distributor: '',
+              reconfirm: '',
+              remarks: '',
+            });
+          }
+        });
+      }
+      // 견적왕 형식 (4줄이 하나의 상품)
+      else if (lines.length >= 4) {
+        console.log('견적왕 형식 감지됨');
+
+        for (let i = 0; i < lines.length; i += 4) {
+          if (i + 3 < lines.length) {
+            const firstLine = lines[i].split('\t');
+            const fourthLine = lines[i + 3];
+
+            if (firstLine.length >= 3) {
+              const category = firstLine[1];
+              const productName = firstLine[3];
+              const quantity = lines[i + 2].trim();
+              // 합계가격에서 콤마와 '원' 제거
+              const price = fourthLine.replace(/,/g, '').replace('원', '');
+
+              newProducts.push({
+                category,
+                productName,
+                quantity,
+                price,
+                productCode: '',
+                distributor: '',
+                reconfirm: '',
+                remarks: '',
+              });
+            }
+          }
+        }
+      } else {
+        throw new Error('지원되지 않는 데이터 형식입니다.');
+      }
+
+      if (newProducts.length > 0) {
+        setEstimate({
+          ...estimate,
+          tableData: [...estimate.tableData, ...newProducts],
+        });
+
+        // 입력 성공 후 textarea 비우기
+        document.getElementById('bulkProductInput').value = '';
+        showNotification(`${newProducts.length}개의 상품이 추가되었습니다.`);
+      } else {
+        showNotification('추가할 상품 데이터가 없습니다.');
+      }
+    } catch (error) {
+      console.error('데이터 처리 중 오류 발생:', error);
+      showNotification('데이터 처리 중 오류가 발생했습니다: ' + error.message);
+    }
+  };
+
   // 견적 저장
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -224,6 +346,17 @@ export default function EstimateCreatePage() {
   return (
     <KingOnlySection fallback={<KingFallback />}>
       <form onSubmit={handleSubmit} className="max-w-6xl mx-auto px-4 py-6">
+        {/* 알림 메시지 표시 영역 - 상단 가운데 위치로 변경 */}
+        {notification.show && (
+          <div
+            className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg ${
+              notification.fadeOut ? 'opacity-0' : 'opacity-100'
+            } transition-opacity duration-500`}
+          >
+            {notification.message}
+          </div>
+        )}
+
         <div className="flex flex-wrap justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold">새 견적 생성</h1>
@@ -662,13 +795,29 @@ export default function EstimateCreatePage() {
         <div className="bg-white p-6 rounded-lg shadow mb-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold pb-2">상품 정보</h2>
-            <button
-              type="button"
-              onClick={handleAddProduct}
-              className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
-            >
-              + 상품 추가
-            </button>
+
+            <div className="flex items-center gap-3">
+              <textarea
+                id="bulkProductInput"
+                rows="1"
+                placeholder="각 상품을 한 줄씩 입력하세요."
+                className="w-[400px] border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+              ></textarea>
+              <button
+                type="button"
+                onClick={handleBulkProductInput}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm whitespace-nowrap"
+              >
+                일괄 입력하기
+              </button>
+              <button
+                type="button"
+                onClick={handleAddProduct}
+                className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm whitespace-nowrap"
+              >
+                + 상품 추가
+              </button>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
