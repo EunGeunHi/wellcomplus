@@ -48,7 +48,7 @@ export default function EstimateCreatePage() {
       includeVat: true,
       vatRate: 10,
       roundingType: '',
-      paymentMethod: '',
+      paymentMethod: '카드',
       shippingCost: 0,
       releaseDate: '',
     },
@@ -180,13 +180,29 @@ export default function EstimateCreatePage() {
       processedValue = value;
     }
 
-    setEstimate({
-      ...estimate,
-      paymentInfo: {
-        ...estimate.paymentInfo,
-        [name]: processedValue,
-      },
-    });
+    // includeVat 체크박스가 변경된 경우 paymentMethod도 함께 변경
+    if (name === 'includeVat') {
+      setEstimate({
+        ...estimate,
+        paymentInfo: {
+          ...estimate.paymentInfo,
+          [name]: processedValue,
+          // 체크 해제시 '현금', 체크시 '카드'로 설정
+          paymentMethod: processedValue ? '카드' : '현금',
+        },
+      });
+
+      // 직접 입력 모드 해제
+      setIsPaymentMethodDirectInput(false);
+    } else {
+      setEstimate({
+        ...estimate,
+        paymentInfo: {
+          ...estimate.paymentInfo,
+          [name]: processedValue,
+        },
+      });
+    }
   };
 
   // 결제 정보 금액 버튼 클릭 핸들러
@@ -1721,7 +1737,11 @@ export default function EstimateCreatePage() {
                   <input
                     type="number"
                     name="shippingCost"
-                    value={estimate.paymentInfo.shippingCost}
+                    value={
+                      estimate.paymentInfo.shippingCost === 0
+                        ? ''
+                        : estimate.paymentInfo.shippingCost
+                    }
                     onChange={handlePaymentInfoChange}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
@@ -1750,15 +1770,69 @@ export default function EstimateCreatePage() {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">VAT 금액:</span>
-                  <span className="font-medium">
-                    {formatNumber(estimate.calculatedValues.vatAmount || 0)}원
-                  </span>
-                </div>
-                <div className="flex justify-between">
                   <span className="text-gray-600">총 구입 금액:</span>
                   <span className="font-medium">
                     {formatNumber(estimate.calculatedValues.totalPurchase || 0)}원
+                  </span>
+                </div>
+                <div className="text-xs text-gray-500 ml-4">
+                  {/* 값이 0이 아닌 항목들을 필터링 */}
+                  {(() => {
+                    // 먼저 유효한 항목만 필터링
+                    const items = [
+                      estimate.calculatedValues.productTotal > 0
+                        ? `상품/부품(${formatNumber(estimate.calculatedValues.productTotal)}원)`
+                        : null,
+                      estimate.paymentInfo.laborCost > 0
+                        ? `공임비(${formatNumber(estimate.paymentInfo.laborCost)}원)`
+                        : null,
+                      estimate.paymentInfo.setupCost > 0
+                        ? `세팅비(${formatNumber(estimate.paymentInfo.setupCost)}원)`
+                        : null,
+                      estimate.paymentInfo.tuningCost > 0
+                        ? `튜닝금액(${formatNumber(estimate.paymentInfo.tuningCost)}원)`
+                        : null,
+                      estimate.paymentInfo.warrantyFee > 0
+                        ? `보증관리비(${formatNumber(estimate.paymentInfo.warrantyFee)}원)`
+                        : null,
+                      estimate.paymentInfo.discount > 0
+                        ? `할인(-${formatNumber(estimate.paymentInfo.discount)}원)`
+                        : null,
+                    ].filter(Boolean);
+
+                    // 요소가 없으면 빈 배열 반환
+                    if (items.length === 0) return null;
+
+                    // 결과를 담을 JSX 요소 배열
+                    const result = [];
+
+                    // 항목들을 순회하면서 2개씩 처리
+                    for (let i = 0; i < items.length; i++) {
+                      const isLastItemInRow = i % 2 === 1 || i === items.length - 1;
+                      const hasNextItem = i < items.length - 1;
+
+                      // 현재 항목 추가
+                      result.push(items[i]);
+
+                      // "+ " 추가 (다음 항목이 있고 현재 항목이 줄의 끝이 아닌 경우)
+                      if (hasNextItem && !isLastItemInRow) {
+                        result.push(' + ');
+                      }
+
+                      // 줄의 끝이고 다음 항목이 있으면 "+ " 추가하고 줄바꿈
+                      if (isLastItemInRow && hasNextItem) {
+                        result.push(' + ');
+                        result.push(<br key={`br-${i}`} />);
+                      }
+                    }
+
+                    return result;
+                  })()}
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">VAT 금액:</span>
+                  <span className="font-medium">
+                    {formatNumber(estimate.calculatedValues.vatAmount || 0)}원
                   </span>
                 </div>
                 <div className="pt-2 mt-2 border-t border-gray-200 flex justify-between">
