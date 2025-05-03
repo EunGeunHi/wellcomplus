@@ -62,73 +62,91 @@ export default function EstimateCreatePage() {
     estimateDescription: '',
   });
 
+  // 직접 입력 UI 상태 관리를 위한 별도의 상태
+  const [isPaymentMethodDirectInput, setIsPaymentMethodDirectInput] = useState(false);
+  // 각 필드별 직접 입력 상태 관리
+  const [directInputFields, setDirectInputFields] = useState({
+    laborCost: false,
+    tuningCost: false,
+    setupCost: false,
+    warrantyFee: false,
+  });
+
+  // 계산 로직을 수행하는 순수 함수 - 별도로 분리하여 재사용 가능
+  const calculateEstimateValues = (estimateData) => {
+    // 상품 합계 계산
+    const productTotal = estimateData.tableData.reduce((total, item) => {
+      // 현금가에서 콤마와 원 제거 후 숫자로 변환
+      const price = item.price
+        ? Number(item.price.toString().replace(/,/g, '').replace('원', ''))
+        : 0;
+      return total + price;
+    }, 0);
+
+    // 추가 비용 계산
+    const additionalCosts =
+      (estimateData.paymentInfo.laborCost || 0) +
+      (estimateData.paymentInfo.tuningCost || 0) +
+      (estimateData.paymentInfo.setupCost || 0) +
+      (estimateData.paymentInfo.warrantyFee || 0) -
+      (estimateData.paymentInfo.discount || 0);
+
+    // 총 구입 금액
+    let totalPurchase = productTotal + additionalCosts;
+
+    // roundingType에 따라 totalPurchase 값 처리
+    const roundingType = estimateData.paymentInfo.roundingType;
+    if (roundingType) {
+      let divisor = 100; // 기본값
+      if (roundingType === '100down') divisor = 100;
+      else if (roundingType === '1000down') divisor = 1000;
+      else if (roundingType === '10000down') divisor = 10000;
+
+      // 해당 단위로 나눈 몫 계산 (버림 처리)
+      const quotient = Math.floor(totalPurchase / divisor);
+      totalPurchase = quotient * divisor;
+    }
+
+    // VAT 계산
+    const vatRate = (estimateData.paymentInfo.vatRate || 10) / 100;
+    let vatAmount = 0;
+
+    // VAT 포함 여부에 따른 계산
+    if (estimateData.paymentInfo.includeVat) {
+      // VAT 체크 함
+      vatAmount = Math.round(totalPurchase * vatRate);
+    } else {
+      // VAT 체크 안함함
+      vatAmount = 0;
+    }
+
+    //VAT 포함한한 최종 결제 금액 계산
+    const finalPayment = totalPurchase + vatAmount;
+
+    // 계산된 값 반환
+    return {
+      productTotal,
+      vatAmount,
+      totalPurchase,
+      finalPayment,
+    };
+  };
+
   // 금액 계산을 위한 useEffect
   useEffect(() => {
     calculateValues();
   }, [estimate.tableData, estimate.paymentInfo]);
 
-  // 금액 계산 함수
+  // 금액 계산 함수 - UI 상태 업데이트
   const calculateValues = () => {
     try {
-      // 상품 합계 계산
-      const productTotal = estimate.tableData.reduce((total, item) => {
-        // 현금가에서 콤마와 원 제거 후 숫자로 변환
-        const price = item.price
-          ? Number(item.price.toString().replace(/,/g, '').replace('원', ''))
-          : 0;
-        return total + price;
-      }, 0);
+      // 재사용 가능한 함수를 호출하여 계산
+      const calculatedValues = calculateEstimateValues(estimate);
 
-      // 추가 비용 계산
-      const additionalCosts =
-        (estimate.paymentInfo.laborCost || 0) +
-        (estimate.paymentInfo.tuningCost || 0) +
-        (estimate.paymentInfo.setupCost || 0) +
-        (estimate.paymentInfo.warrantyFee || 0) -
-        (estimate.paymentInfo.discount || 0);
-
-      // 총 구입 금액
-      let totalPurchase = productTotal + additionalCosts;
-
-      // roundingType에 따라 totalPurchase 값 처리
-      const roundingType = estimate.paymentInfo.roundingType;
-      if (roundingType) {
-        let divisor = 100; // 기본값
-
-        if (roundingType === '100down') divisor = 100;
-        else if (roundingType === '1000down') divisor = 1000;
-        else if (roundingType === '10000down') divisor = 10000;
-
-        // 해당 단위로 나눈 몫 계산 (버림 처리)
-        const quotient = Math.floor(totalPurchase / divisor);
-        totalPurchase = quotient * divisor;
-      }
-
-      // VAT 계산
-      const vatRate = (estimate.paymentInfo.vatRate || 10) / 100;
-      let vatAmount = 0;
-
-      // VAT 포함 여부에 따른 계산
-      if (estimate.paymentInfo.includeVat) {
-        // VAT 체크 함
-        vatAmount = Math.round(totalPurchase * vatRate);
-      } else {
-        // VAT 체크 안함함
-        vatAmount = 0;
-      }
-
-      //VAT 포함한한 최종 결제 금액 계산
-      const finalPayment = totalPurchase + vatAmount;
-
-      // 계산된 값 업데이트
+      // 계산된 값으로 상태 업데이트
       setEstimate((prev) => ({
         ...prev,
-        calculatedValues: {
-          productTotal,
-          vatAmount,
-          totalPurchase,
-          finalPayment,
-        },
+        calculatedValues,
       }));
     } catch (error) {
       console.error('금액 계산 중 오류 발생:', error);
@@ -182,8 +200,6 @@ export default function EstimateCreatePage() {
       paymentInfo: {
         ...estimate.paymentInfo,
         [field]: newAmount,
-        // 직접입력 상태 관리
-        [`${field}DirectInput`]: false,
       },
     });
   };
@@ -191,16 +207,24 @@ export default function EstimateCreatePage() {
   // 직접입력 버튼 핸들러
   const handleDirectInputClick = (field) => {
     // 직접입력 상태 토글
-    const currentDirectInput = estimate.paymentInfo[`${field}DirectInput`] || false;
+    const isDirectInputMode = !directInputFields[field];
 
-    setEstimate({
-      ...estimate,
-      paymentInfo: {
-        ...estimate.paymentInfo,
-        [field]: currentDirectInput ? 0 : estimate.paymentInfo[field], // 직접입력 해제 시 값 초기화
-        [`${field}DirectInput`]: !currentDirectInput,
-      },
+    // 직접입력 상태 업데이트
+    setDirectInputFields({
+      ...directInputFields,
+      [field]: isDirectInputMode,
     });
+
+    // 직접입력이 해제될 때 값 초기화
+    if (!isDirectInputMode) {
+      setEstimate({
+        ...estimate,
+        paymentInfo: {
+          ...estimate.paymentInfo,
+          [field]: 0,
+        },
+      });
+    }
   };
 
   // 견적 유형 변경 핸들러
@@ -462,9 +486,7 @@ export default function EstimateCreatePage() {
     try {
       setSubmitting(true);
 
-      // 계산된 값 업데이트 - 서버에서 다시 계산
-      // 실제 구현 시 클라이언트에서도 계산 로직 추가 가능
-
+      // 서버에 데이터 전송 - 현재 상태 그대로 사용
       const response = await fetch('/api/estimates', {
         method: 'POST',
         headers: {
@@ -588,6 +610,43 @@ export default function EstimateCreatePage() {
 
     // 알림 메시지 표시
     showNotification(`${divisor}원 단위 버림 처리 완료. 끝자리 DC가 서비스 물품에 추가되었습니다.`);
+  };
+
+  // 결제 방법 선택 핸들러
+  const handlePaymentMethodClick = (method) => {
+    // 일반 결제 방법 버튼을 클릭한 경우
+    if (method !== '직접입력') {
+      // 이미 선택된 방법이면 선택 해제(빈 문자열로 설정), 아니면 해당 방법으로 설정
+      const newMethod = estimate.paymentInfo.paymentMethod === method ? '' : method;
+
+      setEstimate({
+        ...estimate,
+        paymentInfo: {
+          ...estimate.paymentInfo,
+          paymentMethod: newMethod,
+        },
+      });
+
+      // 직접 입력 모드 해제
+      setIsPaymentMethodDirectInput(false);
+    } else {
+      // 직접입력 버튼을 클릭한 경우
+      const newDirectInputMode = !isPaymentMethodDirectInput;
+
+      // 직접 입력 모드 토글
+      setIsPaymentMethodDirectInput(newDirectInputMode);
+
+      // 직접 입력 모드를 해제할 때 paymentMethod 값 초기화
+      if (!newDirectInputMode) {
+        setEstimate({
+          ...estimate,
+          paymentInfo: {
+            ...estimate.paymentInfo,
+            paymentMethod: '',
+          },
+        });
+      }
+    }
   };
 
   return (
@@ -1392,7 +1451,7 @@ export default function EstimateCreatePage() {
                       type="button"
                       onClick={() => handleDirectInputClick('laborCost')}
                       className={`px-3 py-1 rounded-md text-xs ${
-                        estimate.paymentInfo.laborCostDirectInput
+                        directInputFields.laborCost
                           ? 'bg-blue-500 text-white'
                           : 'bg-gray-200 text-gray-700'
                       }`}
@@ -1400,7 +1459,7 @@ export default function EstimateCreatePage() {
                       직접입력
                     </button>
                   </div>
-                  {estimate.paymentInfo.laborCostDirectInput ? (
+                  {directInputFields.laborCost ? (
                     <input
                       type="number"
                       name="laborCost"
@@ -1439,7 +1498,7 @@ export default function EstimateCreatePage() {
                       type="button"
                       onClick={() => handleDirectInputClick('tuningCost')}
                       className={`px-3 py-1 rounded-md text-xs ${
-                        estimate.paymentInfo.tuningCostDirectInput
+                        directInputFields.tuningCost
                           ? 'bg-blue-500 text-white'
                           : 'bg-gray-200 text-gray-700'
                       }`}
@@ -1447,7 +1506,7 @@ export default function EstimateCreatePage() {
                       직접입력
                     </button>
                   </div>
-                  {estimate.paymentInfo.tuningCostDirectInput ? (
+                  {directInputFields.tuningCost ? (
                     <input
                       type="number"
                       name="tuningCost"
@@ -1486,7 +1545,7 @@ export default function EstimateCreatePage() {
                       type="button"
                       onClick={() => handleDirectInputClick('setupCost')}
                       className={`px-3 py-1 rounded-md text-xs ${
-                        estimate.paymentInfo.setupCostDirectInput
+                        directInputFields.setupCost
                           ? 'bg-blue-500 text-white'
                           : 'bg-gray-200 text-gray-700'
                       }`}
@@ -1494,7 +1553,7 @@ export default function EstimateCreatePage() {
                       직접입력
                     </button>
                   </div>
-                  {estimate.paymentInfo.setupCostDirectInput ? (
+                  {directInputFields.setupCost ? (
                     <input
                       type="number"
                       name="setupCost"
@@ -1533,7 +1592,7 @@ export default function EstimateCreatePage() {
                       type="button"
                       onClick={() => handleDirectInputClick('warrantyFee')}
                       className={`px-3 py-1 rounded-md text-xs ${
-                        estimate.paymentInfo.warrantyFeeDirectInput
+                        directInputFields.warrantyFee
                           ? 'bg-blue-500 text-white'
                           : 'bg-gray-200 text-gray-700'
                       }`}
@@ -1541,7 +1600,7 @@ export default function EstimateCreatePage() {
                       직접입력
                     </button>
                   </div>
-                  {estimate.paymentInfo.warrantyFeeDirectInput ? (
+                  {directInputFields.warrantyFee ? (
                     <input
                       type="number"
                       name="warrantyFee"
@@ -1605,13 +1664,33 @@ export default function EstimateCreatePage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">결제 방법</label>
-                  <input
-                    type="text"
-                    name="paymentMethod"
-                    value={estimate.paymentInfo.paymentMethod}
-                    onChange={handlePaymentInfoChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {['카드', '카드결제 DC', '현금', '직접입력'].map((method) => (
+                      <button
+                        key={method}
+                        type="button"
+                        onClick={() => handlePaymentMethodClick(method)}
+                        className={`px-4 py-2 rounded-md text-sm ${
+                          (method === '직접입력' && isPaymentMethodDirectInput) ||
+                          (method !== '직접입력' && estimate.paymentInfo.paymentMethod === method)
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-200 text-gray-700'
+                        }`}
+                      >
+                        {method}
+                      </button>
+                    ))}
+                  </div>
+                  {isPaymentMethodDirectInput && (
+                    <input
+                      type="text"
+                      name="paymentMethod"
+                      value={estimate.paymentInfo.paymentMethod}
+                      onChange={handlePaymentInfoChange}
+                      placeholder="결제 방법 입력"
+                      className="mt-2 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                  )}
                 </div>
 
                 <div className="flex items-center">
