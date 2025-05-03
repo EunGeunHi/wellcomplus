@@ -222,7 +222,7 @@ function LoginContent() {
         </div>
 
         {/* 네이버 로그인 버튼 */}
-        <div className="mt-4">
+        {/* <div className="mt-4">
           <button
             type="button"
             onClick={handleNaverSignIn}
@@ -232,7 +232,7 @@ function LoginContent() {
             <SiNaver className="w-4 h-4 mr-2 text-white" />
             <span className="text-white font-medium">네이버로 계속하기</span>
           </button>
-        </div>
+        </div> */}
 
         {/* 구글 로그인 버튼 */}
         <div className="mt-2">

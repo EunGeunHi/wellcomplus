@@ -265,7 +265,7 @@ export default function SignupPage() {
         </div>
 
         {/* 네이버 회원가입 버튼 */}
-        <div className="mt-4">
+        {/* <div className="mt-4">
           <button
             type="button"
             onClick={handleNaverSignUp}
@@ -275,7 +275,7 @@ export default function SignupPage() {
             <SiNaver className="w-4 h-4 mr-2 text-white" />
             <span className="text-white font-medium">네이버로 가입하기</span>
           </button>
-        </div>
+        </div> */}
 
         {/* 구글 회원가입 버튼 */}
         <div className="mt-2">
