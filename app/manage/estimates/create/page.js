@@ -88,7 +88,21 @@ export default function EstimateCreatePage() {
         (estimate.paymentInfo.discount || 0);
 
       // 총 구입 금액
-      const totalPurchase = productTotal + additionalCosts;
+      let totalPurchase = productTotal + additionalCosts;
+
+      // roundingType에 따라 totalPurchase 값 처리
+      const roundingType = estimate.paymentInfo.roundingType;
+      if (roundingType) {
+        let divisor = 100; // 기본값
+
+        if (roundingType === '100down') divisor = 100;
+        else if (roundingType === '1000down') divisor = 1000;
+        else if (roundingType === '10000down') divisor = 10000;
+
+        // 해당 단위로 나눈 몫 계산 (버림 처리)
+        const quotient = Math.floor(totalPurchase / divisor);
+        totalPurchase = quotient * divisor;
+      }
 
       // VAT 계산
       const vatRate = (estimate.paymentInfo.vatRate || 10) / 100;
@@ -507,6 +521,73 @@ export default function EstimateCreatePage() {
   // 포커스 아웃 이벤트 핸들러
   const handleBlur = () => {
     setFocusedInput(null);
+  };
+
+  // 버림 타입 변경 핸들러
+  const handleRoundingTypeClick = (type) => {
+    // 이미 선택된 타입이면 선택 해제(빈 문자열로 설정), 아니면 해당 타입으로 설정
+    const newType = estimate.paymentInfo.roundingType === type ? '' : type;
+
+    // 타입이 선택 해제되었으면 추가 처리 없이 상태만 업데이트
+    if (newType === '') {
+      // 서비스 물품 중 "끝자리DC"로 시작하는 항목 제거
+      const filteredServiceData = estimate.serviceData.filter(
+        (item) => !item.productName.startsWith('끝자리DC')
+      );
+
+      setEstimate({
+        ...estimate,
+        paymentInfo: {
+          ...estimate.paymentInfo,
+          roundingType: newType,
+        },
+        serviceData: filteredServiceData, // 필터링된 서비스 물품 목록으로 업데이트
+      });
+
+      // 알림 메시지 표시
+      showNotification('버림 타입이 해제되었습니다. 관련 끝자리DC 항목이 제거되었습니다.');
+      return;
+    }
+
+    // 현재 totalPurchase 값 가져오기
+    const currentTotal = estimate.calculatedValues.totalPurchase;
+
+    // 버림 단위 설정
+    let divisor = 100; // 기본값: 백단위
+    if (type === '1000down') divisor = 1000;
+    if (type === '10000down') divisor = 10000;
+
+    // 해당 단위로 나눈 몫 계산 (버림 처리)
+    const quotient = Math.floor(currentTotal / divisor);
+    const roundedTotal = quotient * divisor;
+
+    // 버려진 나머지 금액 계산
+    const remainder = currentTotal - roundedTotal;
+
+    // 기존 서비스 물품 중 "끝자리DC"로 시작하는 항목 모두 제거
+    const filteredServiceData = estimate.serviceData.filter(
+      (item) => !item.productName.startsWith('끝자리DC')
+    );
+
+    // 서비스 물품에 추가할 항목 생성
+    const newServiceItem = {
+      productName: `끝자리DC -${formatNumber(remainder)}원`,
+      quantity: '1',
+      remarks: '',
+    };
+
+    // 상태 업데이트: roundingType 설정 및 서비스 물품 추가
+    setEstimate((prev) => ({
+      ...prev,
+      paymentInfo: {
+        ...prev.paymentInfo,
+        roundingType: newType,
+      },
+      serviceData: [...filteredServiceData, newServiceItem], // 기존 DC 항목 제거 후 새 항목 추가
+    }));
+
+    // 알림 메시지 표시
+    showNotification(`${divisor}원 단위 버림 처리 완료. 끝자리 DC가 서비스 물품에 추가되었습니다.`);
   };
 
   return (
@@ -1482,7 +1563,7 @@ export default function EstimateCreatePage() {
                   <input
                     type="number"
                     name="discount"
-                    value={estimate.paymentInfo.discount}
+                    value={estimate.paymentInfo.discount === 0 ? '' : estimate.paymentInfo.discount}
                     onChange={handlePaymentInfoChange}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
@@ -1493,7 +1574,7 @@ export default function EstimateCreatePage() {
                   <input
                     type="number"
                     name="deposit"
-                    value={estimate.paymentInfo.deposit}
+                    value={estimate.paymentInfo.deposit === 0 ? '' : estimate.paymentInfo.deposit}
                     onChange={handlePaymentInfoChange}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
@@ -1501,13 +1582,26 @@ export default function EstimateCreatePage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700">버림 타입</label>
-                  <input
-                    type="text"
-                    name="roundingType"
-                    value={estimate.paymentInfo.roundingType}
-                    onChange={handlePaymentInfoChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {[
+                      { value: '100down', label: '백단위 버림' },
+                      { value: '1000down', label: '천단위 버림' },
+                      { value: '10000down', label: '만단위 버림' },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => handleRoundingTypeClick(option.value)}
+                        className={`px-4 py-2 rounded-md text-sm ${
+                          estimate.paymentInfo.roundingType === option.value
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-200 text-gray-700'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">결제 방법</label>
