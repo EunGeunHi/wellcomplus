@@ -6,7 +6,6 @@ import { KingOnlySection } from '@/app/components/ProtectedContent';
 import KingFallback from '@/app/components/kingFallback';
 import { formatNumber } from '@/utils/numberUtils';
 import { formatPhoneNumberString } from '@/utils/phoneFormatter';
-import Link from 'next/link';
 
 export default function EstimateCreatePage() {
   const router = useRouter();
@@ -271,6 +270,8 @@ export default function EstimateCreatePage() {
           [name]: processedValue,
           // 체크 해제시 '현금', 체크시 '카드'로 설정
           paymentMethod: processedValue ? '카드' : '현금',
+          // 체크 해제시 vatRate를 0으로, 체크시 10으로 설정
+          vatRate: processedValue ? 10 : 0,
         },
       });
 
@@ -736,11 +737,35 @@ export default function EstimateCreatePage() {
       // 이미 선택된 방법이면 선택 해제(빈 문자열로 설정), 아니면 해당 방법으로 설정
       const newMethod = estimate.paymentInfo.paymentMethod === method ? '' : method;
 
+      // VAT 포함 자동 설정: '현금'이면 해제, '카드'/'카드결제 DC'면 체크
+      let includeVat = estimate.paymentInfo.includeVat; // 기본값은 현재 설정 유지
+      if (method === '현금') {
+        // 현금 선택 시 VAT 포함 해제
+        includeVat = false;
+      } else if (method === '카드' || method === '카드결제 DC') {
+        // 카드 관련 선택 시 VAT 포함 체크
+        includeVat = true;
+      }
+
+      // VAT 포함 설정에 따라 VAT 비율 설정
+      let vatRate = 0;
+      if (includeVat) {
+        if (method === '카드결제 DC') {
+          vatRate = 5; // 카드결제 DC는 5% VAT
+        } else if (method === '카드') {
+          vatRate = 10; // 일반 카드는 10% VAT
+        } else {
+          vatRate = estimate.paymentInfo.vatRate; // 기타 방법은 기존 설정 유지
+        }
+      }
+
       setEstimate({
         ...estimate,
         paymentInfo: {
           ...estimate.paymentInfo,
           paymentMethod: newMethod,
+          includeVat: includeVat,
+          vatRate: vatRate,
         },
       });
 
@@ -1890,13 +1915,19 @@ export default function EstimateCreatePage() {
                       <span className="text-sm font-medium text-gray-700">VAT 포함</span>
                     </label>
                   </div>
-                  <div>
+                  <div
+                    style={{
+                      visibility: estimate.paymentInfo.includeVat ? 'visible' : 'hidden',
+                      height: estimate.paymentInfo.includeVat ? 'auto' : '38px',
+                    }}
+                  >
                     <label className="block text-sm font-medium text-gray-700">VAT 비율 (%)</label>
                     <input
                       type="number"
                       name="vatRate"
-                      value={estimate.paymentInfo.vatRate}
+                      value={estimate.paymentInfo.vatRate === 0 ? '' : estimate.paymentInfo.vatRate}
                       onChange={handlePaymentInfoChange}
+                      disabled={!estimate.paymentInfo.includeVat}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
