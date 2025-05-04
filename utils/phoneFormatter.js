@@ -30,6 +30,37 @@ export const formatPhoneNumber = (value) => {
 };
 
 /**
+ * 숫자와 문자 모두 허용하는 전화번호 포맷팅 함수
+ * 첫 3자리 다음 하이픈(-), 그 다음 4자리 후 하이픈(-)을 자동 추가
+ * 글자수 제한 없이 입력 가능
+ *
+ * @param {string} value - 사용자가 입력한 문자열
+ * @returns {string} - 하이픈이 추가된 포맷된 문자열
+ */
+export const formatPhoneNumberString = (value) => {
+  // 기존 하이픈 제거
+  const cleanValue = value.replace(/-/g, '');
+
+  // 입력된 값이 없으면 빈 문자열 반환
+  if (cleanValue.length === 0) {
+    return '';
+  }
+
+  // 첫 3자리
+  if (cleanValue.length <= 3) {
+    return cleanValue;
+  }
+
+  // 중간 부분 (4~7자리)
+  if (cleanValue.length <= 7) {
+    return `${cleanValue.slice(0, 3)}-${cleanValue.slice(3)}`;
+  }
+
+  // 7자리 초과 (3-4-나머지)
+  return `${cleanValue.slice(0, 3)}-${cleanValue.slice(3, 7)}-${cleanValue.slice(7)}`;
+};
+
+/**
  * 전화번호 유효성 검사 함수
  *
  * @param {string} phoneNumber - 검사할 전화번호 (하이픈 포함 또는 미포함)

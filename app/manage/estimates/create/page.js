@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { KingOnlySection } from '@/app/components/ProtectedContent';
 import KingFallback from '@/app/components/kingFallback';
 import { formatNumber } from '@/utils/numberUtils';
+import { formatPhoneNumberString } from '@/utils/phoneFormatter';
 import Link from 'next/link';
 
 export default function EstimateCreatePage() {
@@ -12,6 +13,8 @@ export default function EstimateCreatePage() {
   const [submitting, setSubmitting] = useState(false);
   const [notification, setNotification] = useState({ message: '', show: false, fadeOut: false });
   const [focusedInput, setFocusedInput] = useState(null);
+  // notes 메모 상태 관리
+  const [showNotesModal, setShowNotesModal] = useState(false);
 
   // 견적 유형 옵션
   const estimateTypeOptions = ['예전데이터', '컴퓨터견적', '프린터견적', '노트북견적', 'AS관련'];
@@ -59,7 +62,8 @@ export default function EstimateCreatePage() {
       finalPayment: 0,
     },
     isContractor: false,
-    estimateDescription: '',
+    estimateDescription: '', // 견적설명(견적서 보임)
+    notes: '', // 참고사항(견적서 안보임)
   });
 
   // 직접 입력 UI 상태 관리를 위한 별도의 상태
@@ -71,6 +75,19 @@ export default function EstimateCreatePage() {
     setupCost: false,
     warrantyFee: false,
   });
+
+  // 메모 변경 핸들러
+  const handleNotesChange = (e) => {
+    setEstimate({
+      ...estimate,
+      notes: e.target.value,
+    });
+  };
+
+  // 메모 모달 토글
+  const toggleNotesModal = () => {
+    setShowNotesModal(!showNotesModal);
+  };
 
   // 계산 로직을 수행하는 순수 함수 - 별도로 분리하여 재사용 가능
   const calculateEstimateValues = (estimateData) => {
@@ -156,13 +173,25 @@ export default function EstimateCreatePage() {
   // 고객 정보 변경 핸들러
   const handleCustomerInfoChange = (e) => {
     const { name, value } = e.target;
-    setEstimate({
-      ...estimate,
-      customerInfo: {
-        ...estimate.customerInfo,
-        [name]: value,
-      },
-    });
+
+    // 전화번호 필드인 경우 포맷팅 적용
+    if (name === 'phone') {
+      setEstimate({
+        ...estimate,
+        customerInfo: {
+          ...estimate.customerInfo,
+          [name]: formatPhoneNumberString(value),
+        },
+      });
+    } else {
+      setEstimate({
+        ...estimate,
+        customerInfo: {
+          ...estimate.customerInfo,
+          [name]: value,
+        },
+      });
+    }
   };
 
   // 결제 정보 변경 핸들러
@@ -1873,6 +1902,74 @@ export default function EstimateCreatePage() {
             취소
           </button>
         </div>
+
+        {/* 메모 아이콘 버튼 (고정 위치) */}
+        <button
+          type="button"
+          onClick={toggleNotesModal}
+          className="fixed bottom-6 right-6 bg-blue-500 hover:bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg z-50"
+          title="견적서에 보이지 않는 메모 작성"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+            />
+          </svg>
+        </button>
+
+        {/* 메모 팝오버 */}
+        {showNotesModal && (
+          <div className="fixed bottom-10 right-20 bg-white rounded-lg p-4 w-80 shadow-xl z-50 border border-gray-200">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-sm font-semibold">관리자용 메모</h3>
+              <button
+                type="button"
+                onClick={toggleNotesModal}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <textarea
+              value={estimate.notes}
+              onChange={handleNotesChange}
+              rows={6}
+              className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              placeholder="견적서에 표시되지 않는 메모를 작성하세요."
+            ></textarea>
+            <div className="mt-3 flex justify-end">
+              <button
+                type="button"
+                onClick={toggleNotesModal}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
+              >
+                저장
+              </button>
+            </div>
+          </div>
+        )}
       </form>
     </KingOnlySection>
   );
