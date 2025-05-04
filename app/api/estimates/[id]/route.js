@@ -45,8 +45,13 @@ export const PUT = withKingAuthAPI(async (request, { params, session }) => {
     // 요청 본문 파싱
     const updatedData = await request.json();
 
-    // 수정일 업데이트
+    // 수정일 업데이트 - Date 객체로 저장
     updatedData.updatedAt = new Date();
+
+    // createdAt 필드가 문자열이면 Date 객체로 변환
+    if (updatedData.createdAt && typeof updatedData.createdAt === 'string') {
+      updatedData.createdAt = new Date(updatedData.createdAt);
+    }
 
     // ID 필드 제거 (MongoDB가 자동으로 처리)
     if (updatedData._id) {

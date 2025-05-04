@@ -100,6 +100,7 @@ export default function EstimateSearchContent() {
         searchType: searchTypeValue,
         page: page.toString(),
         limit: pagination.limit.toString(),
+        sort: 'createdAt_desc',
       });
 
       // 견적 타입이 선택된 경우에만 쿼리에 추가

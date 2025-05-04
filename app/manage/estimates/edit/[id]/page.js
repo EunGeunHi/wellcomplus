@@ -1271,10 +1271,27 @@ export default function EstimateEditPage() {
               <textarea
                 value={estimate.estimateDescription || ''}
                 onChange={handleDescriptionChange}
-                rows={4}
+                rows={3}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               ></textarea>
             </div>
+
+            {/* customerInfo에 content 내용이 있으면 textarea에 보여주고 내용 수정 가능하게 하기기 */}
+            {estimate.customerInfo?.content && (
+              <div className="mt-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  내용 (예전 데이터)
+                </label>
+                <textarea
+                  name="content"
+                  value={estimate.customerInfo?.content || ''}
+                  onChange={handleCustomerInfoChange}
+                  rows={40}
+                  placeholder="고객 요구사항, 특이사항 등을 입력하세요"
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                ></textarea>
+              </div>
+            )}
           </div>
 
           {/* 상품 정보 */}
