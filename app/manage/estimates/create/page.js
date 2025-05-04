@@ -404,6 +404,25 @@ export default function EstimateCreatePage() {
     });
   };
 
+  // 전체 상품 삭제 핸들러 추가
+  const handleRemoveAllProducts = () => {
+    if (confirm('모든 상품을 삭제하시겠습니까?')) {
+      setEstimate({
+        ...estimate,
+        tableData: [],
+      });
+      showNotification('모든 상품이 삭제되었습니다.');
+    }
+  };
+
+  // 외부 PC 견적 사이트로 이동
+  const navigateToPcEstimateSite = () => {
+    window.open(
+      'https://shop.danawa.com/virtualestimate/?controller=estimateMain&methods=index&marketPlaceSeq=16&logger_kw=dnw_gnb_esti',
+      '_blank'
+    );
+  };
+
   // 서비스 상품 정보 변경 핸들러
   const handleServiceDataChange = (index, field, value) => {
     const updatedServiceData = [...estimate.serviceData];
@@ -588,10 +607,6 @@ export default function EstimateCreatePage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!confirm('새 견적을 생성하시겠습니까?')) {
-      return;
-    }
-
     try {
       setSubmitting(true);
 
@@ -634,13 +649,6 @@ export default function EstimateCreatePage() {
       alert(`생성 실패: ${err.message}`);
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  // 취소 버튼
-  const handleCancel = () => {
-    if (confirm('견적 생성을 취소하시겠습니까? 모든 입력 내용이 사라집니다.')) {
-      router.back();
     }
   };
 
@@ -760,39 +768,1288 @@ export default function EstimateCreatePage() {
 
   return (
     <KingOnlySection fallback={<KingFallback />}>
-      <form onSubmit={handleSubmit} className="max-w-6xl mx-auto px-4 py-6">
-        {/* 알림 메시지 표시 영역 - 상단 가운데 위치로 변경 */}
-        {notification.show && (
-          <div
-            className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg ${
-              notification.fadeOut ? 'opacity-0' : 'opacity-100'
-            } transition-opacity duration-500`}
-          >
-            {notification.message}
-          </div>
-        )}
+      <div className="bg-gray-50 min-h-screen w-full font-['NanumGothic']">
+        <form onSubmit={handleSubmit} className="max-w-6xl mx-auto px-4 py-6">
+          {/* 알림 메시지 표시 영역 - 상단 가운데 위치로 변경 */}
+          {notification.show && (
+            <div
+              className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg ${
+                notification.fadeOut ? 'opacity-0' : 'opacity-100'
+              } transition-opacity duration-500`}
+            >
+              {notification.message}
+            </div>
+          )}
 
-        <div className="flex flex-wrap justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">새 견적 생성</h1>
-            <div className="mt-2">
-              <label className="block text-sm font-medium text-gray-700">견적 유형</label>
-              <select
-                value={estimate.estimateType}
-                onChange={handleEstimateTypeChange}
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+          <div className="flex flex-wrap justify-between items-center mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">새 견적 생성</h1>
+              <div className="flex mt-1 items-center">
+                <label className="block text-sm font-medium text-gray-700 w-[65px] mr-0">
+                  견적 유형
+                </label>
+                <select
+                  value={estimate.estimateType}
+                  onChange={handleEstimateTypeChange}
+                  className="border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                >
+                  <option value="">선택하세요</option>
+                  {estimateTypeOptions.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2 mt-4 md:mt-0">
+              <label className="flex items-center space-x-2 mr-4 bg-blue-50 px-3 py-2 rounded-lg border border-blue-100">
+                <input
+                  type="checkbox"
+                  checked={estimate.isContractor}
+                  onChange={handleContractorChange}
+                  className="h-4 w-4 text-blue-600 rounded"
+                />
+                <span className="text-sm font-medium text-gray-700">계약자</span>
+              </label>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm transition-colors duration-200 font-medium"
               >
-                <option value="">선택하세요</option>
-                {estimateTypeOptions.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
+                {submitting ? '저장 중...' : '저장하기'}
+              </button>
             </div>
           </div>
-          <div className="flex items-center space-x-2 mt-2 md:mt-0">
-            <label className="flex items-center space-x-2 mr-4">
+
+          {/* 고객 정보 */}
+          <div className="bg-white p-4 rounded-lg shadow mb-2">
+            <h2 className="text-xl font-semibold mb-2 pb-1 border-b">고객 정보</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">이름</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={estimate.customerInfo.name}
+                  onChange={handleCustomerInfoChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">연락처</label>
+                <input
+                  type="text"
+                  name="phone"
+                  value={estimate.customerInfo.phone}
+                  onChange={handleCustomerInfoChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">PC번호</label>
+                <input
+                  type="text"
+                  name="pcNumber"
+                  value={estimate.customerInfo.pcNumber}
+                  onChange={handleCustomerInfoChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+            </div>
+
+            {/* 계약구분 */}
+            <div className="mt-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">계약구분</label>
+              <div className="flex flex-wrap gap-2 items-center">
+                {['일반의뢰', '직접입력'].map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => {
+                      setEstimate({
+                        ...estimate,
+                        customerInfo: {
+                          ...estimate.customerInfo,
+                          contractType: option === '직접입력' ? '' : option,
+                        },
+                      });
+                    }}
+                    className={`px-4 py-2 rounded-md text-sm ${
+                      (option === '직접입력' &&
+                        estimate.customerInfo.contractType !== '일반의뢰') ||
+                      estimate.customerInfo.contractType === option
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-700'
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+                {estimate.customerInfo.contractType !== '일반의뢰' && (
+                  <input
+                    type="text"
+                    placeholder="직접 입력"
+                    value={estimate.customerInfo.contractType || ''}
+                    onChange={(e) => {
+                      setEstimate({
+                        ...estimate,
+                        customerInfo: {
+                          ...estimate.customerInfo,
+                          contractType: e.target.value,
+                        },
+                      });
+                    }}
+                    className="ml-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm"
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* 판매형태 */}
+            <div className="mt-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">판매형태</label>
+              <div className="flex flex-wrap gap-2 items-center">
+                {['부품 조립형', '본인설치', '해당없음', '직접입력'].map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => {
+                      setEstimate({
+                        ...estimate,
+                        customerInfo: {
+                          ...estimate.customerInfo,
+                          saleType: option === '직접입력' ? '' : option,
+                        },
+                      });
+                    }}
+                    className={`px-4 py-2 rounded-md text-sm ${
+                      (option === '직접입력' &&
+                        !['부품 조립형', '본인설치', '해당없음'].includes(
+                          estimate.customerInfo.saleType
+                        )) ||
+                      estimate.customerInfo.saleType === option
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-700'
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+                {!['부품 조립형', '본인설치', '해당없음'].includes(
+                  estimate.customerInfo.saleType
+                ) && (
+                  <input
+                    type="text"
+                    placeholder="직접 입력"
+                    value={estimate.customerInfo.saleType || ''}
+                    onChange={(e) => {
+                      setEstimate({
+                        ...estimate,
+                        customerInfo: {
+                          ...estimate.customerInfo,
+                          saleType: e.target.value,
+                        },
+                      });
+                    }}
+                    className="ml-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm"
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* 구입형태 */}
+            <div className="mt-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">구입형태</label>
+              <div className="flex flex-wrap gap-2 items-center">
+                {['지인', '기존회원', '해당없음', '직접입력'].map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => {
+                      setEstimate({
+                        ...estimate,
+                        customerInfo: {
+                          ...estimate.customerInfo,
+                          purchaseType: option === '직접입력' ? '' : option,
+                        },
+                      });
+                    }}
+                    className={`px-4 py-2 rounded-md text-sm ${
+                      (option === '직접입력' &&
+                        !['지인', '기존회원', '해당없음'].includes(
+                          estimate.customerInfo.purchaseType
+                        )) ||
+                      estimate.customerInfo.purchaseType === option
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-700'
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+                {!['지인', '기존회원', '해당없음'].includes(estimate.customerInfo.purchaseType) && (
+                  <input
+                    type="text"
+                    placeholder="직접 입력"
+                    value={estimate.customerInfo.purchaseType || ''}
+                    onChange={(e) => {
+                      setEstimate({
+                        ...estimate,
+                        customerInfo: {
+                          ...estimate.customerInfo,
+                          purchaseType: e.target.value,
+                        },
+                      });
+                    }}
+                    className="ml-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm"
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* 지인 이름 - 구입형태가 지인일 때만 표시 */}
+            {estimate.customerInfo.purchaseType === '지인' && (
+              <div className="mt-2">
+                <label className="block text-sm font-medium text-gray-700">지인 이름</label>
+                <input
+                  type="text"
+                  name="purchaseTypeName"
+                  value={estimate.customerInfo.purchaseTypeName}
+                  onChange={handleCustomerInfoChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+            )}
+
+            {/* 용도 */}
+            <div className="mt-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">용도</label>
+              <div className="flex flex-wrap gap-2 items-center">
+                {['게임', '문서작업', '영상/이미지편집', '직접입력'].map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => {
+                      setEstimate({
+                        ...estimate,
+                        customerInfo: {
+                          ...estimate.customerInfo,
+                          purpose: option === '직접입력' ? '' : option,
+                        },
+                      });
+                    }}
+                    className={`px-4 py-2 rounded-md text-sm ${
+                      (option === '직접입력' &&
+                        !['게임', '문서작업', '영상/이미지편집'].includes(
+                          estimate.customerInfo.purpose
+                        )) ||
+                      estimate.customerInfo.purpose === option
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-700'
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+                {!['게임', '문서작업', '영상/이미지편집'].includes(
+                  estimate.customerInfo.purpose
+                ) && (
+                  <input
+                    type="text"
+                    placeholder="직접 입력"
+                    value={estimate.customerInfo.purpose || ''}
+                    onChange={(e) => {
+                      setEstimate({
+                        ...estimate,
+                        customerInfo: {
+                          ...estimate.customerInfo,
+                          purpose: e.target.value,
+                        },
+                      });
+                    }}
+                    className="ml-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm"
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* AS조건 */}
+            <div className="mt-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">AS조건</label>
+              <div className="flex flex-wrap gap-2 items-center">
+                {['본인방문조건', '직접입력'].map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => {
+                      setEstimate({
+                        ...estimate,
+                        customerInfo: {
+                          ...estimate.customerInfo,
+                          asCondition: option === '직접입력' ? '' : option,
+                        },
+                      });
+                    }}
+                    className={`px-4 py-2 rounded-md text-sm ${
+                      (option === '직접입력' &&
+                        !['본인방문조건'].includes(estimate.customerInfo.asCondition)) ||
+                      estimate.customerInfo.asCondition === option
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-700'
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+                {!['본인방문조건'].includes(estimate.customerInfo.asCondition) && (
+                  <input
+                    type="text"
+                    placeholder="직접 입력"
+                    value={estimate.customerInfo.asCondition || ''}
+                    onChange={(e) => {
+                      setEstimate({
+                        ...estimate,
+                        customerInfo: {
+                          ...estimate.customerInfo,
+                          asCondition: e.target.value,
+                        },
+                      });
+                    }}
+                    className="ml-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm"
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* 운영체계 */}
+            <div className="mt-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">운영체계</label>
+              <div className="flex flex-wrap gap-2 items-center">
+                {['win10', 'win11', '직접입력'].map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => {
+                      setEstimate({
+                        ...estimate,
+                        customerInfo: {
+                          ...estimate.customerInfo,
+                          os: option === '직접입력' ? '' : option,
+                        },
+                      });
+                    }}
+                    className={`px-4 py-2 rounded-md text-sm ${
+                      (option === '직접입력' &&
+                        !['win10', 'win11'].includes(estimate.customerInfo.os)) ||
+                      estimate.customerInfo.os === option
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-700'
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+                {!['win10', 'win11'].includes(estimate.customerInfo.os) && (
+                  <input
+                    type="text"
+                    placeholder="직접 입력"
+                    value={estimate.customerInfo.os || ''}
+                    onChange={(e) => {
+                      setEstimate({
+                        ...estimate,
+                        customerInfo: {
+                          ...estimate.customerInfo,
+                          os: e.target.value,
+                        },
+                      });
+                    }}
+                    className="ml-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm"
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* 견적담당 */}
+            <div className="mt-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">견적담당</label>
+              <div className="flex flex-wrap gap-2">
+                {['김선식', '소성욱'].map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => {
+                      setEstimate({
+                        ...estimate,
+                        customerInfo: {
+                          ...estimate.customerInfo,
+                          manager: option,
+                        },
+                      });
+                    }}
+                    className={`px-4 py-2 rounded-md text-sm ${
+                      estimate.customerInfo.manager === option
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-700'
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-2">
+              <label className="block text-sm font-medium text-gray-700">
+                견적 설명 및 참고사항(견적서에 내용추가 가능)
+              </label>
+              <textarea
+                value={estimate.estimateDescription}
+                onChange={handleDescriptionChange}
+                rows={4}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              ></textarea>
+            </div>
+          </div>
+
+          {/* 상품 정보 */}
+          <div className="bg-white p-4 rounded-lg shadow mt-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold pb-2">상품 정보</h2>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleRemoveAllProducts}
+                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                >
+                  전체 삭제
+                </button>
+                <button
+                  type="button"
+                  onClick={navigateToPcEstimateSite}
+                  className="bg-[#EB6D53] mr-5 hover:bg-[#E33E38] text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                >
+                  다나와 사이트
+                </button>
+                <textarea
+                  id="bulkProductInput"
+                  rows="1"
+                  placeholder="일괄 입력 형식으로 입력해주세요.(다나와, 견적왕)"
+                  className="w-[400px] border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                ></textarea>
+                <button
+                  type="button"
+                  onClick={handleBulkProductInput}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm whitespace-nowrap"
+                >
+                  일괄 입력하기
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAddProduct}
+                  className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm whitespace-nowrap"
+                >
+                  + 상품 추가
+                </button>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center w-[40px]">
+                      작업
+                    </th>
+                    <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center w-[100px]">
+                      분류
+                    </th>
+                    <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center w-[200px]">
+                      상품명
+                    </th>
+                    <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center w-[50px]">
+                      수량
+                    </th>
+                    <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center w-[110px]">
+                      현금가
+                    </th>
+                    <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
+                      상품코드
+                    </th>
+                    <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
+                      총판
+                    </th>
+                    <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
+                      재조사
+                    </th>
+                    <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
+                      비고
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {estimate.tableData.map((item, index) => (
+                    <tr key={index}>
+                      <td className="px-1 py-1 text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveProduct(index)}
+                          className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors"
+                          title="삭제"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                        </button>
+                      </td>
+                      <td className="px-1 py-1">
+                        <input
+                          type="text"
+                          value={item.category || ''}
+                          onChange={(e) => handleTableDataChange(index, 'category', e.target.value)}
+                          onFocus={() => handleFocus(index, 'category')}
+                          onBlur={handleBlur}
+                          className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
+                            focusedInput === `${index}-category` ? 'w-[150px]' : 'w-full'
+                          }`}
+                        />
+                      </td>
+                      <td className="px-1 py-1">
+                        <input
+                          type="text"
+                          value={item.productName || ''}
+                          onChange={(e) =>
+                            handleTableDataChange(index, 'productName', e.target.value)
+                          }
+                          onFocus={() => handleFocus(index, 'productName')}
+                          onBlur={handleBlur}
+                          className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
+                            focusedInput === `${index}-productName` ? 'w-[500px]' : 'w-full'
+                          }`}
+                        />
+                      </td>
+                      <td className="px-1 py-1">
+                        <input
+                          type="text"
+                          value={item.quantity || ''}
+                          onChange={(e) => handleTableDataChange(index, 'quantity', e.target.value)}
+                          onFocus={() => handleFocus(index, 'quantity')}
+                          onBlur={handleBlur}
+                          className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
+                            focusedInput === `${index}-quantity` ? 'w-[65px]' : 'w-full'
+                          }`}
+                        />
+                      </td>
+                      <td className="px-1 py-1">
+                        <input
+                          type="text"
+                          value={item.price || ''}
+                          onChange={(e) => handleTableDataChange(index, 'price', e.target.value)}
+                          onFocus={() => handleFocus(index, 'price')}
+                          onBlur={handleBlur}
+                          className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
+                            focusedInput === `${index}-price` ? 'w-[150px]' : 'w-full'
+                          }`}
+                        />
+                      </td>
+                      <td className="px-1 py-1">
+                        <input
+                          type="text"
+                          value={item.productCode || ''}
+                          onChange={(e) =>
+                            handleTableDataChange(index, 'productCode', e.target.value)
+                          }
+                          onFocus={() => handleFocus(index, 'productCode')}
+                          onBlur={handleBlur}
+                          className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
+                            focusedInput === `${index}-productCode` ? 'w-[350px]' : 'w-full'
+                          }`}
+                        />
+                      </td>
+                      <td className="px-1 py-1">
+                        <input
+                          type="text"
+                          value={item.distributor || ''}
+                          onChange={(e) =>
+                            handleTableDataChange(index, 'distributor', e.target.value)
+                          }
+                          onFocus={() => handleFocus(index, 'distributor')}
+                          onBlur={handleBlur}
+                          className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
+                            focusedInput === `${index}-distributor` ? 'w-[250px]' : 'w-full'
+                          }`}
+                        />
+                      </td>
+                      <td className="px-1 py-1">
+                        <input
+                          type="text"
+                          value={item.reconfirm || ''}
+                          onChange={(e) =>
+                            handleTableDataChange(index, 'reconfirm', e.target.value)
+                          }
+                          onFocus={() => handleFocus(index, 'reconfirm')}
+                          onBlur={handleBlur}
+                          className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
+                            focusedInput === `${index}-reconfirm` ? 'w-[250px]' : 'w-full'
+                          }`}
+                        />
+                      </td>
+                      <td className="px-1 py-1">
+                        <textarea
+                          value={item.remarks || ''}
+                          onChange={(e) => handleTableDataChange(index, 'remarks', e.target.value)}
+                          onFocus={() => handleFocus(index, 'remarks')}
+                          onBlur={handleBlur}
+                          rows="1"
+                          className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-200 ${
+                            focusedInput === `${index}-remarks`
+                              ? 'w-[250px] h-[60px]'
+                              : 'w-full h-[30px] overflow-hidden'
+                          }`}
+                        ></textarea>
+                      </td>
+                    </tr>
+                  ))}
+                  {estimate.tableData.length === 0 && (
+                    <tr>
+                      <td colSpan="9" className="px-3 py-4 text-center text-gray-500">
+                        등록된 상품이 없습니다. [상품 추가] 버튼을 클릭하여 상품을 추가하세요.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* 서비스 물품 정보 */}
+          <div className="bg-white p-4 rounded-lg shadow mt-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold pb-2">서비스 물품 정보</h2>
+              <button
+                type="button"
+                onClick={handleAddServiceItem}
+                className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
+              >
+                + 서비스 상품 추가
+              </button>
+            </div>
+
+            <div className="flex gap-4">
+              <div className="w-60">
+                <h3 className="text-sm font-medium text-gray-700 mb-2">자주 사용 상품</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickAddServiceItem('마우스')}
+                    className="bg-blue-100 hover:bg-blue-200 text-blue-800 py-1 px-2 rounded text-sm w-full text-center"
+                  >
+                    마우스
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickAddServiceItem('마우스패드')}
+                    className="bg-blue-100 hover:bg-blue-200 text-blue-800 py-1 px-2 rounded text-sm w-full text-center"
+                  >
+                    마우스패드
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickAddServiceItem('키보드')}
+                    className="bg-blue-100 hover:bg-blue-200 text-blue-800 py-1 px-2 rounded text-sm w-full text-center"
+                  >
+                    키보드
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickAddServiceItem('스피커')}
+                    className="bg-blue-100 hover:bg-blue-200 text-blue-800 py-1 px-2 rounded text-sm w-full text-center"
+                  >
+                    스피커
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickAddServiceItem('케이블')}
+                    className="bg-blue-100 hover:bg-blue-200 text-blue-800 py-1 px-2 rounded text-sm w-full text-center"
+                  >
+                    케이블
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex-1">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
+                          작업
+                        </th>
+                        <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
+                          상품명
+                        </th>
+                        <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center w-[45px]">
+                          수량
+                        </th>
+                        <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
+                          비고
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {estimate.serviceData.map((item, index) => (
+                        <tr key={index}>
+                          <td className="px-1 py-1 text-center">
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveServiceItem(index)}
+                              className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors"
+                              title="삭제"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                />
+                              </svg>
+                            </button>
+                          </td>
+                          <td className="px-1 py-1">
+                            <input
+                              type="text"
+                              value={item.productName || ''}
+                              onChange={(e) =>
+                                handleServiceDataChange(index, 'productName', e.target.value)
+                              }
+                              className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm"
+                            />
+                          </td>
+                          <td className="px-1 py-1">
+                            <input
+                              type="text"
+                              value={item.quantity || ''}
+                              onChange={(e) =>
+                                handleServiceDataChange(index, 'quantity', e.target.value)
+                              }
+                              className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm"
+                            />
+                          </td>
+                          <td className="px-1 py-1">
+                            <textarea
+                              value={item.remarks || ''}
+                              onChange={(e) =>
+                                handleServiceDataChange(index, 'remarks', e.target.value)
+                              }
+                              rows="1"
+                              className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm h-[30px]"
+                            ></textarea>
+                          </td>
+                        </tr>
+                      ))}
+                      {estimate.serviceData.length === 0 && (
+                        <tr>
+                          <td colSpan="4" className="px-3 py-4 text-center text-gray-500">
+                            등록된 서비스 상품이 없습니다. [서비스 상품 추가] 버튼을 클릭하여 서비스
+                            상품을 추가하세요.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 결제 정보 */}
+          <div className="bg-white p-4 rounded-lg shadow mt-6">
+            <h2 className="text-xl font-semibold mb-4 pb-2 border-b">결제 정보</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* 결제 세부 정보 */}
+              <div className="col-span-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* 공임비 */}
+                  <div className="border-b">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">공임비</label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {[10000, 20000, 30000, 40000, 50000].map((amount) => (
+                        <button
+                          key={`laborCost-${amount}`}
+                          type="button"
+                          onClick={() => handlePaymentButtonClick('laborCost', amount)}
+                          className={`px-3 py-1 rounded-md text-xs ${
+                            estimate.paymentInfo.laborCost === amount
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-gray-200 text-gray-700'
+                          }`}
+                        >
+                          {amount / 10000}만원
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => handleDirectInputClick('laborCost')}
+                        className={`px-3 py-1 rounded-md text-xs ${
+                          directInputFields.laborCost
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-200 text-gray-700'
+                        }`}
+                      >
+                        직접입력
+                      </button>
+                    </div>
+                    {directInputFields.laborCost ? (
+                      <input
+                        type="text"
+                        name="laborCost"
+                        value={
+                          estimate.paymentInfo.laborCost === 0
+                            ? ''
+                            : formatNumber(estimate.paymentInfo.laborCost)
+                        }
+                        onChange={handlePaymentInfoChange}
+                        className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                    ) : (
+                      <div className="block w-full py-2 px-0">
+                        <span className="text-gray-700">
+                          {formatNumber(estimate.paymentInfo.laborCost || 0)}원
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 튜닝금액 */}
+                  <div className="border-b">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">튜닝금액</label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {[10000, 20000, 30000, 40000, 50000].map((amount) => (
+                        <button
+                          key={`tuningCost-${amount}`}
+                          type="button"
+                          onClick={() => handlePaymentButtonClick('tuningCost', amount)}
+                          className={`px-3 py-1 rounded-md text-xs ${
+                            estimate.paymentInfo.tuningCost === amount
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-gray-200 text-gray-700'
+                          }`}
+                        >
+                          {amount / 10000}만원
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => handleDirectInputClick('tuningCost')}
+                        className={`px-3 py-1 rounded-md text-xs ${
+                          directInputFields.tuningCost
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-200 text-gray-700'
+                        }`}
+                      >
+                        직접입력
+                      </button>
+                    </div>
+                    {directInputFields.tuningCost ? (
+                      <input
+                        type="text"
+                        name="tuningCost"
+                        value={
+                          estimate.paymentInfo.tuningCost === 0
+                            ? ''
+                            : formatNumber(estimate.paymentInfo.tuningCost)
+                        }
+                        onChange={handlePaymentInfoChange}
+                        className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                    ) : (
+                      <div className="block w-full py-2 px-0">
+                        <span className="text-gray-700">
+                          {formatNumber(estimate.paymentInfo.tuningCost || 0)}원
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 세팅비 */}
+                  <div className="border-b">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">세팅비</label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {[10000, 20000, 30000, 40000, 50000].map((amount) => (
+                        <button
+                          key={`setupCost-${amount}`}
+                          type="button"
+                          onClick={() => handlePaymentButtonClick('setupCost', amount)}
+                          className={`px-3 py-1 rounded-md text-xs ${
+                            estimate.paymentInfo.setupCost === amount
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-gray-200 text-gray-700'
+                          }`}
+                        >
+                          {amount / 10000}만원
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => handleDirectInputClick('setupCost')}
+                        className={`px-3 py-1 rounded-md text-xs ${
+                          directInputFields.setupCost
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-200 text-gray-700'
+                        }`}
+                      >
+                        직접입력
+                      </button>
+                    </div>
+                    {directInputFields.setupCost ? (
+                      <input
+                        type="text"
+                        name="setupCost"
+                        value={
+                          estimate.paymentInfo.setupCost === 0
+                            ? ''
+                            : formatNumber(estimate.paymentInfo.setupCost)
+                        }
+                        onChange={handlePaymentInfoChange}
+                        className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                    ) : (
+                      <div className="block w-full py-2 px-0">
+                        <span className="text-gray-700">
+                          {formatNumber(estimate.paymentInfo.setupCost || 0)}원
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 보증관리비 */}
+                  <div className="border-b">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      보증관리비
+                    </label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {[10000, 20000, 30000, 40000, 50000].map((amount) => (
+                        <button
+                          key={`warrantyFee-${amount}`}
+                          type="button"
+                          onClick={() => handlePaymentButtonClick('warrantyFee', amount)}
+                          className={`px-3 py-1 rounded-md text-xs ${
+                            estimate.paymentInfo.warrantyFee === amount
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-gray-200 text-gray-700'
+                          }`}
+                        >
+                          {amount / 10000}만원
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => handleDirectInputClick('warrantyFee')}
+                        className={`px-3 py-1 rounded-md text-xs ${
+                          directInputFields.warrantyFee
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-200 text-gray-700'
+                        }`}
+                      >
+                        직접입력
+                      </button>
+                    </div>
+                    {directInputFields.warrantyFee ? (
+                      <input
+                        type="text"
+                        name="warrantyFee"
+                        value={
+                          estimate.paymentInfo.warrantyFee === 0
+                            ? ''
+                            : formatNumber(estimate.paymentInfo.warrantyFee)
+                        }
+                        onChange={handlePaymentInfoChange}
+                        className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                    ) : (
+                      <div className="block w-full py-2 px-0">
+                        <span className="text-gray-700">
+                          {formatNumber(estimate.paymentInfo.warrantyFee || 0)}원
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">할인</label>
+                    <input
+                      type="text"
+                      name="discount"
+                      value={
+                        estimate.paymentInfo.discount === 0
+                          ? ''
+                          : formatNumber(estimate.paymentInfo.discount)
+                      }
+                      onChange={handlePaymentInfoChange}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">계약금</label>
+                    <input
+                      type="text"
+                      name="deposit"
+                      value={
+                        estimate.paymentInfo.deposit === 0
+                          ? ''
+                          : formatNumber(estimate.paymentInfo.deposit)
+                      }
+                      onChange={handlePaymentInfoChange}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">버림 타입</label>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {[
+                        { value: '100down', label: '백단위 버림' },
+                        { value: '1000down', label: '천단위 버림' },
+                        { value: '10000down', label: '만단위 버림' },
+                      ].map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => handleRoundingTypeClick(option.value)}
+                          className={`px-4 py-2 rounded-md text-sm ${
+                            estimate.paymentInfo.roundingType === option.value
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-gray-200 text-gray-700'
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">결제 방법</label>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {['카드', '카드결제 DC', '현금', '직접입력'].map((method) => (
+                        <button
+                          key={method}
+                          type="button"
+                          onClick={() => handlePaymentMethodClick(method)}
+                          className={`px-4 py-2 rounded-md text-sm ${
+                            (method === '직접입력' && isPaymentMethodDirectInput) ||
+                            (method !== '직접입력' && estimate.paymentInfo.paymentMethod === method)
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-gray-200 text-gray-700'
+                          }`}
+                        >
+                          {method}
+                        </button>
+                      ))}
+                    </div>
+                    {isPaymentMethodDirectInput && (
+                      <input
+                        type="text"
+                        name="paymentMethod"
+                        value={estimate.paymentInfo.paymentMethod}
+                        onChange={handlePaymentInfoChange}
+                        placeholder="결제 방법 입력"
+                        className="mt-2 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                    )}
+                  </div>
+
+                  <div className="flex items-center">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        name="includeVat"
+                        checked={estimate.paymentInfo.includeVat}
+                        onChange={handlePaymentInfoChange}
+                        className="h-4 w-4 text-blue-600 rounded"
+                      />
+                      <span className="text-sm font-medium text-gray-700">VAT 포함</span>
+                    </label>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">VAT 비율 (%)</label>
+                    <input
+                      type="number"
+                      name="vatRate"
+                      value={estimate.paymentInfo.vatRate}
+                      onChange={handlePaymentInfoChange}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      배송+설비 비용
+                    </label>
+                    <input
+                      type="text"
+                      name="shippingCost"
+                      value={
+                        estimate.paymentInfo.shippingCost === 0
+                          ? ''
+                          : formatNumber(estimate.paymentInfo.shippingCost)
+                      }
+                      onChange={handlePaymentInfoChange}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">출고일자</label>
+                    <input
+                      type="date"
+                      name="releaseDate"
+                      value={estimate.paymentInfo.releaseDate}
+                      onChange={handlePaymentInfoChange}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 금액 정보 안내 */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold mb-3 text-gray-800">금액 정보</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">상품/부품 합계:</span>
+                    <span className="font-medium">
+                      {formatNumber(estimate.calculatedValues.productTotal || 0)}원
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">총 구입 금액:</span>
+                    <span className="font-medium">
+                      {formatNumber(estimate.calculatedValues.totalPurchase || 0)}원
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-500 ml-4">
+                    {/* 값이 0이 아닌 항목들을 필터링 */}
+                    {(() => {
+                      // 먼저 유효한 항목만 필터링
+                      const items = [
+                        estimate.calculatedValues.productTotal > 0
+                          ? `상품/부품(${formatNumber(estimate.calculatedValues.productTotal)}원)`
+                          : null,
+                        estimate.paymentInfo.laborCost > 0
+                          ? `공임비(${formatNumber(estimate.paymentInfo.laborCost)}원)`
+                          : null,
+                        estimate.paymentInfo.setupCost > 0
+                          ? `세팅비(${formatNumber(estimate.paymentInfo.setupCost)}원)`
+                          : null,
+                        estimate.paymentInfo.tuningCost > 0
+                          ? `튜닝금액(${formatNumber(estimate.paymentInfo.tuningCost)}원)`
+                          : null,
+                        estimate.paymentInfo.warrantyFee > 0
+                          ? `보증관리비(${formatNumber(estimate.paymentInfo.warrantyFee)}원)`
+                          : null,
+                        estimate.paymentInfo.discount > 0
+                          ? `할인(-${formatNumber(estimate.paymentInfo.discount)}원)`
+                          : null,
+                        // 버림 타입이 활성화된 경우 버려진 금액 표시
+                        (() => {
+                          if (estimate.paymentInfo.roundingType) {
+                            // 현재 총 구입 금액 (버려지기 전 금액)
+                            const originalTotal =
+                              estimate.calculatedValues.productTotal +
+                              (estimate.paymentInfo.laborCost || 0) +
+                              (estimate.paymentInfo.tuningCost || 0) +
+                              (estimate.paymentInfo.setupCost || 0) +
+                              (estimate.paymentInfo.warrantyFee || 0) -
+                              (estimate.paymentInfo.discount || 0);
+
+                            // 버림 단위 설정
+                            let divisor = 100; // 기본값: 백단위
+                            if (estimate.paymentInfo.roundingType === '1000down') divisor = 1000;
+                            if (estimate.paymentInfo.roundingType === '10000down') divisor = 10000;
+
+                            // 버려진 금액 계산
+                            const quotient = Math.floor(originalTotal / divisor);
+                            const roundedTotal = quotient * divisor;
+                            const remainder = originalTotal - roundedTotal;
+
+                            // 버려진 금액이 있는 경우만 표시
+                            if (remainder > 0) {
+                              return `끝자리 버림(-${formatNumber(remainder)}원)`;
+                            }
+                          }
+                          return null;
+                        })(),
+                      ].filter(Boolean);
+
+                      // 요소가 없으면 빈 배열 반환
+                      if (items.length === 0) return null;
+
+                      // 결과를 담을 JSX 요소 배열
+                      const result = [];
+
+                      // 항목들을 순회하면서 2개씩 처리
+                      for (let i = 0; i < items.length; i++) {
+                        const isLastItemInRow = i % 2 === 1 || i === items.length - 1;
+                        const hasNextItem = i < items.length - 1;
+
+                        // 현재 항목 추가
+                        result.push(items[i]);
+
+                        // "+ " 추가 (다음 항목이 있고 현재 항목이 줄의 끝이 아닌 경우)
+                        if (hasNextItem && !isLastItemInRow) {
+                          result.push(' + ');
+                        }
+
+                        // 줄의 끝이고 다음 항목이 있으면 "+ " 추가하고 줄바꿈
+                        if (isLastItemInRow && hasNextItem) {
+                          result.push(' + ');
+                          result.push(<br key={`br-${i}`} />);
+                        }
+                      }
+
+                      return result;
+                    })()}
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">VAT 금액:</span>
+                    <span className="font-medium">
+                      {formatNumber(estimate.calculatedValues.vatAmount || 0)}원
+                    </span>
+                  </div>
+                  <div className="pt-2 mt-2 border-t border-gray-200 flex justify-between">
+                    <span className="text-gray-800 font-semibold">최종 결제 금액:</span>
+                    <span className="text-blue-600 font-bold text-lg">
+                      {formatNumber(estimate.calculatedValues.finalPayment || 0)}원
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-4 text-xs text-gray-500">(금액은 실시간으로 계산됩니다)</div>
+              </div>
+            </div>
+          </div>
+
+          {/* 하단 버튼 영역 */}
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <label className="flex items-center space-x-2 mr-4 bg-blue-50 px-3 py-2 rounded-lg border border-blue-100">
               <input
                 type="checkbox"
                 checked={estimate.isContractor}
@@ -804,1289 +2061,81 @@ export default function EstimateCreatePage() {
             <button
               type="submit"
               disabled={submitting}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow"
             >
               {submitting ? '저장 중...' : '저장하기'}
             </button>
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded"
-            >
-              취소
-            </button>
-          </div>
-        </div>
-
-        {/* 고객 정보 */}
-        <div className="bg-white p-6 rounded-lg shadow mb-6">
-          <h2 className="text-xl font-semibold mb-4 pb-2 border-b">고객 정보</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">이름</label>
-              <input
-                type="text"
-                name="name"
-                value={estimate.customerInfo.name}
-                onChange={handleCustomerInfoChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">연락처</label>
-              <input
-                type="text"
-                name="phone"
-                value={estimate.customerInfo.phone}
-                onChange={handleCustomerInfoChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">PC번호</label>
-              <input
-                type="text"
-                name="pcNumber"
-                value={estimate.customerInfo.pcNumber}
-                onChange={handleCustomerInfoChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-            </div>
           </div>
 
-          {/* 계약구분 */}
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">계약구분</label>
-            <div className="flex flex-wrap gap-2 items-center">
-              {['일반의뢰', '직접입력'].map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => {
-                    setEstimate({
-                      ...estimate,
-                      customerInfo: {
-                        ...estimate.customerInfo,
-                        contractType: option === '직접입력' ? '' : option,
-                      },
-                    });
-                  }}
-                  className={`px-4 py-2 rounded-md text-sm ${
-                    (option === '직접입력' && estimate.customerInfo.contractType !== '일반의뢰') ||
-                    estimate.customerInfo.contractType === option
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 text-gray-700'
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-              {estimate.customerInfo.contractType !== '일반의뢰' && (
-                <input
-                  type="text"
-                  placeholder="직접 입력"
-                  value={estimate.customerInfo.contractType || ''}
-                  onChange={(e) => {
-                    setEstimate({
-                      ...estimate,
-                      customerInfo: {
-                        ...estimate.customerInfo,
-                        contractType: e.target.value,
-                      },
-                    });
-                  }}
-                  className="ml-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm"
-                />
-              )}
-            </div>
-          </div>
-
-          {/* 판매형태 */}
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">판매형태</label>
-            <div className="flex flex-wrap gap-2 items-center">
-              {['부품 조립형', '본인설치', '해당없음', '직접입력'].map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => {
-                    setEstimate({
-                      ...estimate,
-                      customerInfo: {
-                        ...estimate.customerInfo,
-                        saleType: option === '직접입력' ? '' : option,
-                      },
-                    });
-                  }}
-                  className={`px-4 py-2 rounded-md text-sm ${
-                    (option === '직접입력' &&
-                      !['부품 조립형', '본인설치', '해당없음'].includes(
-                        estimate.customerInfo.saleType
-                      )) ||
-                    estimate.customerInfo.saleType === option
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 text-gray-700'
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-              {!['부품 조립형', '본인설치', '해당없음'].includes(
-                estimate.customerInfo.saleType
-              ) && (
-                <input
-                  type="text"
-                  placeholder="직접 입력"
-                  value={estimate.customerInfo.saleType || ''}
-                  onChange={(e) => {
-                    setEstimate({
-                      ...estimate,
-                      customerInfo: {
-                        ...estimate.customerInfo,
-                        saleType: e.target.value,
-                      },
-                    });
-                  }}
-                  className="ml-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm"
-                />
-              )}
-            </div>
-          </div>
-
-          {/* 구입형태 */}
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">구입형태</label>
-            <div className="flex flex-wrap gap-2 items-center">
-              {['지인', '기존회원', '해당없음', '직접입력'].map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => {
-                    setEstimate({
-                      ...estimate,
-                      customerInfo: {
-                        ...estimate.customerInfo,
-                        purchaseType: option === '직접입력' ? '' : option,
-                      },
-                    });
-                  }}
-                  className={`px-4 py-2 rounded-md text-sm ${
-                    (option === '직접입력' &&
-                      !['지인', '기존회원', '해당없음'].includes(
-                        estimate.customerInfo.purchaseType
-                      )) ||
-                    estimate.customerInfo.purchaseType === option
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 text-gray-700'
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-              {!['지인', '기존회원', '해당없음'].includes(estimate.customerInfo.purchaseType) && (
-                <input
-                  type="text"
-                  placeholder="직접 입력"
-                  value={estimate.customerInfo.purchaseType || ''}
-                  onChange={(e) => {
-                    setEstimate({
-                      ...estimate,
-                      customerInfo: {
-                        ...estimate.customerInfo,
-                        purchaseType: e.target.value,
-                      },
-                    });
-                  }}
-                  className="ml-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm"
-                />
-              )}
-            </div>
-          </div>
-
-          {/* 지인 이름 - 구입형태가 지인일 때만 표시 */}
-          {estimate.customerInfo.purchaseType === '지인' && (
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700">지인 이름</label>
-              <input
-                type="text"
-                name="purchaseTypeName"
-                value={estimate.customerInfo.purchaseTypeName}
-                onChange={handleCustomerInfoChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-            </div>
-          )}
-
-          {/* 용도 */}
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">용도</label>
-            <div className="flex flex-wrap gap-2 items-center">
-              {['게임', '문서작업', '영상/이미지편집', '직접입력'].map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => {
-                    setEstimate({
-                      ...estimate,
-                      customerInfo: {
-                        ...estimate.customerInfo,
-                        purpose: option === '직접입력' ? '' : option,
-                      },
-                    });
-                  }}
-                  className={`px-4 py-2 rounded-md text-sm ${
-                    (option === '직접입력' &&
-                      !['게임', '문서작업', '영상/이미지편집'].includes(
-                        estimate.customerInfo.purpose
-                      )) ||
-                    estimate.customerInfo.purpose === option
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 text-gray-700'
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-              {!['게임', '문서작업', '영상/이미지편집'].includes(estimate.customerInfo.purpose) && (
-                <input
-                  type="text"
-                  placeholder="직접 입력"
-                  value={estimate.customerInfo.purpose || ''}
-                  onChange={(e) => {
-                    setEstimate({
-                      ...estimate,
-                      customerInfo: {
-                        ...estimate.customerInfo,
-                        purpose: e.target.value,
-                      },
-                    });
-                  }}
-                  className="ml-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm"
-                />
-              )}
-            </div>
-          </div>
-
-          {/* AS조건 */}
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">AS조건</label>
-            <div className="flex flex-wrap gap-2 items-center">
-              {['본인방문조건', '직접입력'].map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => {
-                    setEstimate({
-                      ...estimate,
-                      customerInfo: {
-                        ...estimate.customerInfo,
-                        asCondition: option === '직접입력' ? '' : option,
-                      },
-                    });
-                  }}
-                  className={`px-4 py-2 rounded-md text-sm ${
-                    (option === '직접입력' &&
-                      !['본인방문조건'].includes(estimate.customerInfo.asCondition)) ||
-                    estimate.customerInfo.asCondition === option
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 text-gray-700'
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-              {!['본인방문조건'].includes(estimate.customerInfo.asCondition) && (
-                <input
-                  type="text"
-                  placeholder="직접 입력"
-                  value={estimate.customerInfo.asCondition || ''}
-                  onChange={(e) => {
-                    setEstimate({
-                      ...estimate,
-                      customerInfo: {
-                        ...estimate.customerInfo,
-                        asCondition: e.target.value,
-                      },
-                    });
-                  }}
-                  className="ml-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm"
-                />
-              )}
-            </div>
-          </div>
-
-          {/* 운영체계 */}
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">운영체계</label>
-            <div className="flex flex-wrap gap-2 items-center">
-              {['win10', 'win11', '직접입력'].map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => {
-                    setEstimate({
-                      ...estimate,
-                      customerInfo: {
-                        ...estimate.customerInfo,
-                        os: option === '직접입력' ? '' : option,
-                      },
-                    });
-                  }}
-                  className={`px-4 py-2 rounded-md text-sm ${
-                    (option === '직접입력' &&
-                      !['win10', 'win11'].includes(estimate.customerInfo.os)) ||
-                    estimate.customerInfo.os === option
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 text-gray-700'
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-              {!['win10', 'win11'].includes(estimate.customerInfo.os) && (
-                <input
-                  type="text"
-                  placeholder="직접 입력"
-                  value={estimate.customerInfo.os || ''}
-                  onChange={(e) => {
-                    setEstimate({
-                      ...estimate,
-                      customerInfo: {
-                        ...estimate.customerInfo,
-                        os: e.target.value,
-                      },
-                    });
-                  }}
-                  className="ml-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm"
-                />
-              )}
-            </div>
-          </div>
-
-          {/* 견적담당 */}
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">견적담당</label>
-            <div className="flex flex-wrap gap-2">
-              {['김선식', '소성욱'].map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => {
-                    setEstimate({
-                      ...estimate,
-                      customerInfo: {
-                        ...estimate.customerInfo,
-                        manager: option,
-                      },
-                    });
-                  }}
-                  className={`px-4 py-2 rounded-md text-sm ${
-                    estimate.customerInfo.manager === option
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 text-gray-700'
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700">
-              견적 설명 및 참고사항(견적서에 내용추가 가능)
-            </label>
-            <textarea
-              value={estimate.estimateDescription}
-              onChange={handleDescriptionChange}
-              rows={4}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            ></textarea>
-          </div>
-        </div>
-
-        {/* 상품 정보 */}
-        <div className="bg-white p-6 rounded-lg shadow mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold pb-2">상품 정보</h2>
-
-            <div className="flex items-center gap-3">
-              <textarea
-                id="bulkProductInput"
-                rows="1"
-                placeholder="일괄 입력 형식으로 입력해주세요.(다나와, 견적왕)"
-                className="w-[400px] border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-              ></textarea>
-              <button
-                type="button"
-                onClick={handleBulkProductInput}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm whitespace-nowrap"
-              >
-                일괄 입력하기
-              </button>
-              <button
-                type="button"
-                onClick={handleAddProduct}
-                className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm whitespace-nowrap"
-              >
-                + 상품 추가
-              </button>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center w-[40px]">
-                    작업
-                  </th>
-                  <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center w-[100px]">
-                    분류
-                  </th>
-                  <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center w-[200px]">
-                    상품명
-                  </th>
-                  <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center w-[50px]">
-                    수량
-                  </th>
-                  <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center w-[110px]">
-                    현금가
-                  </th>
-                  <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
-                    상품코드
-                  </th>
-                  <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
-                    총판
-                  </th>
-                  <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
-                    재조사
-                  </th>
-                  <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
-                    비고
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {estimate.tableData.map((item, index) => (
-                  <tr key={index}>
-                    <td className="px-1 py-1">
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveProduct(index)}
-                        className="text-base text-red-500 hover:text-red-700"
-                      >
-                        삭제
-                      </button>
-                    </td>
-                    <td className="px-1 py-1">
-                      <input
-                        type="text"
-                        value={item.category || ''}
-                        onChange={(e) => handleTableDataChange(index, 'category', e.target.value)}
-                        onFocus={() => handleFocus(index, 'category')}
-                        onBlur={handleBlur}
-                        className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
-                          focusedInput === `${index}-category` ? 'w-[150px]' : 'w-full'
-                        }`}
-                      />
-                    </td>
-                    <td className="px-1 py-1">
-                      <input
-                        type="text"
-                        value={item.productName || ''}
-                        onChange={(e) =>
-                          handleTableDataChange(index, 'productName', e.target.value)
-                        }
-                        onFocus={() => handleFocus(index, 'productName')}
-                        onBlur={handleBlur}
-                        className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
-                          focusedInput === `${index}-productName` ? 'w-[500px]' : 'w-full'
-                        }`}
-                      />
-                    </td>
-                    <td className="px-1 py-1">
-                      <input
-                        type="text"
-                        value={item.quantity || ''}
-                        onChange={(e) => handleTableDataChange(index, 'quantity', e.target.value)}
-                        onFocus={() => handleFocus(index, 'quantity')}
-                        onBlur={handleBlur}
-                        className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
-                          focusedInput === `${index}-quantity` ? 'w-[65px]' : 'w-full'
-                        }`}
-                      />
-                    </td>
-                    <td className="px-1 py-1">
-                      <input
-                        type="text"
-                        value={item.price || ''}
-                        onChange={(e) => handleTableDataChange(index, 'price', e.target.value)}
-                        onFocus={() => handleFocus(index, 'price')}
-                        onBlur={handleBlur}
-                        className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
-                          focusedInput === `${index}-price` ? 'w-[150px]' : 'w-full'
-                        }`}
-                      />
-                    </td>
-                    <td className="px-1 py-1">
-                      <input
-                        type="text"
-                        value={item.productCode || ''}
-                        onChange={(e) =>
-                          handleTableDataChange(index, 'productCode', e.target.value)
-                        }
-                        onFocus={() => handleFocus(index, 'productCode')}
-                        onBlur={handleBlur}
-                        className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
-                          focusedInput === `${index}-productCode` ? 'w-[350px]' : 'w-full'
-                        }`}
-                      />
-                    </td>
-                    <td className="px-1 py-1">
-                      <input
-                        type="text"
-                        value={item.distributor || ''}
-                        onChange={(e) =>
-                          handleTableDataChange(index, 'distributor', e.target.value)
-                        }
-                        onFocus={() => handleFocus(index, 'distributor')}
-                        onBlur={handleBlur}
-                        className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
-                          focusedInput === `${index}-distributor` ? 'w-[250px]' : 'w-full'
-                        }`}
-                      />
-                    </td>
-                    <td className="px-1 py-1">
-                      <input
-                        type="text"
-                        value={item.reconfirm || ''}
-                        onChange={(e) => handleTableDataChange(index, 'reconfirm', e.target.value)}
-                        onFocus={() => handleFocus(index, 'reconfirm')}
-                        onBlur={handleBlur}
-                        className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
-                          focusedInput === `${index}-reconfirm` ? 'w-[250px]' : 'w-full'
-                        }`}
-                      />
-                    </td>
-                    <td className="px-1 py-1">
-                      <textarea
-                        value={item.remarks || ''}
-                        onChange={(e) => handleTableDataChange(index, 'remarks', e.target.value)}
-                        onFocus={() => handleFocus(index, 'remarks')}
-                        onBlur={handleBlur}
-                        rows="1"
-                        className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-200 ${
-                          focusedInput === `${index}-remarks`
-                            ? 'w-[250px] h-[60px]'
-                            : 'w-full h-[30px] overflow-hidden'
-                        }`}
-                      ></textarea>
-                    </td>
-                  </tr>
-                ))}
-                {estimate.tableData.length === 0 && (
-                  <tr>
-                    <td colSpan="9" className="px-3 py-4 text-center text-gray-500">
-                      등록된 상품이 없습니다. [상품 추가] 버튼을 클릭하여 상품을 추가하세요.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* 서비스 물품 정보 */}
-        <div className="bg-white p-6 rounded-lg shadow mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold pb-2">서비스 물품 정보</h2>
-            <button
-              type="button"
-              onClick={handleAddServiceItem}
-              className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
-            >
-              + 서비스 상품 추가
-            </button>
-          </div>
-
-          <div className="flex gap-4">
-            <div className="w-60">
-              <h3 className="text-sm font-medium text-gray-700 mb-2">자주 사용 상품</h3>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleQuickAddServiceItem('마우스')}
-                  className="bg-blue-100 hover:bg-blue-200 text-blue-800 py-1 px-2 rounded text-sm w-full text-center"
-                >
-                  마우스
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickAddServiceItem('마우스패드')}
-                  className="bg-blue-100 hover:bg-blue-200 text-blue-800 py-1 px-2 rounded text-sm w-full text-center"
-                >
-                  마우스패드
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickAddServiceItem('키보드')}
-                  className="bg-blue-100 hover:bg-blue-200 text-blue-800 py-1 px-2 rounded text-sm w-full text-center"
-                >
-                  키보드
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickAddServiceItem('스피커')}
-                  className="bg-blue-100 hover:bg-blue-200 text-blue-800 py-1 px-2 rounded text-sm w-full text-center"
-                >
-                  스피커
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickAddServiceItem('케이블')}
-                  className="bg-blue-100 hover:bg-blue-200 text-blue-800 py-1 px-2 rounded text-sm w-full text-center"
-                >
-                  케이블
-                </button>
-              </div>
-            </div>
-
-            <div className="flex-1">
-              <div className="overflow-x-auto">
-                <table className="min-w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
-                        작업
-                      </th>
-                      <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
-                        상품명
-                      </th>
-                      <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center w-[45px]">
-                        수량
-                      </th>
-                      <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
-                        비고
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {estimate.serviceData.map((item, index) => (
-                      <tr key={index}>
-                        <td className="px-1 py-1">
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveServiceItem(index)}
-                            className="text-base text-red-500 hover:text-red-700"
-                          >
-                            삭제
-                          </button>
-                        </td>
-                        <td className="px-1 py-1">
-                          <input
-                            type="text"
-                            value={item.productName || ''}
-                            onChange={(e) =>
-                              handleServiceDataChange(index, 'productName', e.target.value)
-                            }
-                            className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm"
-                          />
-                        </td>
-                        <td className="px-1 py-1">
-                          <input
-                            type="text"
-                            value={item.quantity || ''}
-                            onChange={(e) =>
-                              handleServiceDataChange(index, 'quantity', e.target.value)
-                            }
-                            className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm"
-                          />
-                        </td>
-                        <td className="px-1 py-1">
-                          <textarea
-                            value={item.remarks || ''}
-                            onChange={(e) =>
-                              handleServiceDataChange(index, 'remarks', e.target.value)
-                            }
-                            rows="1"
-                            className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm h-[30px]"
-                          ></textarea>
-                        </td>
-                      </tr>
-                    ))}
-                    {estimate.serviceData.length === 0 && (
-                      <tr>
-                        <td colSpan="4" className="px-3 py-4 text-center text-gray-500">
-                          등록된 서비스 상품이 없습니다. [서비스 상품 추가] 버튼을 클릭하여 서비스
-                          상품을 추가하세요.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 결제 정보 */}
-        <div className="bg-white p-6 rounded-lg shadow mb-6">
-          <h2 className="text-xl font-semibold mb-4 pb-2 border-b">결제 정보</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* 결제 세부 정보 */}
-            <div className="col-span-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* 공임비 */}
-                <div className="border-b">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">공임비</label>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {[10000, 20000, 30000, 40000, 50000].map((amount) => (
-                      <button
-                        key={`laborCost-${amount}`}
-                        type="button"
-                        onClick={() => handlePaymentButtonClick('laborCost', amount)}
-                        className={`px-3 py-1 rounded-md text-xs ${
-                          estimate.paymentInfo.laborCost === amount
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-200 text-gray-700'
-                        }`}
-                      >
-                        {amount / 10000}만원
-                      </button>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => handleDirectInputClick('laborCost')}
-                      className={`px-3 py-1 rounded-md text-xs ${
-                        directInputFields.laborCost
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-200 text-gray-700'
-                      }`}
-                    >
-                      직접입력
-                    </button>
-                  </div>
-                  {directInputFields.laborCost ? (
-                    <input
-                      type="text"
-                      name="laborCost"
-                      value={
-                        estimate.paymentInfo.laborCost === 0
-                          ? ''
-                          : formatNumber(estimate.paymentInfo.laborCost)
-                      }
-                      onChange={handlePaymentInfoChange}
-                      className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
-                  ) : (
-                    <div className="block w-full py-2 px-0">
-                      <span className="text-gray-700">
-                        {formatNumber(estimate.paymentInfo.laborCost || 0)}원
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* 튜닝금액 */}
-                <div className="border-b">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">튜닝금액</label>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {[10000, 20000, 30000, 40000, 50000].map((amount) => (
-                      <button
-                        key={`tuningCost-${amount}`}
-                        type="button"
-                        onClick={() => handlePaymentButtonClick('tuningCost', amount)}
-                        className={`px-3 py-1 rounded-md text-xs ${
-                          estimate.paymentInfo.tuningCost === amount
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-200 text-gray-700'
-                        }`}
-                      >
-                        {amount / 10000}만원
-                      </button>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => handleDirectInputClick('tuningCost')}
-                      className={`px-3 py-1 rounded-md text-xs ${
-                        directInputFields.tuningCost
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-200 text-gray-700'
-                      }`}
-                    >
-                      직접입력
-                    </button>
-                  </div>
-                  {directInputFields.tuningCost ? (
-                    <input
-                      type="text"
-                      name="tuningCost"
-                      value={
-                        estimate.paymentInfo.tuningCost === 0
-                          ? ''
-                          : formatNumber(estimate.paymentInfo.tuningCost)
-                      }
-                      onChange={handlePaymentInfoChange}
-                      className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
-                  ) : (
-                    <div className="block w-full py-2 px-0">
-                      <span className="text-gray-700">
-                        {formatNumber(estimate.paymentInfo.tuningCost || 0)}원
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* 세팅비 */}
-                <div className="border-b">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">세팅비</label>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {[10000, 20000, 30000, 40000, 50000].map((amount) => (
-                      <button
-                        key={`setupCost-${amount}`}
-                        type="button"
-                        onClick={() => handlePaymentButtonClick('setupCost', amount)}
-                        className={`px-3 py-1 rounded-md text-xs ${
-                          estimate.paymentInfo.setupCost === amount
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-200 text-gray-700'
-                        }`}
-                      >
-                        {amount / 10000}만원
-                      </button>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => handleDirectInputClick('setupCost')}
-                      className={`px-3 py-1 rounded-md text-xs ${
-                        directInputFields.setupCost
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-200 text-gray-700'
-                      }`}
-                    >
-                      직접입력
-                    </button>
-                  </div>
-                  {directInputFields.setupCost ? (
-                    <input
-                      type="text"
-                      name="setupCost"
-                      value={
-                        estimate.paymentInfo.setupCost === 0
-                          ? ''
-                          : formatNumber(estimate.paymentInfo.setupCost)
-                      }
-                      onChange={handlePaymentInfoChange}
-                      className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
-                  ) : (
-                    <div className="block w-full py-2 px-0">
-                      <span className="text-gray-700">
-                        {formatNumber(estimate.paymentInfo.setupCost || 0)}원
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* 보증관리비 */}
-                <div className="border-b">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">보증관리비</label>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {[10000, 20000, 30000, 40000, 50000].map((amount) => (
-                      <button
-                        key={`warrantyFee-${amount}`}
-                        type="button"
-                        onClick={() => handlePaymentButtonClick('warrantyFee', amount)}
-                        className={`px-3 py-1 rounded-md text-xs ${
-                          estimate.paymentInfo.warrantyFee === amount
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-200 text-gray-700'
-                        }`}
-                      >
-                        {amount / 10000}만원
-                      </button>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => handleDirectInputClick('warrantyFee')}
-                      className={`px-3 py-1 rounded-md text-xs ${
-                        directInputFields.warrantyFee
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-200 text-gray-700'
-                      }`}
-                    >
-                      직접입력
-                    </button>
-                  </div>
-                  {directInputFields.warrantyFee ? (
-                    <input
-                      type="text"
-                      name="warrantyFee"
-                      value={
-                        estimate.paymentInfo.warrantyFee === 0
-                          ? ''
-                          : formatNumber(estimate.paymentInfo.warrantyFee)
-                      }
-                      onChange={handlePaymentInfoChange}
-                      className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
-                  ) : (
-                    <div className="block w-full py-2 px-0">
-                      <span className="text-gray-700">
-                        {formatNumber(estimate.paymentInfo.warrantyFee || 0)}원
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">할인</label>
-                  <input
-                    type="text"
-                    name="discount"
-                    value={
-                      estimate.paymentInfo.discount === 0
-                        ? ''
-                        : formatNumber(estimate.paymentInfo.discount)
-                    }
-                    onChange={handlePaymentInfoChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">계약금</label>
-                  <input
-                    type="text"
-                    name="deposit"
-                    value={
-                      estimate.paymentInfo.deposit === 0
-                        ? ''
-                        : formatNumber(estimate.paymentInfo.deposit)
-                    }
-                    onChange={handlePaymentInfoChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">버림 타입</label>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {[
-                      { value: '100down', label: '백단위 버림' },
-                      { value: '1000down', label: '천단위 버림' },
-                      { value: '10000down', label: '만단위 버림' },
-                    ].map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => handleRoundingTypeClick(option.value)}
-                        className={`px-4 py-2 rounded-md text-sm ${
-                          estimate.paymentInfo.roundingType === option.value
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-200 text-gray-700'
-                        }`}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">결제 방법</label>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {['카드', '카드결제 DC', '현금', '직접입력'].map((method) => (
-                      <button
-                        key={method}
-                        type="button"
-                        onClick={() => handlePaymentMethodClick(method)}
-                        className={`px-4 py-2 rounded-md text-sm ${
-                          (method === '직접입력' && isPaymentMethodDirectInput) ||
-                          (method !== '직접입력' && estimate.paymentInfo.paymentMethod === method)
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-200 text-gray-700'
-                        }`}
-                      >
-                        {method}
-                      </button>
-                    ))}
-                  </div>
-                  {isPaymentMethodDirectInput && (
-                    <input
-                      type="text"
-                      name="paymentMethod"
-                      value={estimate.paymentInfo.paymentMethod}
-                      onChange={handlePaymentInfoChange}
-                      placeholder="결제 방법 입력"
-                      className="mt-2 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
-                  )}
-                </div>
-
-                <div className="flex items-center">
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      name="includeVat"
-                      checked={estimate.paymentInfo.includeVat}
-                      onChange={handlePaymentInfoChange}
-                      className="h-4 w-4 text-blue-600 rounded"
-                    />
-                    <span className="text-sm font-medium text-gray-700">VAT 포함</span>
-                  </label>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">VAT 비율 (%)</label>
-                  <input
-                    type="number"
-                    name="vatRate"
-                    value={estimate.paymentInfo.vatRate}
-                    onChange={handlePaymentInfoChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">배송+설비 비용</label>
-                  <input
-                    type="text"
-                    name="shippingCost"
-                    value={
-                      estimate.paymentInfo.shippingCost === 0
-                        ? ''
-                        : formatNumber(estimate.paymentInfo.shippingCost)
-                    }
-                    onChange={handlePaymentInfoChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">출고일자</label>
-                  <input
-                    type="date"
-                    name="releaseDate"
-                    value={estimate.paymentInfo.releaseDate}
-                    onChange={handlePaymentInfoChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* 금액 정보 안내 */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold mb-3 text-gray-800">금액 정보</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">상품/부품 합계:</span>
-                  <span className="font-medium">
-                    {formatNumber(estimate.calculatedValues.productTotal || 0)}원
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">총 구입 금액:</span>
-                  <span className="font-medium">
-                    {formatNumber(estimate.calculatedValues.totalPurchase || 0)}원
-                  </span>
-                </div>
-                <div className="text-xs text-gray-500 ml-4">
-                  {/* 값이 0이 아닌 항목들을 필터링 */}
-                  {(() => {
-                    // 먼저 유효한 항목만 필터링
-                    const items = [
-                      estimate.calculatedValues.productTotal > 0
-                        ? `상품/부품(${formatNumber(estimate.calculatedValues.productTotal)}원)`
-                        : null,
-                      estimate.paymentInfo.laborCost > 0
-                        ? `공임비(${formatNumber(estimate.paymentInfo.laborCost)}원)`
-                        : null,
-                      estimate.paymentInfo.setupCost > 0
-                        ? `세팅비(${formatNumber(estimate.paymentInfo.setupCost)}원)`
-                        : null,
-                      estimate.paymentInfo.tuningCost > 0
-                        ? `튜닝금액(${formatNumber(estimate.paymentInfo.tuningCost)}원)`
-                        : null,
-                      estimate.paymentInfo.warrantyFee > 0
-                        ? `보증관리비(${formatNumber(estimate.paymentInfo.warrantyFee)}원)`
-                        : null,
-                      estimate.paymentInfo.discount > 0
-                        ? `할인(-${formatNumber(estimate.paymentInfo.discount)}원)`
-                        : null,
-                      // 버림 타입이 활성화된 경우 버려진 금액 표시
-                      (() => {
-                        if (estimate.paymentInfo.roundingType) {
-                          // 현재 총 구입 금액 (버려지기 전 금액)
-                          const originalTotal =
-                            estimate.calculatedValues.productTotal +
-                            (estimate.paymentInfo.laborCost || 0) +
-                            (estimate.paymentInfo.tuningCost || 0) +
-                            (estimate.paymentInfo.setupCost || 0) +
-                            (estimate.paymentInfo.warrantyFee || 0) -
-                            (estimate.paymentInfo.discount || 0);
-
-                          // 버림 단위 설정
-                          let divisor = 100; // 기본값: 백단위
-                          if (estimate.paymentInfo.roundingType === '1000down') divisor = 1000;
-                          if (estimate.paymentInfo.roundingType === '10000down') divisor = 10000;
-
-                          // 버려진 금액 계산
-                          const quotient = Math.floor(originalTotal / divisor);
-                          const roundedTotal = quotient * divisor;
-                          const remainder = originalTotal - roundedTotal;
-
-                          // 버려진 금액이 있는 경우만 표시
-                          if (remainder > 0) {
-                            return `끝자리 버림(-${formatNumber(remainder)}원)`;
-                          }
-                        }
-                        return null;
-                      })(),
-                    ].filter(Boolean);
-
-                    // 요소가 없으면 빈 배열 반환
-                    if (items.length === 0) return null;
-
-                    // 결과를 담을 JSX 요소 배열
-                    const result = [];
-
-                    // 항목들을 순회하면서 2개씩 처리
-                    for (let i = 0; i < items.length; i++) {
-                      const isLastItemInRow = i % 2 === 1 || i === items.length - 1;
-                      const hasNextItem = i < items.length - 1;
-
-                      // 현재 항목 추가
-                      result.push(items[i]);
-
-                      // "+ " 추가 (다음 항목이 있고 현재 항목이 줄의 끝이 아닌 경우)
-                      if (hasNextItem && !isLastItemInRow) {
-                        result.push(' + ');
-                      }
-
-                      // 줄의 끝이고 다음 항목이 있으면 "+ " 추가하고 줄바꿈
-                      if (isLastItemInRow && hasNextItem) {
-                        result.push(' + ');
-                        result.push(<br key={`br-${i}`} />);
-                      }
-                    }
-
-                    return result;
-                  })()}
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">VAT 금액:</span>
-                  <span className="font-medium">
-                    {formatNumber(estimate.calculatedValues.vatAmount || 0)}원
-                  </span>
-                </div>
-                <div className="pt-2 mt-2 border-t border-gray-200 flex justify-between">
-                  <span className="text-gray-800 font-semibold">최종 결제 금액:</span>
-                  <span className="text-blue-600 font-bold text-lg">
-                    {formatNumber(estimate.calculatedValues.finalPayment || 0)}원
-                  </span>
-                </div>
-              </div>
-              <div className="mt-4 text-xs text-gray-500">(금액은 실시간으로 계산됩니다)</div>
-            </div>
-          </div>
-        </div>
-
-        {/* 하단 버튼 영역 */}
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <label className="flex items-center space-x-2 mr-4">
-            <input
-              type="checkbox"
-              checked={estimate.isContractor}
-              onChange={handleContractorChange}
-              className="h-4 w-4 text-blue-600 rounded"
-            />
-            <span className="text-sm font-medium text-gray-700">계약자</span>
-          </label>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow"
-          >
-            {submitting ? '저장 중...' : '저장하기'}
-          </button>
+          {/* 메모 아이콘 버튼 (고정 위치) */}
           <button
             type="button"
-            onClick={handleCancel}
-            className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-lg shadow"
+            onClick={toggleNotesModal}
+            className="fixed bottom-6 right-6 bg-blue-500 hover:bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg z-50"
+            title="견적서에 보이지 않는 메모 작성"
           >
-            취소
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
+            </svg>
           </button>
-        </div>
 
-        {/* 메모 아이콘 버튼 (고정 위치) */}
-        <button
-          type="button"
-          onClick={toggleNotesModal}
-          className="fixed bottom-6 right-6 bg-blue-500 hover:bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg z-50"
-          title="견적서에 보이지 않는 메모 작성"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-            />
-          </svg>
-        </button>
-
-        {/* 메모 팝오버 */}
-        {showNotesModal && (
-          <div className="fixed bottom-10 right-20 bg-white rounded-lg p-4 w-80 shadow-xl z-50 border border-gray-200">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-sm font-semibold">관리자용 메모</h3>
-              <button
-                type="button"
-                onClick={toggleNotesModal}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+          {/* 메모 팝오버 */}
+          {showNotesModal && (
+            <div className="fixed bottom-10 right-20 bg-white rounded-lg p-4 w-80 shadow-xl z-50 border border-gray-200">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-sm font-semibold">관리자용 메모</h3>
+                <button
+                  type="button"
+                  onClick={toggleNotesModal}
+                  className="text-gray-400 hover:text-gray-500"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <textarea
+                value={estimate.notes}
+                onChange={handleNotesChange}
+                rows={6}
+                className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="견적서에 표시되지 않는 메모를 작성하세요."
+              ></textarea>
+              <div className="mt-3 flex justify-end">
+                <button
+                  type="button"
+                  onClick={toggleNotesModal}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
+                >
+                  저장
+                </button>
+              </div>
             </div>
-            <textarea
-              value={estimate.notes}
-              onChange={handleNotesChange}
-              rows={6}
-              className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              placeholder="견적서에 표시되지 않는 메모를 작성하세요."
-            ></textarea>
-            <div className="mt-3 flex justify-end">
-              <button
-                type="button"
-                onClick={toggleNotesModal}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
-              >
-                저장
-              </button>
-            </div>
-          </div>
-        )}
-      </form>
+          )}
+        </form>
+      </div>
     </KingOnlySection>
   );
 }
