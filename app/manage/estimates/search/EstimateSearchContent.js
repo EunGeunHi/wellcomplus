@@ -245,6 +245,17 @@ export default function EstimateSearchContent() {
     { value: 'false', label: '비계약자' },
   ];
 
+  // 견적 상세 페이지로 이동하는 핸들러 추가
+  const handleRowClick = (estimateId) => {
+    router.push(`/manage/estimates/detail/${estimateId}`);
+  };
+
+  // 견적서 페이지로 이동하는 핸들러 추가
+  const handleQuoteClick = (e, estimateId) => {
+    e.stopPropagation(); // 이벤트 버블링 방지
+    router.push(`/manage/quote/${estimateId}`);
+  };
+
   return (
     <>
       <div className="flex justify-between items-center mb-6">
@@ -333,13 +344,17 @@ export default function EstimateSearchContent() {
               <th className="px-4 py-2 text-left">연락처</th>
               <th className="px-4 py-2 text-left">계약상태</th>
               <th className="px-4 py-2 text-left">생성일</th>
-              <th className="px-4 py-2 text-left">상세보기</th>
+              <th className="px-4 py-2 text-left">견적서</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {estimates.length > 0 ? (
               estimates.map((estimate) => (
-                <tr key={estimate._id} className="hover:bg-gray-50">
+                <tr
+                  key={estimate._id}
+                  className="hover:bg-gray-50 cursor-pointer"
+                  onClick={() => handleRowClick(estimate._id)}
+                >
                   <td className="px-4 py-2">{estimate.estimateType || '없음'}</td>
                   <td className="px-4 py-2">{estimate.customerInfo.name || '-'}</td>
                   <td className="px-4 py-2">{estimate.customerInfo.phone || '-'}</td>
@@ -358,12 +373,12 @@ export default function EstimateSearchContent() {
                       : '-'}
                   </td>
                   <td className="px-4 py-2">
-                    <Link
-                      href={`/manage/estimates/detail/${estimate._id}`}
-                      className="text-blue-500 hover:text-blue-700"
+                    <span
+                      className="text-blue-500 hover:text-blue-700 cursor-pointer"
+                      onClick={(e) => handleQuoteClick(e, estimate._id)}
                     >
-                      상세보기
-                    </Link>
+                      견적서
+                    </span>
                   </td>
                 </tr>
               ))
