@@ -45,7 +45,7 @@ export default function EstimateDetailPage() {
 
   // 뒤로 가기
   const handleGoBack = () => {
-    router.push('/manage/estimates/search');
+    router.back();
   };
 
   // 수정 페이지로 이동
