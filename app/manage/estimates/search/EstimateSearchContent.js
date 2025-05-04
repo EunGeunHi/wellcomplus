@@ -260,12 +260,20 @@ export default function EstimateSearchContent() {
     <>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">견적 검색</h1>
-        <Link
-          href="/manage/estimates/create"
-          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
-        >
-          새로운 데이터 추가
-        </Link>
+        <div>
+          <Link
+            href="/manage/quote/statement"
+            className="bg-green-500 mr-2 hover:bg-green-600 text-white px-4 py-2 rounded"
+          >
+            거래명세표인쇄
+          </Link>
+          <Link
+            href="/manage/estimates/create"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            새로운 데이터 추가
+          </Link>
+        </div>
       </div>
 
       {/* 검색 폼 */}

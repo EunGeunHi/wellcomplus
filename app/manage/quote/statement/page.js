@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { formatKoreanPhoneNumber } from '@/utils/phoneFormatter';
 
 export default function Statement() {
   // 오늘 날짜를 한국어 형식(YYYY년 MM월 DD일)으로 변환하는 함수
@@ -24,7 +25,7 @@ export default function Statement() {
     address: '부산광역시 동래구 온천장로 81-20 신화타워부산컴퓨터도매상가 2층 209호',
     deliveryMethod: '도소매',
     businessType: '컴퓨터및주변기기',
-    phone: '010-0000-0000',
+    phone: '',
     regNumber: '607-02-70320',
     cash: '*0',
     credit: '*0',
@@ -32,7 +33,7 @@ export default function Statement() {
 
   // 품목 데이터 상태 추가
   const [items, setItems] = useState(
-    Array(15)
+    Array(14)
       .fill()
       .map((_, index) => {
         // 12번과 13번 품목에 계좌 정보 미리 설정
@@ -67,7 +68,7 @@ export default function Statement() {
   );
 
   // 일반 필드 변경 핸들러
-  const handleChange = e => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
 
     // 현금과 외상 입력 시 쉼표 포맷팅 적용
@@ -84,7 +85,7 @@ export default function Statement() {
       // 천 단위 쉼표 추가 및 별표 복원
       if (numericValue) {
         const formattedValue = numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        setInvoiceData(prev => ({
+        setInvoiceData((prev) => ({
           ...prev,
           [name]: hasAsterisk ? `*${formattedValue}` : formattedValue,
         }));
@@ -92,8 +93,18 @@ export default function Statement() {
       }
     }
 
+    // 전화번호 입력 시 자동 하이픈 적용 (한국 전화번호 형식)
+    if (name === 'phone') {
+      const formattedPhone = formatKoreanPhoneNumber(value, 'overflowing');
+      setInvoiceData((prev) => ({
+        ...prev,
+        [name]: formattedPhone,
+      }));
+      return;
+    }
+
     // 그 외 필드는 기존 방식으로 처리
-    setInvoiceData(prev => ({
+    setInvoiceData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -143,7 +154,7 @@ export default function Statement() {
   };
 
   // 총액 계산 함수
-  const calculateTotal = itemsArray => {
+  const calculateTotal = (itemsArray) => {
     const total = itemsArray.reduce((sum, item) => {
       if (!item.amount) return sum;
       const cleanAmount = item.amount.toString().replace(/,/g, '');
@@ -151,14 +162,14 @@ export default function Statement() {
     }, 0);
 
     // 천단위 쉼표 추가하여 총액 업데이트
-    setInvoiceData(prev => ({
+    setInvoiceData((prev) => ({
       ...prev,
       totalAmount: total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','),
     }));
   };
 
   // 수량의 합계를 계산하는 함수
-  const calculateTotalQuantity = itemsArray => {
+  const calculateTotalQuantity = (itemsArray) => {
     return itemsArray.reduce((sum, item) => {
       if (!item.quantity) return sum;
       const cleanQuantity = item.quantity.toString().replace(/,/g, '');
@@ -226,7 +237,7 @@ export default function Statement() {
           </li>
           <li className="text-yellow-700">
             <span className="font-semibold">기본 정보:</span> 거래처, 현금, 외상, 연락처 정보를
-            수정하면 됩니다.
+            수정하면 됩니다. ---연락처 입력을 숫자만 입력하면 자동으로 "-"입력 됩니다.
           </li>
           <li className="text-yellow-700">
             <span className="font-semibold">상품 정보:</span> 상품명 입력하고, 수량과 판매가를
@@ -512,7 +523,7 @@ export default function Statement() {
                       <input
                         type="text"
                         value={item.name}
-                        onChange={e => handleItemChange(index, 'name', e.target.value)}
+                        onChange={(e) => handleItemChange(index, 'name', e.target.value)}
                         className="w-full focus:outline-none"
                       />
                     </td>
@@ -520,7 +531,7 @@ export default function Statement() {
                       <input
                         type="text"
                         value={item.quantity}
-                        onChange={e => handleItemChange(index, 'quantity', e.target.value)}
+                        onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
                         className="w-full text-center focus:outline-none"
                       />
                     </td>
@@ -528,7 +539,7 @@ export default function Statement() {
                       <input
                         type="text"
                         value={item.price}
-                        onChange={e => handleItemChange(index, 'price', e.target.value)}
+                        onChange={(e) => handleItemChange(index, 'price', e.target.value)}
                         className="w-full text-right focus:outline-none"
                       />
                     </td>
@@ -570,7 +581,7 @@ export default function Statement() {
             </table>
           </div>
 
-          <hr className="border-t-2 border-gray-300 my-3" />
+          <hr className="border-t-2 border-gray-300 my-8" />
 
           {/* 공급자용*/}
           <div className="border border-red-500 p-4">
@@ -825,7 +836,7 @@ export default function Statement() {
                       <input
                         type="text"
                         value={item.name}
-                        onChange={e => handleItemChange(index, 'name', e.target.value)}
+                        onChange={(e) => handleItemChange(index, 'name', e.target.value)}
                         className="w-full focus:outline-none"
                       />
                     </td>
@@ -833,7 +844,7 @@ export default function Statement() {
                       <input
                         type="text"
                         value={item.quantity}
-                        onChange={e => handleItemChange(index, 'quantity', e.target.value)}
+                        onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
                         className="w-full text-center focus:outline-none"
                       />
                     </td>
@@ -841,7 +852,7 @@ export default function Statement() {
                       <input
                         type="text"
                         value={item.price}
-                        onChange={e => handleItemChange(index, 'price', e.target.value)}
+                        onChange={(e) => handleItemChange(index, 'price', e.target.value)}
                         className="w-full text-right focus:outline-none"
                       />
                     </td>
