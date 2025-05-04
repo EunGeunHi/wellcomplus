@@ -16,6 +16,14 @@ export default function EstimateCreatePage() {
   // notes 메모 상태 관리
   const [showNotesModal, setShowNotesModal] = useState(false);
 
+  // 오늘 날짜 기준으로 PC번호 기본값 생성 (예: 2024년 5월 -> 2405PC)
+  const getDefaultPcNumber = () => {
+    const today = new Date();
+    const year = today.getFullYear().toString().slice(-2); // 연도의 마지막 2자리
+    const month = (today.getMonth() + 1).toString().padStart(2, '0'); // 월 (01-12 형식)
+    return `${year}${month}PC`;
+  };
+
   // 견적 유형 옵션
   const estimateTypeOptions = ['예전데이터', '컴퓨터견적', '프린터견적', '노트북견적', 'AS관련'];
 
@@ -25,7 +33,7 @@ export default function EstimateCreatePage() {
     customerInfo: {
       name: '',
       phone: '',
-      pcNumber: '',
+      pcNumber: getDefaultPcNumber(), // PC번호 기본값 설정
       contractType: '일반의뢰',
       saleType: '해당없음',
       purchaseType: '해당없음',
@@ -154,6 +162,37 @@ export default function EstimateCreatePage() {
     calculateValues();
   }, [estimate.tableData, estimate.paymentInfo]);
 
+  // 버림 타입 자동 해제를 위한 useEffect
+  useEffect(() => {
+    // 버림 타입이 선택되어 있는 경우에만 실행
+    if (estimate.paymentInfo.roundingType) {
+      // 서비스 물품 중 "끝자리DC"로 시작하는 항목 제거
+      const filteredServiceData = estimate.serviceData.filter(
+        (item) => !item.productName.startsWith('끝자리DC')
+      );
+
+      // 버림 타입 해제
+      setEstimate((prev) => ({
+        ...prev,
+        paymentInfo: {
+          ...prev.paymentInfo,
+          roundingType: '', // 버림 타입 해제
+        },
+        serviceData: filteredServiceData, // 필터링된 서비스 물품 목록으로 업데이트
+      }));
+
+      // 알림 메시지 표시
+      showNotification('금액 변경으로 인해 버림 타입이 자동으로 해제되었습니다.');
+    }
+  }, [
+    estimate.calculatedValues.productTotal, // 상품/부품 합계 변경 감지
+    estimate.paymentInfo.laborCost, // 공임비 변경 감지
+    estimate.paymentInfo.setupCost, // 세팅비 변경 감지
+    estimate.paymentInfo.tuningCost, // 튜닝금액 변경 감지
+    estimate.paymentInfo.warrantyFee, // 보증관리비 변경 감지
+    estimate.paymentInfo.discount, // 할인 변경 감지
+  ]);
+
   // 금액 계산 함수 - UI 상태 업데이트
   const calculateValues = () => {
     try {
@@ -205,6 +244,20 @@ export default function EstimateCreatePage() {
       processedValue = value === '' ? 0 : Number(value);
     } else if (name === 'releaseDate') {
       processedValue = value; // 날짜는 문자열로 유지
+    } else if (
+      [
+        'laborCost',
+        'tuningCost',
+        'setupCost',
+        'warrantyFee',
+        'discount',
+        'deposit',
+        'shippingCost',
+      ].includes(name) &&
+      type === 'text'
+    ) {
+      // 포맷팅된 금액 입력 처리 - 숫자가 아닌 문자 제거 후 숫자로 변환
+      processedValue = value === '' ? 0 : Number(value.replace(/[^\d]/g, ''));
     } else {
       processedValue = value;
     }
@@ -299,10 +352,21 @@ export default function EstimateCreatePage() {
   // 상품 정보 변경 핸들러
   const handleTableDataChange = (index, field, value) => {
     const updatedTableData = [...estimate.tableData];
-    updatedTableData[index] = {
-      ...updatedTableData[index],
-      [field]: value,
-    };
+
+    // 가격 필드인 경우 숫자만 입력 가능하도록 처리
+    if (field === 'price') {
+      // 콤마 제거 후 숫자만 추출
+      const numericValue = value.replace(/[^\d]/g, '');
+      updatedTableData[index] = {
+        ...updatedTableData[index],
+        [field]: numericValue ? formatNumber(numericValue) : '',
+      };
+    } else {
+      updatedTableData[index] = {
+        ...updatedTableData[index],
+        [field]: value,
+      };
+    }
 
     setEstimate({
       ...estimate,
@@ -460,7 +524,7 @@ export default function EstimateCreatePage() {
               category,
               productName,
               quantity,
-              price,
+              price: formatNumber(price),
               productCode: '',
               distributor: '',
               reconfirm: '',
@@ -489,7 +553,7 @@ export default function EstimateCreatePage() {
                 category,
                 productName,
                 quantity,
-                price,
+                price: formatNumber(price),
                 productCode: '',
                 distributor: '',
                 reconfirm: '',
@@ -786,7 +850,6 @@ export default function EstimateCreatePage() {
                 value={estimate.customerInfo.pcNumber}
                 onChange={handleCustomerInfoChange}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="2504PC"
               />
             </div>
           </div>
@@ -1506,9 +1569,13 @@ export default function EstimateCreatePage() {
                   </div>
                   {directInputFields.laborCost ? (
                     <input
-                      type="number"
+                      type="text"
                       name="laborCost"
-                      value={estimate.paymentInfo.laborCost}
+                      value={
+                        estimate.paymentInfo.laborCost === 0
+                          ? ''
+                          : formatNumber(estimate.paymentInfo.laborCost)
+                      }
                       onChange={handlePaymentInfoChange}
                       className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
@@ -1553,9 +1620,13 @@ export default function EstimateCreatePage() {
                   </div>
                   {directInputFields.tuningCost ? (
                     <input
-                      type="number"
+                      type="text"
                       name="tuningCost"
-                      value={estimate.paymentInfo.tuningCost}
+                      value={
+                        estimate.paymentInfo.tuningCost === 0
+                          ? ''
+                          : formatNumber(estimate.paymentInfo.tuningCost)
+                      }
                       onChange={handlePaymentInfoChange}
                       className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
@@ -1600,9 +1671,13 @@ export default function EstimateCreatePage() {
                   </div>
                   {directInputFields.setupCost ? (
                     <input
-                      type="number"
+                      type="text"
                       name="setupCost"
-                      value={estimate.paymentInfo.setupCost}
+                      value={
+                        estimate.paymentInfo.setupCost === 0
+                          ? ''
+                          : formatNumber(estimate.paymentInfo.setupCost)
+                      }
                       onChange={handlePaymentInfoChange}
                       className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
@@ -1647,9 +1722,13 @@ export default function EstimateCreatePage() {
                   </div>
                   {directInputFields.warrantyFee ? (
                     <input
-                      type="number"
+                      type="text"
                       name="warrantyFee"
-                      value={estimate.paymentInfo.warrantyFee}
+                      value={
+                        estimate.paymentInfo.warrantyFee === 0
+                          ? ''
+                          : formatNumber(estimate.paymentInfo.warrantyFee)
+                      }
                       onChange={handlePaymentInfoChange}
                       className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
@@ -1665,9 +1744,13 @@ export default function EstimateCreatePage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700">할인</label>
                   <input
-                    type="number"
+                    type="text"
                     name="discount"
-                    value={estimate.paymentInfo.discount === 0 ? '' : estimate.paymentInfo.discount}
+                    value={
+                      estimate.paymentInfo.discount === 0
+                        ? ''
+                        : formatNumber(estimate.paymentInfo.discount)
+                    }
                     onChange={handlePaymentInfoChange}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
@@ -1676,9 +1759,13 @@ export default function EstimateCreatePage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700">계약금</label>
                   <input
-                    type="number"
+                    type="text"
                     name="deposit"
-                    value={estimate.paymentInfo.deposit === 0 ? '' : estimate.paymentInfo.deposit}
+                    value={
+                      estimate.paymentInfo.deposit === 0
+                        ? ''
+                        : formatNumber(estimate.paymentInfo.deposit)
+                    }
                     onChange={handlePaymentInfoChange}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
@@ -1764,12 +1851,12 @@ export default function EstimateCreatePage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700">배송+설비 비용</label>
                   <input
-                    type="number"
+                    type="text"
                     name="shippingCost"
                     value={
                       estimate.paymentInfo.shippingCost === 0
                         ? ''
-                        : estimate.paymentInfo.shippingCost
+                        : formatNumber(estimate.paymentInfo.shippingCost)
                     }
                     onChange={handlePaymentInfoChange}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -1827,6 +1914,35 @@ export default function EstimateCreatePage() {
                       estimate.paymentInfo.discount > 0
                         ? `할인(-${formatNumber(estimate.paymentInfo.discount)}원)`
                         : null,
+                      // 버림 타입이 활성화된 경우 버려진 금액 표시
+                      (() => {
+                        if (estimate.paymentInfo.roundingType) {
+                          // 현재 총 구입 금액 (버려지기 전 금액)
+                          const originalTotal =
+                            estimate.calculatedValues.productTotal +
+                            (estimate.paymentInfo.laborCost || 0) +
+                            (estimate.paymentInfo.tuningCost || 0) +
+                            (estimate.paymentInfo.setupCost || 0) +
+                            (estimate.paymentInfo.warrantyFee || 0) -
+                            (estimate.paymentInfo.discount || 0);
+
+                          // 버림 단위 설정
+                          let divisor = 100; // 기본값: 백단위
+                          if (estimate.paymentInfo.roundingType === '1000down') divisor = 1000;
+                          if (estimate.paymentInfo.roundingType === '10000down') divisor = 10000;
+
+                          // 버려진 금액 계산
+                          const quotient = Math.floor(originalTotal / divisor);
+                          const roundedTotal = quotient * divisor;
+                          const remainder = originalTotal - roundedTotal;
+
+                          // 버려진 금액이 있는 경우만 표시
+                          if (remainder > 0) {
+                            return `끝자리 버림(-${formatNumber(remainder)}원)`;
+                          }
+                        }
+                        return null;
+                      })(),
                     ].filter(Boolean);
 
                     // 요소가 없으면 빈 배열 반환

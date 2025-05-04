@@ -280,7 +280,9 @@ export default function EstimateDetailPage() {
                       {item.productName || '-'}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap text-sm">{item.quantity || '-'}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.price || '-'}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm">
+                      {item.price ? formatNumber(item.price) : '-'}
+                    </td>
                     <td className="px-3 py-2 whitespace-nowrap text-sm">
                       {item.productCode || '-'}
                     </td>

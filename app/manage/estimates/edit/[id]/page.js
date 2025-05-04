@@ -109,10 +109,21 @@ export default function EstimateEditPage() {
   // 상품 정보 변경 핸들러
   const handleTableDataChange = (index, field, value) => {
     const updatedTableData = [...estimate.tableData];
-    updatedTableData[index] = {
-      ...updatedTableData[index],
-      [field]: value,
-    };
+
+    // 가격 필드인 경우 숫자만 입력 가능하도록 처리
+    if (field === 'price') {
+      // 콤마 제거 후 숫자만 추출
+      const numericValue = value.replace(/[^\d]/g, '');
+      updatedTableData[index] = {
+        ...updatedTableData[index],
+        [field]: numericValue ? formatNumber(numericValue) : '',
+      };
+    } else {
+      updatedTableData[index] = {
+        ...updatedTableData[index],
+        [field]: value,
+      };
+    }
 
     setEstimate({
       ...estimate,
