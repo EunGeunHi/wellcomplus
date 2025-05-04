@@ -1,30 +1,78 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { KingOnlySection } from '@/app/components/ProtectedContent';
 import KingFallback from '@/app/components/kingFallback';
-import { formatDate } from '@/utils/dateFormat';
 import { formatNumber } from '@/utils/numberUtils';
 import { formatPhoneNumberString } from '@/utils/phoneFormatter';
 import Link from 'next/link';
 
-export default function EstimateEditPage() {
-  const params = useParams();
+export default function EstimateCreatePage() {
   const router = useRouter();
-  const { id } = params;
-
-  const [estimate, setEstimate] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [notification, setNotification] = useState({ message: '', show: false, fadeOut: false });
   const [focusedInput, setFocusedInput] = useState(null);
   // notes 메모 상태 관리
   const [showNotesModal, setShowNotesModal] = useState(false);
 
+  // 오늘 날짜 기준으로 PC번호 기본값 생성 (예: 2024년 5월 -> 2405PC)
+  const getDefaultPcNumber = () => {
+    const today = new Date();
+    const year = today.getFullYear().toString().slice(-2); // 연도의 마지막 2자리
+    const month = (today.getMonth() + 1).toString().padStart(2, '0'); // 월 (01-12 형식)
+    return `${year}${month}PC`;
+  };
+
   // 견적 유형 옵션
   const estimateTypeOptions = ['예전데이터', '컴퓨터견적', '프린터견적', '노트북견적', 'AS관련'];
+
+  // 초기 견적 상태 설정
+  const [estimate, setEstimate] = useState({
+    estimateType: '',
+    customerInfo: {
+      name: '',
+      phone: '',
+      pcNumber: getDefaultPcNumber(), // PC번호 기본값 설정
+      contractType: '일반의뢰',
+      saleType: '해당없음',
+      purchaseType: '해당없음',
+      purchaseTypeName: '',
+      purpose: '',
+      asCondition: '본인방문조건',
+      os: 'win11',
+      manager: '김선식',
+    },
+
+    tableData: [], // 상품 데이터
+
+    serviceData: [], // 서비스 물품 데이터
+
+    // 결제 정보
+    paymentInfo: {
+      laborCost: 0,
+      tuningCost: 0,
+      setupCost: 0,
+      warrantyFee: 0,
+      discount: 0,
+      deposit: 0,
+      includeVat: true,
+      vatRate: 10,
+      roundingType: '',
+      paymentMethod: '카드',
+      shippingCost: 0,
+      releaseDate: '',
+    },
+    calculatedValues: {
+      productTotal: 0,
+      totalPurchase: 0,
+      vatAmount: 0,
+      finalPayment: 0,
+    },
+    isContractor: false,
+    estimateDescription: '', // 견적설명(견적서 보임)
+    notes: '', // 참고사항(견적서 안보임)
+  });
 
   // 직접 입력 UI 상태 관리를 위한 별도의 상태
   const [isPaymentMethodDirectInput, setIsPaymentMethodDirectInput] = useState(false);
@@ -111,20 +159,17 @@ export default function EstimateEditPage() {
 
   // 금액 계산을 위한 useEffect
   useEffect(() => {
-    if (estimate) {
-      calculateValues();
-    }
-  }, [estimate?.tableData, estimate?.paymentInfo]);
+    calculateValues();
+  }, [estimate.tableData, estimate.paymentInfo]);
 
   // 버림 타입 자동 해제를 위한 useEffect
   useEffect(() => {
-    if (!estimate) return;
-
     // 버림 타입이 선택되어 있는 경우에만 실행
     if (estimate.paymentInfo.roundingType) {
       // 서비스 물품 중 "끝자리DC"로 시작하는 항목 제거
-      const filteredServiceData =
-        estimate.serviceData?.filter((item) => !item.productName.startsWith('끝자리DC')) || [];
+      const filteredServiceData = estimate.serviceData.filter(
+        (item) => !item.productName.startsWith('끝자리DC')
+      );
 
       // 버림 타입 해제
       setEstimate((prev) => ({
@@ -140,12 +185,12 @@ export default function EstimateEditPage() {
       showNotification('금액 변경으로 인해 버림 타입이 자동으로 해제되었습니다.');
     }
   }, [
-    estimate?.calculatedValues?.productTotal, // 상품/부품 합계 변경 감지
-    estimate?.paymentInfo?.laborCost, // 공임비 변경 감지
-    estimate?.paymentInfo?.setupCost, // 세팅비 변경 감지
-    estimate?.paymentInfo?.tuningCost, // 튜닝금액 변경 감지
-    estimate?.paymentInfo?.warrantyFee, // 보증관리비 변경 감지
-    estimate?.paymentInfo?.discount, // 할인 변경 감지
+    estimate.calculatedValues.productTotal, // 상품/부품 합계 변경 감지
+    estimate.paymentInfo.laborCost, // 공임비 변경 감지
+    estimate.paymentInfo.setupCost, // 세팅비 변경 감지
+    estimate.paymentInfo.tuningCost, // 튜닝금액 변경 감지
+    estimate.paymentInfo.warrantyFee, // 보증관리비 변경 감지
+    estimate.paymentInfo.discount, // 할인 변경 감지
   ]);
 
   // 금액 계산 함수 - UI 상태 업데이트
@@ -163,55 +208,6 @@ export default function EstimateEditPage() {
       console.error('금액 계산 중 오류 발생:', error);
     }
   };
-
-  //견적데이터 불러오기
-  useEffect(() => {
-    const fetchEstimate = async () => {
-      if (!id) return;
-
-      try {
-        setLoading(true);
-        const response = await fetch(`/api/estimates/${id}`);
-
-        if (!response.ok) {
-          throw new Error('견적 정보를 불러오는데 실패했습니다.');
-        }
-
-        const data = await response.json();
-        setEstimate(data.estimate);
-
-        // 직접 입력 필드 상태 설정
-        setIsPaymentMethodDirectInput(
-          !['카드', '카드결제 DC', '현금'].includes(data.estimate.paymentInfo?.paymentMethod || '')
-        );
-
-        // 출고일자가 있는 경우 YYYY-MM-DD 형식으로 변환
-        if (data.estimate?.paymentInfo?.releaseDate) {
-          // MongoDB에서 가져온 날짜 문자열 또는 Date 객체를 처리
-          let releaseDate = data.estimate.paymentInfo.releaseDate;
-
-          // 문자열이나 Date 객체에서 YYYY-MM-DD 형식으로 변환
-          if (releaseDate) {
-            const date = new Date(releaseDate);
-            if (!isNaN(date.getTime())) {
-              const year = date.getFullYear();
-              const month = String(date.getMonth() + 1).padStart(2, '0');
-              const day = String(date.getDate()).padStart(2, '0');
-
-              data.estimate.paymentInfo.releaseDate = `${year}-${month}-${day}`;
-            }
-          }
-        }
-      } catch (err) {
-        console.error('견적 상세 조회 오류:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEstimate();
-  }, [id]);
 
   // 고객 정보 변경 핸들러
   const handleCustomerInfoChange = (e) => {
@@ -393,7 +389,7 @@ export default function EstimateEditPage() {
 
     setEstimate({
       ...estimate,
-      tableData: [...(estimate.tableData || []), newProduct],
+      tableData: [...estimate.tableData, newProduct],
     });
   };
 
@@ -408,7 +404,7 @@ export default function EstimateEditPage() {
     });
   };
 
-  // 전체 상품 삭제 핸들러
+  // 전체 상품 삭제 핸들러 추가
   const handleRemoveAllProducts = () => {
     if (confirm('모든 상품을 삭제하시겠습니까?')) {
       setEstimate({
@@ -429,7 +425,7 @@ export default function EstimateEditPage() {
 
   // 서비스 상품 정보 변경 핸들러
   const handleServiceDataChange = (index, field, value) => {
-    const updatedServiceData = [...(estimate.serviceData || [])];
+    const updatedServiceData = [...estimate.serviceData];
     updatedServiceData[index] = {
       ...updatedServiceData[index],
       [field]: value,
@@ -451,7 +447,7 @@ export default function EstimateEditPage() {
 
     setEstimate({
       ...estimate,
-      serviceData: [...(estimate.serviceData || []), newServiceItem],
+      serviceData: [...estimate.serviceData, newServiceItem],
     });
   };
 
@@ -465,7 +461,7 @@ export default function EstimateEditPage() {
 
     setEstimate({
       ...estimate,
-      serviceData: [...(estimate.serviceData || []), newServiceItem],
+      serviceData: [...estimate.serviceData, newServiceItem],
     });
 
     // 알림 메시지 표시
@@ -474,7 +470,7 @@ export default function EstimateEditPage() {
 
   // 서비스 상품 삭제 핸들러
   const handleRemoveServiceItem = (index) => {
-    const updatedServiceData = [...(estimate.serviceData || [])];
+    const updatedServiceData = [...estimate.serviceData];
     updatedServiceData.splice(index, 1);
 
     setEstimate({
@@ -509,175 +505,6 @@ export default function EstimateEditPage() {
         setNotification({ message: '', show: false, fadeOut: false });
       }, 500);
     }, 2500);
-  };
-
-  // 포커스 이벤트 핸들러
-  const handleFocus = (index, field) => {
-    setFocusedInput(`${index}-${field}`);
-  };
-
-  // 포커스 아웃 이벤트 핸들러
-  const handleBlur = () => {
-    setFocusedInput(null);
-  };
-
-  // 버림 타입 변경 핸들러
-  const handleRoundingTypeClick = (type) => {
-    // 이미 선택된 타입이면 선택 해제(빈 문자열로 설정), 아니면 해당 타입으로 설정
-    const newType = estimate.paymentInfo.roundingType === type ? '' : type;
-
-    // 타입이 선택 해제되었으면 추가 처리 없이 상태만 업데이트
-    if (newType === '') {
-      // 서비스 물품 중 "끝자리DC"로 시작하는 항목 제거
-      const filteredServiceData = (estimate.serviceData || []).filter(
-        (item) => !item.productName.startsWith('끝자리DC')
-      );
-
-      setEstimate({
-        ...estimate,
-        paymentInfo: {
-          ...estimate.paymentInfo,
-          roundingType: newType,
-        },
-        serviceData: filteredServiceData, // 필터링된 서비스 물품 목록으로 업데이트
-      });
-
-      // 알림 메시지 표시
-      showNotification('버림 타입이 해제되었습니다. 관련 끝자리DC 항목이 제거되었습니다.');
-      return;
-    }
-
-    // 현재 totalPurchase 값 가져오기
-    const currentTotal = estimate.calculatedValues.totalPurchase;
-
-    // 버림 단위 설정
-    let divisor = 100; // 기본값: 백단위
-    if (type === '1000down') divisor = 1000;
-    if (type === '10000down') divisor = 10000;
-
-    // 해당 단위로 나눈 몫 계산 (버림 처리)
-    const quotient = Math.floor(currentTotal / divisor);
-    const roundedTotal = quotient * divisor;
-
-    // 버려진 나머지 금액 계산
-    const remainder = currentTotal - roundedTotal;
-
-    // 기존 서비스 물품 중 "끝자리DC"로 시작하는 항목 모두 제거
-    const filteredServiceData = (estimate.serviceData || []).filter(
-      (item) => !item.productName.startsWith('끝자리DC')
-    );
-
-    // 서비스 물품에 추가할 항목 생성
-    const newServiceItem = {
-      productName: `끝자리DC -${formatNumber(remainder)}원`,
-      quantity: '1',
-      remarks: '',
-    };
-
-    // 상태 업데이트: roundingType 설정 및 서비스 물품 추가
-    setEstimate((prev) => ({
-      ...prev,
-      paymentInfo: {
-        ...prev.paymentInfo,
-        roundingType: newType,
-      },
-      serviceData: [...filteredServiceData, newServiceItem], // 기존 DC 항목 제거 후 새 항목 추가
-    }));
-
-    // 알림 메시지 표시
-    showNotification(`${divisor}원 단위 버림 처리 완료. 끝자리 DC가 서비스 물품에 추가되었습니다.`);
-  };
-
-  // 결제 방법 선택 핸들러
-  const handlePaymentMethodClick = (method) => {
-    // 일반 결제 방법 버튼을 클릭한 경우
-    if (method !== '직접입력') {
-      // 이미 선택된 방법이면 선택 해제(빈 문자열로 설정), 아니면 해당 방법으로 설정
-      const newMethod = estimate.paymentInfo.paymentMethod === method ? '' : method;
-
-      setEstimate({
-        ...estimate,
-        paymentInfo: {
-          ...estimate.paymentInfo,
-          paymentMethod: newMethod,
-        },
-      });
-
-      // 직접 입력 모드 해제
-      setIsPaymentMethodDirectInput(false);
-    } else {
-      // 직접입력 버튼을 클릭한 경우
-      const newDirectInputMode = !isPaymentMethodDirectInput;
-
-      // 직접 입력 모드 토글
-      setIsPaymentMethodDirectInput(newDirectInputMode);
-
-      // 직접 입력 모드를 해제할 때 paymentMethod 값 초기화
-      if (!newDirectInputMode) {
-        setEstimate({
-          ...estimate,
-          paymentInfo: {
-            ...estimate.paymentInfo,
-            paymentMethod: '',
-          },
-        });
-      }
-    }
-  };
-
-  // 수정된 견적 저장
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      setSubmitting(true);
-
-      const response = await fetch(`/api/estimates/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(estimate),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '견적 수정 중 오류가 발생했습니다.');
-      }
-
-      alert('견적이 성공적으로 수정되었습니다.');
-
-      // 캐시 무효화를 위한 추가 조치
-      try {
-        await fetch('/api/invalidate-cache', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ path: '/manage/estimates/search' }),
-        });
-      } catch (error) {
-        console.error('캐시 무효화 요청 실패:', error);
-      }
-
-      // 로컬 스토리지에 타임스탬프 저장
-      localStorage.setItem('estimatesRefreshTimestamp', Date.now().toString());
-
-      // 상세 페이지로 이동
-      const timestamp = new Date().getTime();
-      // window.location.href를 사용해 완전히 새로운 페이지 로드 강제
-      window.location.href = `/manage/estimates/search?refresh=${timestamp}`;
-    } catch (err) {
-      console.error('견적 수정 오류:', err);
-      alert(`수정 실패: ${err.message}`);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // 취소 버튼
-  const handleCancel = () => {
-    if (confirm('수정을 취소하시겠습니까? 변경사항이 저장되지 않습니다.')) {
-      router.back();
-    }
   };
 
   // 상품 일괄 입력 처리 핸들러
@@ -776,51 +603,168 @@ export default function EstimateEditPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <KingOnlySection fallback={<KingFallback />}>
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
-        </div>
-      </KingOnlySection>
-    );
-  }
+  // 견적 저장
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (error) {
-    return (
-      <KingOnlySection fallback={<KingFallback />}>
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="bg-red-100 p-4 rounded-lg text-red-700 mb-4">{error}</div>
-          <button
-            onClick={() => router.back()}
-            className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded"
-          >
-            뒤로 가기
-          </button>
-        </div>
-      </KingOnlySection>
-    );
-  }
+    try {
+      setSubmitting(true);
 
-  if (!estimate) {
-    return (
-      <KingOnlySection fallback={<KingFallback />}>
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="bg-yellow-100 p-4 rounded-lg text-yellow-700 mb-4">
-            견적 정보를 찾을 수 없습니다.
-          </div>
-          <button
-            onClick={() => router.back()}
-            className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded"
-          >
-            뒤로 가기
-          </button>
-        </div>
-      </KingOnlySection>
+      // 서버에 데이터 전송 - 현재 상태 그대로 사용
+      const response = await fetch('/api/estimates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(estimate),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '견적 생성 중 오류가 발생했습니다.');
+      }
+
+      const data = await response.json();
+      alert('견적이 성공적으로 생성되었습니다.');
+
+      // 캐시 무효화를 위한 조치
+      try {
+        await fetch('/api/invalidate-cache', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: '/manage/estimates/search' }),
+        });
+      } catch (error) {
+        console.error('캐시 무효화 요청 실패:', error);
+      }
+
+      // 로컬 스토리지에 타임스탬프 저장
+      localStorage.setItem('estimatesRefreshTimestamp', Date.now().toString());
+
+      // 검색 페이지로 이동
+      const timestamp = new Date().getTime();
+      window.location.href = `/manage/estimates/search?refresh=${timestamp}`;
+    } catch (err) {
+      console.error('견적 생성 오류:', err);
+      alert(`생성 실패: ${err.message}`);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // 포커스 이벤트 핸들러
+  const handleFocus = (index, field) => {
+    setFocusedInput(`${index}-${field}`);
+  };
+
+  // 포커스 아웃 이벤트 핸들러
+  const handleBlur = () => {
+    setFocusedInput(null);
+  };
+
+  // 버림 타입 변경 핸들러
+  const handleRoundingTypeClick = (type) => {
+    // 이미 선택된 타입이면 선택 해제(빈 문자열로 설정), 아니면 해당 타입으로 설정
+    const newType = estimate.paymentInfo.roundingType === type ? '' : type;
+
+    // 타입이 선택 해제되었으면 추가 처리 없이 상태만 업데이트
+    if (newType === '') {
+      // 서비스 물품 중 "끝자리DC"로 시작하는 항목 제거
+      const filteredServiceData = estimate.serviceData.filter(
+        (item) => !item.productName.startsWith('끝자리DC')
+      );
+
+      setEstimate({
+        ...estimate,
+        paymentInfo: {
+          ...estimate.paymentInfo,
+          roundingType: newType,
+        },
+        serviceData: filteredServiceData, // 필터링된 서비스 물품 목록으로 업데이트
+      });
+
+      // 알림 메시지 표시
+      showNotification('버림 타입이 해제되었습니다. 관련 끝자리DC 항목이 제거되었습니다.');
+      return;
+    }
+
+    // 현재 totalPurchase 값 가져오기
+    const currentTotal = estimate.calculatedValues.totalPurchase;
+
+    // 버림 단위 설정
+    let divisor = 100; // 기본값: 백단위
+    if (type === '1000down') divisor = 1000;
+    if (type === '10000down') divisor = 10000;
+
+    // 해당 단위로 나눈 몫 계산 (버림 처리)
+    const quotient = Math.floor(currentTotal / divisor);
+    const roundedTotal = quotient * divisor;
+
+    // 버려진 나머지 금액 계산
+    const remainder = currentTotal - roundedTotal;
+
+    // 기존 서비스 물품 중 "끝자리DC"로 시작하는 항목 모두 제거
+    const filteredServiceData = estimate.serviceData.filter(
+      (item) => !item.productName.startsWith('끝자리DC')
     );
-  }
+
+    // 서비스 물품에 추가할 항목 생성
+    const newServiceItem = {
+      productName: `끝자리DC -${formatNumber(remainder)}원`,
+      quantity: '1',
+      remarks: '',
+    };
+
+    // 상태 업데이트: roundingType 설정 및 서비스 물품 추가
+    setEstimate((prev) => ({
+      ...prev,
+      paymentInfo: {
+        ...prev.paymentInfo,
+        roundingType: newType,
+      },
+      serviceData: [...filteredServiceData, newServiceItem], // 기존 DC 항목 제거 후 새 항목 추가
+    }));
+
+    // 알림 메시지 표시
+    showNotification(`${divisor}원 단위 버림 처리 완료. 끝자리 DC가 서비스 물품에 추가되었습니다.`);
+  };
+
+  // 결제 방법 선택 핸들러
+  const handlePaymentMethodClick = (method) => {
+    // 일반 결제 방법 버튼을 클릭한 경우
+    if (method !== '직접입력') {
+      // 이미 선택된 방법이면 선택 해제(빈 문자열로 설정), 아니면 해당 방법으로 설정
+      const newMethod = estimate.paymentInfo.paymentMethod === method ? '' : method;
+
+      setEstimate({
+        ...estimate,
+        paymentInfo: {
+          ...estimate.paymentInfo,
+          paymentMethod: newMethod,
+        },
+      });
+
+      // 직접 입력 모드 해제
+      setIsPaymentMethodDirectInput(false);
+    } else {
+      // 직접입력 버튼을 클릭한 경우
+      const newDirectInputMode = !isPaymentMethodDirectInput;
+
+      // 직접 입력 모드 토글
+      setIsPaymentMethodDirectInput(newDirectInputMode);
+
+      // 직접 입력 모드를 해제할 때 paymentMethod 값 초기화
+      if (!newDirectInputMode) {
+        setEstimate({
+          ...estimate,
+          paymentInfo: {
+            ...estimate.paymentInfo,
+            paymentMethod: '',
+          },
+        });
+      }
+    }
+  };
 
   return (
     <KingOnlySection fallback={<KingFallback />}>
@@ -839,13 +783,13 @@ export default function EstimateEditPage() {
 
           <div className="flex flex-wrap justify-between items-center mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">견적 정보 수정</h1>
+              <h1 className="text-2xl font-bold text-gray-800">새 견적 생성</h1>
               <div className="flex mt-1 items-center">
                 <label className="block text-sm font-medium text-gray-700 w-[65px] mr-0">
                   견적 유형
                 </label>
                 <select
-                  value={estimate?.estimateType || ''}
+                  value={estimate.estimateType}
                   onChange={handleEstimateTypeChange}
                   className="border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 >
@@ -862,7 +806,7 @@ export default function EstimateEditPage() {
               <label className="flex items-center space-x-2 mr-4 bg-blue-50 px-3 py-2 rounded-lg border border-blue-100">
                 <input
                   type="checkbox"
-                  checked={estimate?.isContractor || false}
+                  checked={estimate.isContractor}
                   onChange={handleContractorChange}
                   className="h-4 w-4 text-blue-600 rounded"
                 />
@@ -873,14 +817,7 @@ export default function EstimateEditPage() {
                 disabled={submitting}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm transition-colors duration-200 font-medium"
               >
-                {submitting ? '수정 중...' : '수정하기'}
-              </button>
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg shadow-sm transition-colors duration-200"
-              >
-                취소
+                {submitting ? '저장 중...' : '저장하기'}
               </button>
             </div>
           </div>
@@ -894,7 +831,7 @@ export default function EstimateEditPage() {
                 <input
                   type="text"
                   name="name"
-                  value={estimate.customerInfo?.name || ''}
+                  value={estimate.customerInfo.name}
                   onChange={handleCustomerInfoChange}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
@@ -904,7 +841,7 @@ export default function EstimateEditPage() {
                 <input
                   type="text"
                   name="phone"
-                  value={estimate.customerInfo?.phone || ''}
+                  value={estimate.customerInfo.phone}
                   onChange={handleCustomerInfoChange}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
@@ -914,7 +851,7 @@ export default function EstimateEditPage() {
                 <input
                   type="text"
                   name="pcNumber"
-                  value={estimate.customerInfo?.pcNumber || ''}
+                  value={estimate.customerInfo.pcNumber}
                   onChange={handleCustomerInfoChange}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
@@ -940,8 +877,8 @@ export default function EstimateEditPage() {
                     }}
                     className={`px-4 py-2 rounded-md text-sm ${
                       (option === '직접입력' &&
-                        estimate.customerInfo?.contractType !== '일반의뢰') ||
-                      estimate.customerInfo?.contractType === option
+                        estimate.customerInfo.contractType !== '일반의뢰') ||
+                      estimate.customerInfo.contractType === option
                         ? 'bg-blue-500 text-white'
                         : 'bg-gray-200 text-gray-700'
                     }`}
@@ -949,11 +886,11 @@ export default function EstimateEditPage() {
                     {option}
                   </button>
                 ))}
-                {estimate.customerInfo?.contractType !== '일반의뢰' && (
+                {estimate.customerInfo.contractType !== '일반의뢰' && (
                   <input
                     type="text"
                     placeholder="직접 입력"
-                    value={estimate.customerInfo?.contractType || ''}
+                    value={estimate.customerInfo.contractType || ''}
                     onChange={(e) => {
                       setEstimate({
                         ...estimate,
@@ -989,9 +926,9 @@ export default function EstimateEditPage() {
                     className={`px-4 py-2 rounded-md text-sm ${
                       (option === '직접입력' &&
                         !['부품 조립형', '본인설치', '해당없음'].includes(
-                          estimate.customerInfo?.saleType
+                          estimate.customerInfo.saleType
                         )) ||
-                      estimate.customerInfo?.saleType === option
+                      estimate.customerInfo.saleType === option
                         ? 'bg-blue-500 text-white'
                         : 'bg-gray-200 text-gray-700'
                     }`}
@@ -1000,12 +937,12 @@ export default function EstimateEditPage() {
                   </button>
                 ))}
                 {!['부품 조립형', '본인설치', '해당없음'].includes(
-                  estimate.customerInfo?.saleType
+                  estimate.customerInfo.saleType
                 ) && (
                   <input
                     type="text"
                     placeholder="직접 입력"
-                    value={estimate.customerInfo?.saleType || ''}
+                    value={estimate.customerInfo.saleType || ''}
                     onChange={(e) => {
                       setEstimate({
                         ...estimate,
@@ -1041,9 +978,9 @@ export default function EstimateEditPage() {
                     className={`px-4 py-2 rounded-md text-sm ${
                       (option === '직접입력' &&
                         !['지인', '기존회원', '해당없음'].includes(
-                          estimate.customerInfo?.purchaseType
+                          estimate.customerInfo.purchaseType
                         )) ||
-                      estimate.customerInfo?.purchaseType === option
+                      estimate.customerInfo.purchaseType === option
                         ? 'bg-blue-500 text-white'
                         : 'bg-gray-200 text-gray-700'
                     }`}
@@ -1051,13 +988,11 @@ export default function EstimateEditPage() {
                     {option}
                   </button>
                 ))}
-                {!['지인', '기존회원', '해당없음'].includes(
-                  estimate.customerInfo?.purchaseType
-                ) && (
+                {!['지인', '기존회원', '해당없음'].includes(estimate.customerInfo.purchaseType) && (
                   <input
                     type="text"
                     placeholder="직접 입력"
-                    value={estimate.customerInfo?.purchaseType || ''}
+                    value={estimate.customerInfo.purchaseType || ''}
                     onChange={(e) => {
                       setEstimate({
                         ...estimate,
@@ -1074,13 +1009,13 @@ export default function EstimateEditPage() {
             </div>
 
             {/* 지인 이름 - 구입형태가 지인일 때만 표시 */}
-            {estimate.customerInfo?.purchaseType === '지인' && (
+            {estimate.customerInfo.purchaseType === '지인' && (
               <div className="mt-2">
                 <label className="block text-sm font-medium text-gray-700">지인 이름</label>
                 <input
                   type="text"
                   name="purchaseTypeName"
-                  value={estimate.customerInfo?.purchaseTypeName || ''}
+                  value={estimate.customerInfo.purchaseTypeName}
                   onChange={handleCustomerInfoChange}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
@@ -1107,9 +1042,9 @@ export default function EstimateEditPage() {
                     className={`px-4 py-2 rounded-md text-sm ${
                       (option === '직접입력' &&
                         !['게임', '문서작업', '영상/이미지편집'].includes(
-                          estimate.customerInfo?.purpose
+                          estimate.customerInfo.purpose
                         )) ||
-                      estimate.customerInfo?.purpose === option
+                      estimate.customerInfo.purpose === option
                         ? 'bg-blue-500 text-white'
                         : 'bg-gray-200 text-gray-700'
                     }`}
@@ -1118,12 +1053,12 @@ export default function EstimateEditPage() {
                   </button>
                 ))}
                 {!['게임', '문서작업', '영상/이미지편집'].includes(
-                  estimate.customerInfo?.purpose
+                  estimate.customerInfo.purpose
                 ) && (
                   <input
                     type="text"
                     placeholder="직접 입력"
-                    value={estimate.customerInfo?.purpose || ''}
+                    value={estimate.customerInfo.purpose || ''}
                     onChange={(e) => {
                       setEstimate({
                         ...estimate,
@@ -1158,8 +1093,8 @@ export default function EstimateEditPage() {
                     }}
                     className={`px-4 py-2 rounded-md text-sm ${
                       (option === '직접입력' &&
-                        !['본인방문조건'].includes(estimate.customerInfo?.asCondition)) ||
-                      estimate.customerInfo?.asCondition === option
+                        !['본인방문조건'].includes(estimate.customerInfo.asCondition)) ||
+                      estimate.customerInfo.asCondition === option
                         ? 'bg-blue-500 text-white'
                         : 'bg-gray-200 text-gray-700'
                     }`}
@@ -1167,11 +1102,11 @@ export default function EstimateEditPage() {
                     {option}
                   </button>
                 ))}
-                {!['본인방문조건'].includes(estimate.customerInfo?.asCondition) && (
+                {!['본인방문조건'].includes(estimate.customerInfo.asCondition) && (
                   <input
                     type="text"
                     placeholder="직접 입력"
-                    value={estimate.customerInfo?.asCondition || ''}
+                    value={estimate.customerInfo.asCondition || ''}
                     onChange={(e) => {
                       setEstimate({
                         ...estimate,
@@ -1206,8 +1141,8 @@ export default function EstimateEditPage() {
                     }}
                     className={`px-4 py-2 rounded-md text-sm ${
                       (option === '직접입력' &&
-                        !['win10', 'win11'].includes(estimate.customerInfo?.os)) ||
-                      estimate.customerInfo?.os === option
+                        !['win10', 'win11'].includes(estimate.customerInfo.os)) ||
+                      estimate.customerInfo.os === option
                         ? 'bg-blue-500 text-white'
                         : 'bg-gray-200 text-gray-700'
                     }`}
@@ -1215,11 +1150,11 @@ export default function EstimateEditPage() {
                     {option}
                   </button>
                 ))}
-                {!['win10', 'win11'].includes(estimate.customerInfo?.os) && (
+                {!['win10', 'win11'].includes(estimate.customerInfo.os) && (
                   <input
                     type="text"
                     placeholder="직접 입력"
-                    value={estimate.customerInfo?.os || ''}
+                    value={estimate.customerInfo.os || ''}
                     onChange={(e) => {
                       setEstimate({
                         ...estimate,
@@ -1253,7 +1188,7 @@ export default function EstimateEditPage() {
                       });
                     }}
                     className={`px-4 py-2 rounded-md text-sm ${
-                      estimate.customerInfo?.manager === option
+                      estimate.customerInfo.manager === option
                         ? 'bg-blue-500 text-white'
                         : 'bg-gray-200 text-gray-700'
                     }`}
@@ -1269,7 +1204,7 @@ export default function EstimateEditPage() {
                 견적 설명 및 참고사항(견적서에 내용추가 가능)
               </label>
               <textarea
-                value={estimate.estimateDescription || ''}
+                value={estimate.estimateDescription}
                 onChange={handleDescriptionChange}
                 rows={4}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -1354,7 +1289,7 @@ export default function EstimateEditPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {estimate.tableData?.map((item, index) => (
+                  {estimate.tableData.map((item, index) => (
                     <tr key={index}>
                       <td className="px-1 py-1 text-center">
                         <button
@@ -1487,7 +1422,7 @@ export default function EstimateEditPage() {
                       </td>
                     </tr>
                   ))}
-                  {(!estimate.tableData || estimate.tableData.length === 0) && (
+                  {estimate.tableData.length === 0 && (
                     <tr>
                       <td colSpan="9" className="px-3 py-4 text-center text-gray-500">
                         등록된 상품이 없습니다. [상품 추가] 버튼을 클릭하여 상품을 추가하세요.
@@ -1574,7 +1509,7 @@ export default function EstimateEditPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {estimate.serviceData?.map((item, index) => (
+                      {estimate.serviceData.map((item, index) => (
                         <tr key={index}>
                           <td className="px-1 py-1 text-center">
                             <button
@@ -1631,7 +1566,7 @@ export default function EstimateEditPage() {
                           </td>
                         </tr>
                       ))}
-                      {(!estimate.serviceData || estimate.serviceData.length === 0) && (
+                      {estimate.serviceData.length === 0 && (
                         <tr>
                           <td colSpan="4" className="px-3 py-4 text-center text-gray-500">
                             등록된 서비스 상품이 없습니다. [서비스 상품 추가] 버튼을 클릭하여 서비스
@@ -1663,7 +1598,7 @@ export default function EstimateEditPage() {
                           type="button"
                           onClick={() => handlePaymentButtonClick('laborCost', amount)}
                           className={`px-3 py-1 rounded-md text-xs ${
-                            estimate?.paymentInfo?.laborCost === amount
+                            estimate.paymentInfo.laborCost === amount
                               ? 'bg-blue-500 text-white'
                               : 'bg-gray-200 text-gray-700'
                           }`}
@@ -1688,9 +1623,9 @@ export default function EstimateEditPage() {
                         type="text"
                         name="laborCost"
                         value={
-                          estimate?.paymentInfo?.laborCost === 0
+                          estimate.paymentInfo.laborCost === 0
                             ? ''
-                            : formatNumber(estimate?.paymentInfo?.laborCost)
+                            : formatNumber(estimate.paymentInfo.laborCost)
                         }
                         onChange={handlePaymentInfoChange}
                         className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -1698,7 +1633,7 @@ export default function EstimateEditPage() {
                     ) : (
                       <div className="block w-full py-2 px-0">
                         <span className="text-gray-700">
-                          {formatNumber(estimate?.paymentInfo?.laborCost || 0)}원
+                          {formatNumber(estimate.paymentInfo.laborCost || 0)}원
                         </span>
                       </div>
                     )}
@@ -1714,7 +1649,7 @@ export default function EstimateEditPage() {
                           type="button"
                           onClick={() => handlePaymentButtonClick('tuningCost', amount)}
                           className={`px-3 py-1 rounded-md text-xs ${
-                            estimate?.paymentInfo?.tuningCost === amount
+                            estimate.paymentInfo.tuningCost === amount
                               ? 'bg-blue-500 text-white'
                               : 'bg-gray-200 text-gray-700'
                           }`}
@@ -1739,9 +1674,9 @@ export default function EstimateEditPage() {
                         type="text"
                         name="tuningCost"
                         value={
-                          estimate?.paymentInfo?.tuningCost === 0
+                          estimate.paymentInfo.tuningCost === 0
                             ? ''
-                            : formatNumber(estimate?.paymentInfo?.tuningCost)
+                            : formatNumber(estimate.paymentInfo.tuningCost)
                         }
                         onChange={handlePaymentInfoChange}
                         className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -1749,7 +1684,7 @@ export default function EstimateEditPage() {
                     ) : (
                       <div className="block w-full py-2 px-0">
                         <span className="text-gray-700">
-                          {formatNumber(estimate?.paymentInfo?.tuningCost || 0)}원
+                          {formatNumber(estimate.paymentInfo.tuningCost || 0)}원
                         </span>
                       </div>
                     )}
@@ -1765,7 +1700,7 @@ export default function EstimateEditPage() {
                           type="button"
                           onClick={() => handlePaymentButtonClick('setupCost', amount)}
                           className={`px-3 py-1 rounded-md text-xs ${
-                            estimate?.paymentInfo?.setupCost === amount
+                            estimate.paymentInfo.setupCost === amount
                               ? 'bg-blue-500 text-white'
                               : 'bg-gray-200 text-gray-700'
                           }`}
@@ -1790,9 +1725,9 @@ export default function EstimateEditPage() {
                         type="text"
                         name="setupCost"
                         value={
-                          estimate?.paymentInfo?.setupCost === 0
+                          estimate.paymentInfo.setupCost === 0
                             ? ''
-                            : formatNumber(estimate?.paymentInfo?.setupCost)
+                            : formatNumber(estimate.paymentInfo.setupCost)
                         }
                         onChange={handlePaymentInfoChange}
                         className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -1800,7 +1735,7 @@ export default function EstimateEditPage() {
                     ) : (
                       <div className="block w-full py-2 px-0">
                         <span className="text-gray-700">
-                          {formatNumber(estimate?.paymentInfo?.setupCost || 0)}원
+                          {formatNumber(estimate.paymentInfo.setupCost || 0)}원
                         </span>
                       </div>
                     )}
@@ -1818,7 +1753,7 @@ export default function EstimateEditPage() {
                           type="button"
                           onClick={() => handlePaymentButtonClick('warrantyFee', amount)}
                           className={`px-3 py-1 rounded-md text-xs ${
-                            estimate?.paymentInfo?.warrantyFee === amount
+                            estimate.paymentInfo.warrantyFee === amount
                               ? 'bg-blue-500 text-white'
                               : 'bg-gray-200 text-gray-700'
                           }`}
@@ -1843,9 +1778,9 @@ export default function EstimateEditPage() {
                         type="text"
                         name="warrantyFee"
                         value={
-                          estimate?.paymentInfo?.warrantyFee === 0
+                          estimate.paymentInfo.warrantyFee === 0
                             ? ''
-                            : formatNumber(estimate?.paymentInfo?.warrantyFee)
+                            : formatNumber(estimate.paymentInfo.warrantyFee)
                         }
                         onChange={handlePaymentInfoChange}
                         className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -1853,7 +1788,7 @@ export default function EstimateEditPage() {
                     ) : (
                       <div className="block w-full py-2 px-0">
                         <span className="text-gray-700">
-                          {formatNumber(estimate?.paymentInfo?.warrantyFee || 0)}원
+                          {formatNumber(estimate.paymentInfo.warrantyFee || 0)}원
                         </span>
                       </div>
                     )}
@@ -1865,9 +1800,9 @@ export default function EstimateEditPage() {
                       type="text"
                       name="discount"
                       value={
-                        estimate?.paymentInfo?.discount === 0
+                        estimate.paymentInfo.discount === 0
                           ? ''
-                          : formatNumber(estimate?.paymentInfo?.discount)
+                          : formatNumber(estimate.paymentInfo.discount)
                       }
                       onChange={handlePaymentInfoChange}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -1880,9 +1815,9 @@ export default function EstimateEditPage() {
                       type="text"
                       name="deposit"
                       value={
-                        estimate?.paymentInfo?.deposit === 0
+                        estimate.paymentInfo.deposit === 0
                           ? ''
-                          : formatNumber(estimate?.paymentInfo?.deposit)
+                          : formatNumber(estimate.paymentInfo.deposit)
                       }
                       onChange={handlePaymentInfoChange}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -1902,7 +1837,7 @@ export default function EstimateEditPage() {
                           type="button"
                           onClick={() => handleRoundingTypeClick(option.value)}
                           className={`px-4 py-2 rounded-md text-sm ${
-                            estimate?.paymentInfo?.roundingType === option.value
+                            estimate.paymentInfo.roundingType === option.value
                               ? 'bg-blue-500 text-white'
                               : 'bg-gray-200 text-gray-700'
                           }`}
@@ -1922,8 +1857,7 @@ export default function EstimateEditPage() {
                           onClick={() => handlePaymentMethodClick(method)}
                           className={`px-4 py-2 rounded-md text-sm ${
                             (method === '직접입력' && isPaymentMethodDirectInput) ||
-                            (method !== '직접입력' &&
-                              estimate?.paymentInfo?.paymentMethod === method)
+                            (method !== '직접입력' && estimate.paymentInfo.paymentMethod === method)
                               ? 'bg-blue-500 text-white'
                               : 'bg-gray-200 text-gray-700'
                           }`}
@@ -1936,7 +1870,7 @@ export default function EstimateEditPage() {
                       <input
                         type="text"
                         name="paymentMethod"
-                        value={estimate?.paymentInfo?.paymentMethod}
+                        value={estimate.paymentInfo.paymentMethod}
                         onChange={handlePaymentInfoChange}
                         placeholder="결제 방법 입력"
                         className="mt-2 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -1949,7 +1883,7 @@ export default function EstimateEditPage() {
                       <input
                         type="checkbox"
                         name="includeVat"
-                        checked={estimate?.paymentInfo?.includeVat}
+                        checked={estimate.paymentInfo.includeVat}
                         onChange={handlePaymentInfoChange}
                         className="h-4 w-4 text-blue-600 rounded"
                       />
@@ -1961,7 +1895,7 @@ export default function EstimateEditPage() {
                     <input
                       type="number"
                       name="vatRate"
-                      value={estimate?.paymentInfo?.vatRate}
+                      value={estimate.paymentInfo.vatRate}
                       onChange={handlePaymentInfoChange}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
@@ -1975,9 +1909,9 @@ export default function EstimateEditPage() {
                       type="text"
                       name="shippingCost"
                       value={
-                        estimate?.paymentInfo?.shippingCost === 0
+                        estimate.paymentInfo.shippingCost === 0
                           ? ''
-                          : formatNumber(estimate?.paymentInfo?.shippingCost)
+                          : formatNumber(estimate.paymentInfo.shippingCost)
                       }
                       onChange={handlePaymentInfoChange}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -1988,7 +1922,7 @@ export default function EstimateEditPage() {
                     <input
                       type="date"
                       name="releaseDate"
-                      value={estimate?.paymentInfo?.releaseDate}
+                      value={estimate.paymentInfo.releaseDate}
                       onChange={handlePaymentInfoChange}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
@@ -2003,51 +1937,49 @@ export default function EstimateEditPage() {
                   <div className="flex justify-between">
                     <span className="text-gray-600">상품/부품 합계:</span>
                     <span className="font-medium">
-                      {formatNumber(estimate?.calculatedValues?.productTotal || 0)}원
+                      {formatNumber(estimate.calculatedValues.productTotal || 0)}원
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">총 구입 금액:</span>
                     <span className="font-medium">
-                      {formatNumber(estimate?.calculatedValues?.totalPurchase || 0)}원
+                      {formatNumber(estimate.calculatedValues.totalPurchase || 0)}원
                     </span>
                   </div>
                   <div className="text-xs text-gray-500 ml-4">
                     {/* 값이 0이 아닌 항목들을 필터링 */}
                     {(() => {
                       // 먼저 유효한 항목만 필터링
-                      if (!estimate) return null;
-
                       const items = [
-                        estimate.calculatedValues?.productTotal > 0
+                        estimate.calculatedValues.productTotal > 0
                           ? `상품/부품(${formatNumber(estimate.calculatedValues.productTotal)}원)`
                           : null,
-                        estimate.paymentInfo?.laborCost > 0
+                        estimate.paymentInfo.laborCost > 0
                           ? `공임비(${formatNumber(estimate.paymentInfo.laborCost)}원)`
                           : null,
-                        estimate.paymentInfo?.setupCost > 0
+                        estimate.paymentInfo.setupCost > 0
                           ? `세팅비(${formatNumber(estimate.paymentInfo.setupCost)}원)`
                           : null,
-                        estimate.paymentInfo?.tuningCost > 0
+                        estimate.paymentInfo.tuningCost > 0
                           ? `튜닝금액(${formatNumber(estimate.paymentInfo.tuningCost)}원)`
                           : null,
-                        estimate.paymentInfo?.warrantyFee > 0
+                        estimate.paymentInfo.warrantyFee > 0
                           ? `보증관리비(${formatNumber(estimate.paymentInfo.warrantyFee)}원)`
                           : null,
-                        estimate.paymentInfo?.discount > 0
+                        estimate.paymentInfo.discount > 0
                           ? `할인(-${formatNumber(estimate.paymentInfo.discount)}원)`
                           : null,
                         // 버림 타입이 활성화된 경우 버려진 금액 표시
                         (() => {
-                          if (estimate.paymentInfo?.roundingType) {
+                          if (estimate.paymentInfo.roundingType) {
                             // 현재 총 구입 금액 (버려지기 전 금액)
                             const originalTotal =
-                              estimate.calculatedValues?.productTotal +
-                              (estimate.paymentInfo?.laborCost || 0) +
-                              (estimate.paymentInfo?.tuningCost || 0) +
-                              (estimate.paymentInfo?.setupCost || 0) +
-                              (estimate.paymentInfo?.warrantyFee || 0) -
-                              (estimate.paymentInfo?.discount || 0);
+                              estimate.calculatedValues.productTotal +
+                              (estimate.paymentInfo.laborCost || 0) +
+                              (estimate.paymentInfo.tuningCost || 0) +
+                              (estimate.paymentInfo.setupCost || 0) +
+                              (estimate.paymentInfo.warrantyFee || 0) -
+                              (estimate.paymentInfo.discount || 0);
 
                             // 버림 단위 설정
                             let divisor = 100; // 기본값: 백단위
@@ -2100,13 +2032,13 @@ export default function EstimateEditPage() {
                   <div className="flex justify-between">
                     <span className="text-gray-600">VAT 금액:</span>
                     <span className="font-medium">
-                      {formatNumber(estimate?.calculatedValues?.vatAmount || 0)}원
+                      {formatNumber(estimate.calculatedValues.vatAmount || 0)}원
                     </span>
                   </div>
                   <div className="pt-2 mt-2 border-t border-gray-200 flex justify-between">
                     <span className="text-gray-800 font-semibold">최종 결제 금액:</span>
                     <span className="text-blue-600 font-bold text-lg">
-                      {formatNumber(estimate?.calculatedValues?.finalPayment || 0)}원
+                      {formatNumber(estimate.calculatedValues.finalPayment || 0)}원
                     </span>
                   </div>
                 </div>
@@ -2120,7 +2052,7 @@ export default function EstimateEditPage() {
             <label className="flex items-center space-x-2 mr-4 bg-blue-50 px-3 py-2 rounded-lg border border-blue-100">
               <input
                 type="checkbox"
-                checked={estimate?.isContractor || false}
+                checked={estimate.isContractor}
                 onChange={handleContractorChange}
                 className="h-4 w-4 text-blue-600 rounded"
               />
@@ -2129,16 +2061,9 @@ export default function EstimateEditPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm transition-colors duration-200 font-medium"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow"
             >
-              {submitting ? '수정 중...' : '수정하기'}
-            </button>
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg shadow-sm transition-colors duration-200"
-            >
-              취소
+              {submitting ? '저장 중...' : '저장하기'}
             </button>
           </div>
 
@@ -2192,7 +2117,7 @@ export default function EstimateEditPage() {
                 </button>
               </div>
               <textarea
-                value={estimate?.notes || ''}
+                value={estimate.notes}
                 onChange={handleNotesChange}
                 rows={6}
                 className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"

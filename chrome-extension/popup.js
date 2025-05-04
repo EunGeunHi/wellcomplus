@@ -61,7 +61,11 @@ document.addEventListener('DOMContentLoaded', function () {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       const currentUrl = tabs[0].url;
 
-      if (currentUrl.includes('localhost:3000/manage/estimates/create')) {
+      // URL이 견적 생성 또는 견적 편집 페이지인지 확인
+      if (
+        currentUrl.includes('localhost:3000/manage/estimates/create') ||
+        currentUrl.includes('localhost:3000/manage/estimates/edit/')
+      ) {
         // 현재 탭이 웰컴플러스 견적 페이지인 경우
         try {
           chrome.tabs.sendMessage(tabs[0].id, { action: 'insertProducts' }, function (response) {

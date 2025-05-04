@@ -27,7 +27,10 @@
       "js": ["content-danawa.js"]
     },
     {
-      "matches": ["http://localhost:3000/manage/estimates/create*"],
+      "matches": [
+        "http://localhost:3000/manage/estimates/create*",
+        "http://localhost:3000/manage/estimates/edit/*"
+      ],
       "js": ["content-wellcomplus.js"]
     }
   ]

@@ -247,8 +247,16 @@ export default function EstimateDetailPage() {
           {/* 견적설명 */}
           {estimate.estimateDescription && (
             <div className="mt-4">
-              <p className="text-gray-600">견적설명</p>
+              <p className="text-gray-600">견적설명(견적서에 표시되는 내용)</p>
               <p className="whitespace-pre-line">{estimate.estimateDescription}</p>
+            </div>
+          )}
+
+          {/* 참고사항항 */}
+          {estimate.notes && (
+            <div className="mt-4">
+              <p className="text-gray-600">참고사항(견적서에 포함되지 않는 내용)</p>
+              <p className="whitespace-pre-line">{estimate.notes}</p>
             </div>
           )}
         </div>
@@ -437,19 +445,20 @@ export default function EstimateDetailPage() {
                       : '-'}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">VAT 금액:</span>
-                  <span className="font-medium">
-                    {estimate.calculatedValues?.vatAmount !== undefined
-                      ? `${formatNumber(estimate.calculatedValues.vatAmount)}원`
-                      : '-'}
-                  </span>
-                </div>
+
                 <div className="flex justify-between">
                   <span className="text-gray-600">총 구입 금액:</span>
                   <span className="font-medium">
                     {estimate.calculatedValues?.totalPurchase !== undefined
                       ? `${formatNumber(estimate.calculatedValues.totalPurchase)}원`
+                      : '-'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">VAT 금액:</span>
+                  <span className="font-medium">
+                    {estimate.calculatedValues?.vatAmount !== undefined
+                      ? `${formatNumber(estimate.calculatedValues.vatAmount)}원`
                       : '-'}
                   </span>
                 </div>
