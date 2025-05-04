@@ -152,369 +152,387 @@ export default function EstimateDetailPage() {
 
   return (
     <KingOnlySection fallback={<KingFallback />}>
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        <div className="flex flex-wrap justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">견적 상세 정보</h1>
-            <div className="mt-1 inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-              {estimate.estimateType || '없음'}
+      <div className="bg-gray-50 w-full py-6">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex flex-wrap justify-between items-center mb-6">
+            <div>
+              <h1 className="text-2xl font-bold">견적 상세 정보</h1>
+              <div className="mt-1 inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                {estimate.estimateType || '없음'}
+              </div>
+            </div>
+            <div className="flex space-x-2 mt-2 md:mt-0">
+              <button
+                onClick={handleEdit}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                disabled={isDeleting}
+              >
+                수정
+              </button>
+              <button
+                onClick={handleDelete}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                disabled={isDeleting}
+              >
+                {isDeleting ? '삭제 중...' : '삭제'}
+              </button>
+              <button
+                onClick={handleGoBack}
+                className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded"
+              >
+                목록으로 돌아가기
+              </button>
             </div>
           </div>
-          <div className="flex space-x-2 mt-2 md:mt-0">
+
+          {/* 고객 정보 */}
+          <div className="bg-white p-6 rounded-lg shadow mb-6">
+            <h2 className="text-xl font-semibold mb-4 pb-2 border-b">고객 정보</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-gray-600">이름</p>
+                <p className="font-medium">{estimate.customerInfo.name || '-'}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">연락처</p>
+                <p className="font-medium">{estimate.customerInfo.phone || '-'}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">PC번호</p>
+                <p className="font-medium">{estimate.customerInfo.pcNumber || '-'}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">계약구분</p>
+                <p className="font-medium">{estimate.customerInfo.contractType || '-'}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">판매형태</p>
+                <p className="font-medium">{estimate.customerInfo.saleType || '-'}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">구입형태</p>
+                <p className="font-medium">{estimate.customerInfo.purchaseType || '-'}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">지인 이름</p>
+                <p className="font-medium">{estimate.customerInfo.purchaseTypeName || '-'}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">용도</p>
+                <p className="font-medium">{estimate.customerInfo.purpose || '-'}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">AS조건</p>
+                <p className="font-medium">{estimate.customerInfo.asCondition || '-'}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">운영체계</p>
+                <p className="font-medium">{estimate.customerInfo.os || '-'}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">견적담당</p>
+                <p className="font-medium">{estimate.customerInfo.manager || '-'}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">계약자 여부</p>
+                <p className="font-medium">{estimate.isContractor ? '계약자' : '미계약자'}</p>
+              </div>
+            </div>
+
+            {/* 내용 */}
+            <div className="mt-4">
+              <p className="text-gray-600">내용</p>
+              <p className="whitespace-pre-line">{estimate.customerInfo.content || '-'}</p>
+            </div>
+
+            {/* 견적설명 */}
+            {estimate.estimateDescription && (
+              <div className="mt-4">
+                <p className="text-gray-600">견적설명(견적서에 표시되는 내용)</p>
+                <p className="whitespace-pre-line">{estimate.estimateDescription}</p>
+              </div>
+            )}
+
+            {/* 참고사항항 */}
+            {estimate.notes && (
+              <div className="mt-4">
+                <p className="text-gray-600">참고사항(견적서에 포함되지 않는 내용)</p>
+                <p className="whitespace-pre-line">{estimate.notes}</p>
+              </div>
+            )}
+          </div>
+
+          {/* 상품 정보 */}
+          {estimate.tableData && estimate.tableData.length > 0 && (
+            <div className="bg-white p-6 rounded-lg shadow mb-6 overflow-x-auto">
+              <h2 className="text-xl font-semibold mb-4 pb-2 border-b">상품 정보</h2>
+              <table className="min-w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">분류</th>
+                    <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">
+                      상품명
+                    </th>
+                    <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">수량</th>
+                    <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">
+                      현금가
+                    </th>
+                    <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">
+                      상품코드
+                    </th>
+                    <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">총판</th>
+                    <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">
+                      재조사
+                    </th>
+                    <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">비고</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {estimate.tableData.map((item, index) => (
+                    <tr key={index}>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                        {item.category || '-'}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                        {item.productName || '-'}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                        {item.quantity || '-'}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                        {item.price ? formatNumber(item.price) : '-'}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                        {item.productCode || '-'}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                        {item.distributor || '-'}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                        {item.reconfirm || '-'}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm">{item.remarks || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* 서비스 물품 정보 */}
+          {estimate.serviceData && estimate.serviceData.length > 0 && (
+            <div className="bg-white p-6 rounded-lg shadow mb-6 overflow-x-auto">
+              <h2 className="text-xl font-semibold mb-4 pb-2 border-b">서비스 물품 정보</h2>
+              <table className="min-w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">
+                      상품명
+                    </th>
+                    <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">수량</th>
+                    <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">비고</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {estimate.serviceData.map((item, index) => (
+                    <tr key={index}>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                        {item.productName || '-'}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                        {item.quantity || '-'}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm">{item.remarks || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* 결제 정보 */}
+          <div className="bg-white p-6 rounded-lg shadow mb-6">
+            <h2 className="text-xl font-semibold mb-4 pb-2 border-b">결제 정보</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* 결제 세부 정보 */}
+              <div className="col-span-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-gray-600">공임비</p>
+                    <p className="font-medium">
+                      {estimate.paymentInfo?.laborCost !== undefined
+                        ? `${formatNumber(estimate.paymentInfo.laborCost)}원`
+                        : '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">튜닝금액</p>
+                    <p className="font-medium">
+                      {estimate.paymentInfo?.tuningCost !== undefined
+                        ? `${formatNumber(estimate.paymentInfo.tuningCost)}원`
+                        : '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">세팅비</p>
+                    <p className="font-medium">
+                      {estimate.paymentInfo?.setupCost !== undefined
+                        ? `${formatNumber(estimate.paymentInfo.setupCost)}원`
+                        : '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">보증관리비</p>
+                    <p className="font-medium">
+                      {estimate.paymentInfo?.warrantyFee !== undefined
+                        ? `${formatNumber(estimate.paymentInfo.warrantyFee)}원`
+                        : '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">할인</p>
+                    <p className="font-medium">
+                      {estimate.paymentInfo?.discount !== undefined
+                        ? `${formatNumber(estimate.paymentInfo.discount)}원`
+                        : '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">계약금</p>
+                    <p className="font-medium">
+                      {estimate.paymentInfo?.deposit !== undefined
+                        ? `${formatNumber(estimate.paymentInfo.deposit)}원`
+                        : '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">VAT 포함 여부</p>
+                    <p className="font-medium">
+                      {estimate.paymentInfo?.includeVat !== undefined
+                        ? estimate.paymentInfo.includeVat
+                          ? 'VAT 포함'
+                          : 'VAT 미포함'
+                        : '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">VAT 비율</p>
+                    <p className="font-medium">
+                      {estimate.paymentInfo?.vatRate !== undefined
+                        ? `${estimate.paymentInfo.vatRate}%`
+                        : '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">버림 타입</p>
+                    <p className="font-medium">{estimate.paymentInfo?.roundingType || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">결제 방법</p>
+                    <p className="font-medium">{estimate.paymentInfo?.paymentMethod || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">배송+설비 비용</p>
+                    <p className="font-medium">
+                      {estimate.paymentInfo?.shippingCost !== undefined
+                        ? `${formatNumber(estimate.paymentInfo.shippingCost)}원`
+                        : '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">출고일자</p>
+                    <p className="font-medium">
+                      {estimate.paymentInfo?.releaseDate
+                        ? formatDate(estimate.paymentInfo.releaseDate)
+                        : '-'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 계산된 금액 요약 */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold mb-3 text-gray-800">금액 요약</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">상품/부품 합계:</span>
+                    <span className="font-medium">
+                      {estimate.calculatedValues?.productTotal !== undefined
+                        ? `${formatNumber(estimate.calculatedValues.productTotal)}원`
+                        : '-'}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">총 구입 금액:</span>
+                    <span className="font-medium">
+                      {estimate.calculatedValues?.totalPurchase !== undefined
+                        ? `${formatNumber(estimate.calculatedValues.totalPurchase)}원`
+                        : '-'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">VAT 금액:</span>
+                    <span className="font-medium">
+                      {estimate.calculatedValues?.vatAmount !== undefined
+                        ? `${formatNumber(estimate.calculatedValues.vatAmount)}원`
+                        : '-'}
+                    </span>
+                  </div>
+                  <div className="pt-2 mt-2 border-t border-gray-200 flex justify-between">
+                    <span className="text-gray-800 font-semibold">최종 결제 금액:</span>
+                    <span className="text-blue-600 font-bold text-lg">
+                      {estimate.calculatedValues?.finalPayment !== undefined
+                        ? `${formatNumber(estimate.calculatedValues.finalPayment)}원`
+                        : '-'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 생성/수정 정보 */}
+          <div className="bg-white p-4 rounded-lg shadow mb-6">
+            <div className="flex flex-wrap justify-between text-sm text-gray-500">
+              <div>
+                <span>생성일: </span>
+                <span>
+                  {estimate.createdAt ? formatDate(estimate.createdAt, { withTime: true }) : '-'}
+                </span>
+              </div>
+              <div>
+                <span>최종 수정일: </span>
+                <span>
+                  {estimate.updatedAt ? formatDate(estimate.updatedAt, { withTime: true }) : '-'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 하단 버튼 영역 */}
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
             <button
               onClick={handleEdit}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow"
               disabled={isDeleting}
             >
-              수정
+              수정하기
             </button>
             <button
               onClick={handleDelete}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+              className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg shadow"
               disabled={isDeleting}
             >
-              {isDeleting ? '삭제 중...' : '삭제'}
+              {isDeleting ? '삭제 중...' : '삭제하기'}
             </button>
             <button
               onClick={handleGoBack}
-              className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded"
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-lg shadow"
             >
               목록으로 돌아가기
             </button>
           </div>
-        </div>
-
-        {/* 고객 정보 */}
-        <div className="bg-white p-6 rounded-lg shadow mb-6">
-          <h2 className="text-xl font-semibold mb-4 pb-2 border-b">고객 정보</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-gray-600">이름</p>
-              <p className="font-medium">{estimate.customerInfo.name || '-'}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">연락처</p>
-              <p className="font-medium">{estimate.customerInfo.phone || '-'}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">PC번호</p>
-              <p className="font-medium">{estimate.customerInfo.pcNumber || '-'}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">계약구분</p>
-              <p className="font-medium">{estimate.customerInfo.contractType || '-'}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">판매형태</p>
-              <p className="font-medium">{estimate.customerInfo.saleType || '-'}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">구입형태</p>
-              <p className="font-medium">{estimate.customerInfo.purchaseType || '-'}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">지인 이름</p>
-              <p className="font-medium">{estimate.customerInfo.purchaseTypeName || '-'}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">용도</p>
-              <p className="font-medium">{estimate.customerInfo.purpose || '-'}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">AS조건</p>
-              <p className="font-medium">{estimate.customerInfo.asCondition || '-'}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">운영체계</p>
-              <p className="font-medium">{estimate.customerInfo.os || '-'}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">견적담당</p>
-              <p className="font-medium">{estimate.customerInfo.manager || '-'}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">계약자 여부</p>
-              <p className="font-medium">{estimate.isContractor ? '계약자' : '미계약자'}</p>
-            </div>
-          </div>
-
-          {/* 내용 */}
-          <div className="mt-4">
-            <p className="text-gray-600">내용</p>
-            <p className="whitespace-pre-line">{estimate.customerInfo.content || '-'}</p>
-          </div>
-
-          {/* 견적설명 */}
-          {estimate.estimateDescription && (
-            <div className="mt-4">
-              <p className="text-gray-600">견적설명(견적서에 표시되는 내용)</p>
-              <p className="whitespace-pre-line">{estimate.estimateDescription}</p>
-            </div>
-          )}
-
-          {/* 참고사항항 */}
-          {estimate.notes && (
-            <div className="mt-4">
-              <p className="text-gray-600">참고사항(견적서에 포함되지 않는 내용)</p>
-              <p className="whitespace-pre-line">{estimate.notes}</p>
-            </div>
-          )}
-        </div>
-
-        {/* 상품 정보 */}
-        {estimate.tableData && estimate.tableData.length > 0 && (
-          <div className="bg-white p-6 rounded-lg shadow mb-6 overflow-x-auto">
-            <h2 className="text-xl font-semibold mb-4 pb-2 border-b">상품 정보</h2>
-            <table className="min-w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">분류</th>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">상품명</th>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">수량</th>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">현금가</th>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">
-                    상품코드
-                  </th>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">총판</th>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">재조사</th>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">비고</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {estimate.tableData.map((item, index) => (
-                  <tr key={index}>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.category || '-'}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">
-                      {item.productName || '-'}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.quantity || '-'}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">
-                      {item.price ? formatNumber(item.price) : '-'}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">
-                      {item.productCode || '-'}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">
-                      {item.distributor || '-'}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.reconfirm || '-'}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.remarks || '-'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* 서비스 물품 정보 */}
-        {estimate.serviceData && estimate.serviceData.length > 0 && (
-          <div className="bg-white p-6 rounded-lg shadow mb-6 overflow-x-auto">
-            <h2 className="text-xl font-semibold mb-4 pb-2 border-b">서비스 물품 정보</h2>
-            <table className="min-w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">상품명</th>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">수량</th>
-                  <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">비고</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {estimate.serviceData.map((item, index) => (
-                  <tr key={index}>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">
-                      {item.productName || '-'}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.quantity || '-'}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.remarks || '-'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* 결제 정보 */}
-        <div className="bg-white p-6 rounded-lg shadow mb-6">
-          <h2 className="text-xl font-semibold mb-4 pb-2 border-b">결제 정보</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* 결제 세부 정보 */}
-            <div className="col-span-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-gray-600">공임비</p>
-                  <p className="font-medium">
-                    {estimate.paymentInfo?.laborCost !== undefined
-                      ? `${formatNumber(estimate.paymentInfo.laborCost)}원`
-                      : '-'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-600">튜닝금액</p>
-                  <p className="font-medium">
-                    {estimate.paymentInfo?.tuningCost !== undefined
-                      ? `${formatNumber(estimate.paymentInfo.tuningCost)}원`
-                      : '-'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-600">세팅비</p>
-                  <p className="font-medium">
-                    {estimate.paymentInfo?.setupCost !== undefined
-                      ? `${formatNumber(estimate.paymentInfo.setupCost)}원`
-                      : '-'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-600">보증관리비</p>
-                  <p className="font-medium">
-                    {estimate.paymentInfo?.warrantyFee !== undefined
-                      ? `${formatNumber(estimate.paymentInfo.warrantyFee)}원`
-                      : '-'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-600">할인</p>
-                  <p className="font-medium">
-                    {estimate.paymentInfo?.discount !== undefined
-                      ? `${formatNumber(estimate.paymentInfo.discount)}원`
-                      : '-'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-600">계약금</p>
-                  <p className="font-medium">
-                    {estimate.paymentInfo?.deposit !== undefined
-                      ? `${formatNumber(estimate.paymentInfo.deposit)}원`
-                      : '-'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-600">VAT 포함 여부</p>
-                  <p className="font-medium">
-                    {estimate.paymentInfo?.includeVat !== undefined
-                      ? estimate.paymentInfo.includeVat
-                        ? 'VAT 포함'
-                        : 'VAT 미포함'
-                      : '-'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-600">VAT 비율</p>
-                  <p className="font-medium">
-                    {estimate.paymentInfo?.vatRate !== undefined
-                      ? `${estimate.paymentInfo.vatRate}%`
-                      : '-'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-600">버림 타입</p>
-                  <p className="font-medium">{estimate.paymentInfo?.roundingType || '-'}</p>
-                </div>
-                <div>
-                  <p className="text-gray-600">결제 방법</p>
-                  <p className="font-medium">{estimate.paymentInfo?.paymentMethod || '-'}</p>
-                </div>
-                <div>
-                  <p className="text-gray-600">배송+설비 비용</p>
-                  <p className="font-medium">
-                    {estimate.paymentInfo?.shippingCost !== undefined
-                      ? `${formatNumber(estimate.paymentInfo.shippingCost)}원`
-                      : '-'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-600">출고일자</p>
-                  <p className="font-medium">
-                    {estimate.paymentInfo?.releaseDate
-                      ? formatDate(estimate.paymentInfo.releaseDate)
-                      : '-'}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* 계산된 금액 요약 */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold mb-3 text-gray-800">금액 요약</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">상품/부품 합계:</span>
-                  <span className="font-medium">
-                    {estimate.calculatedValues?.productTotal !== undefined
-                      ? `${formatNumber(estimate.calculatedValues.productTotal)}원`
-                      : '-'}
-                  </span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-gray-600">총 구입 금액:</span>
-                  <span className="font-medium">
-                    {estimate.calculatedValues?.totalPurchase !== undefined
-                      ? `${formatNumber(estimate.calculatedValues.totalPurchase)}원`
-                      : '-'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">VAT 금액:</span>
-                  <span className="font-medium">
-                    {estimate.calculatedValues?.vatAmount !== undefined
-                      ? `${formatNumber(estimate.calculatedValues.vatAmount)}원`
-                      : '-'}
-                  </span>
-                </div>
-                <div className="pt-2 mt-2 border-t border-gray-200 flex justify-between">
-                  <span className="text-gray-800 font-semibold">최종 결제 금액:</span>
-                  <span className="text-blue-600 font-bold text-lg">
-                    {estimate.calculatedValues?.finalPayment !== undefined
-                      ? `${formatNumber(estimate.calculatedValues.finalPayment)}원`
-                      : '-'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 생성/수정 정보 */}
-        <div className="bg-white p-4 rounded-lg shadow mb-6">
-          <div className="flex flex-wrap justify-between text-sm text-gray-500">
-            <div>
-              <span>생성일: </span>
-              <span>
-                {estimate.createdAt ? formatDate(estimate.createdAt, { withTime: true }) : '-'}
-              </span>
-            </div>
-            <div>
-              <span>최종 수정일: </span>
-              <span>
-                {estimate.updatedAt ? formatDate(estimate.updatedAt, { withTime: true }) : '-'}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* 하단 버튼 영역 */}
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <button
-            onClick={handleEdit}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow"
-            disabled={isDeleting}
-          >
-            수정하기
-          </button>
-          <button
-            onClick={handleDelete}
-            className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg shadow"
-            disabled={isDeleting}
-          >
-            {isDeleting ? '삭제 중...' : '삭제하기'}
-          </button>
-          <button
-            onClick={handleGoBack}
-            className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-lg shadow"
-          >
-            목록으로 돌아가기
-          </button>
         </div>
       </div>
     </KingOnlySection>
