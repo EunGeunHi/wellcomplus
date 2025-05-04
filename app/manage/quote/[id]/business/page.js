@@ -741,10 +741,10 @@ export default function BusinessQuotePage({ params }) {
 
           {/* 금액을 한글로 표시 */}
 
-          <div className="border-2 border-sky-500 rounded-lg bg-sky-300 p-5 mb-2">
+          <div className="border-2 border-sky-500 rounded-lg bg-sky-200 p-5 mb-2">
             <div className="text-center text-lg font-bold text-black tracking-wider">
               {estimate.calculatedValues?.finalPayment
-                ? `총 액: ${numberToKorean(estimate.calculatedValues.finalPayment)} (${estimate.calculatedValues.finalPayment.toLocaleString()}원) ${estimate.paymentInfo?.includeVat ? 'V.A.T포함' : 'V.A.T별도'}`
+                ? `총 액: 금${numberToKorean(estimate.calculatedValues.finalPayment)} (${estimate.calculatedValues.finalPayment.toLocaleString()}원) ${estimate.paymentInfo?.includeVat ? 'V.A.T포함' : 'V.A.T별도'}`
                 : ''}
             </div>
           </div>

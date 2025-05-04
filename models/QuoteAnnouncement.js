@@ -5,7 +5,7 @@ const AnnouncementSchema = new mongoose.Schema({
     type: String,
     required: true,
     default: 'consumer',
-    enum: ['consumer', 'business'], // 소비자용, 기업용 구분
+    enum: ['consumer', 'business', 'delivery'], // 소비자용, 기업용, 납품서용 구분
   },
   content: {
     type: String,
