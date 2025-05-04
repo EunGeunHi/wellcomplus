@@ -2,8 +2,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { KingOnlySection } from '@/app/components/ProtectedContent';
+import KingFallback from '@/app/components/kingFallback';
 
-export default function ConsumerQuotePage({ params }) {
+export default function BusinessQuotePage({ params }) {
   const [estimate, setEstimate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -53,8 +55,8 @@ export default function ConsumerQuotePage({ params }) {
       try {
         setLoading(true);
 
-        // API를 통해 견적 데이터 불러오기
-        const response = await fetch(`/api/estimates/${id}`, {
+        // API를 통해 견적 데이터 불러오기 (인증 필요한 API 엔드포인트 사용)
+        const response = await fetch(`/api/quote/${id}`, {
           cache: 'no-store',
         });
 
@@ -64,8 +66,8 @@ export default function ConsumerQuotePage({ params }) {
 
         const data = await response.json();
 
-        if (!data.success || !data.estimate) {
-          throw new Error(data.message || '견적을 찾을 수 없습니다.');
+        if (!data.estimate) {
+          throw new Error('견적을 찾을 수 없습니다.');
         }
 
         setEstimate(data.estimate);
@@ -88,8 +90,8 @@ export default function ConsumerQuotePage({ params }) {
   useEffect(() => {
     const fetchAnnouncement = async () => {
       try {
-        // API를 통해 공지사항 데이터 불러오기
-        const response = await fetch('/api/quote/consumer', {
+        // API를 통해 공지사항 데이터 불러오기 (기업용 공지사항 API 호출)
+        const response = await fetch('/api/quote/business', {
           cache: 'no-store',
         });
 
@@ -103,8 +105,8 @@ export default function ConsumerQuotePage({ params }) {
           // 줄바꿈을 기준으로 공지사항을 배열로 변환
           const items = data.announcement
             .split('\n')
-            .filter(line => line.trim() !== '')
-            .map(line => line.trim());
+            .filter((line) => line.trim() !== '')
+            .map((line) => line.trim());
 
           setNoticeItems(items);
         }
@@ -115,6 +117,7 @@ export default function ConsumerQuotePage({ params }) {
           '본 견적서는 수급상황에 따라, 금액과 부품이 대체/변동 될 수 있습니다.',
           '상품의 사양 및 가격은 제조사의 정책에 따라 변경될 수 있습니다.',
           '계약금 입금 후 주문이 확정됩니다.',
+          '부가세는 별도입니다.',
         ]);
       }
     };
@@ -123,7 +126,7 @@ export default function ConsumerQuotePage({ params }) {
   }, []);
 
   // 날짜 형식 변환 함수
-  const formatDate = dateString => {
+  const formatDate = (dateString) => {
     const date = new Date(dateString);
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -151,7 +154,7 @@ export default function ConsumerQuotePage({ params }) {
   // }, [estimate, loading, error, printTriggered]);
 
   // 공지사항 수정 처리 함수 추가
-  const handleNotesContentChange = e => {
+  const handleNotesContentChange = (e) => {
     setNotesContent(e.target.value);
   };
 
@@ -168,11 +171,11 @@ export default function ConsumerQuotePage({ params }) {
       // 줄바꿈을 기준으로 텍스트를 분리하여 배열로 변환
       const newNoticeItems = notesContent
         .split('\n')
-        .filter(line => line.trim() !== '') // 빈 줄 제거
-        .map(line => line.trim());
+        .filter((line) => line.trim() !== '') // 빈 줄 제거
+        .map((line) => line.trim());
 
-      // API를 통해 공지사항 저장
-      const response = await fetch('/api/quote/consumer', {
+      // API를 통해 공지사항 저장 (기업용 공지사항 API 호출)
+      const response = await fetch('/api/quote/business', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -184,7 +187,7 @@ export default function ConsumerQuotePage({ params }) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || '공지사항 저장 중 오류가 발생했습니다.');
+        throw new Error(errorData.error || '공지사항 저장 중 오류가 발생했습니다.');
       }
 
       const data = await response.json();
@@ -204,7 +207,7 @@ export default function ConsumerQuotePage({ params }) {
   };
 
   // 숫자를 한글로 변환하는 함수 추가
-  const numberToKorean = number => {
+  const numberToKorean = (number) => {
     const units = ['', '만', '억', '조'];
     const digits = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
     const decimals = ['', '십', '백', '천'];
@@ -277,33 +280,674 @@ export default function ConsumerQuotePage({ params }) {
   }
 
   return (
-    <div style={{ width: '800px', margin: '0 auto', padding: '24px' }}>
-      {/* 인쇄 스타일 */}
-      <style jsx global>{`
-        @media print {
-          body * {
-            visibility: hidden;
+    <KingOnlySection fallback={<KingFallback />}>
+      <div style={{ width: '800px', margin: '0 auto', padding: '24px' }}>
+        {/* 인쇄 스타일 */}
+        <style jsx global>{`
+          @media print {
+            body * {
+              visibility: hidden;
+            }
+            .print-this-section,
+            .print-this-section * {
+              visibility: visible;
+            }
+            .print-this-section {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 100%;
+            }
+            .no-print {
+              display: none !important;
+            }
           }
-          .print-this-section,
-          .print-this-section * {
-            visibility: visible;
-          }
-          .print-this-section {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-          }
-          .no-print {
-            display: none !important;
-          }
-        }
-      `}</style>
+        `}</style>
 
-      {/* 상단 컨트롤 패널 - 재디자인 */}
-      <div className="no-print mb-6">
+        {/* 상단 컨트롤 패널 - 재디자인 */}
+        <div className="no-print mb-6">
+          {/* 뒤로가기 및 주요 컨트롤 */}
+          <div className="flex justify-between items-center mb-4">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center text-gray-600 hover:text-gray-800 font-medium transition-colors px-3 py-2 rounded-md hover:bg-gray-100"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              돌아가기
+            </button>
+
+            <button
+              onClick={handlePrint}
+              className="flex items-center bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg shadow transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              인쇄하기
+            </button>
+          </div>
+
+          {/* 설정 컨트롤 패널 */}
+          <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* 왼쪽 컨트롤 그룹 */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-gray-700 mb-2">문서 설정</h3>
+
+                {/* 빈 행 추가 컨트롤 */}
+                <div className="flex items-center">
+                  <span className="text-gray-700 text-sm w-28">빈 행 추가:</span>
+                  <div className="flex items-center">
+                    <button
+                      onClick={() => setRowEmptyAdd((prev) => Math.max(0, prev - 1))}
+                      className="bg-gray-100 text-gray-700 px-2 py-1 rounded-l-md hover:bg-gray-200 transition-colors border border-gray-300"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                    <span className="bg-white px-3 py-1 border-t border-b border-gray-300 min-w-[2rem] text-center">
+                      {rowEmptyAdd}
+                    </span>
+                    <button
+                      onClick={() => setRowEmptyAdd((prev) => prev + 1)}
+                      className="bg-gray-100 text-gray-700 px-2 py-1 rounded-r-md hover:bg-gray-200 transition-colors border border-gray-300"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                {/* 체크박스 옵션들 */}
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={showNotes}
+                    onChange={(e) => setShowNotes(e.target.checked)}
+                    className="form-checkbox h-5 w-5 text-sky-500 rounded border-gray-300 focus:ring-sky-500"
+                  />
+                  <span className="ml-2 text-gray-700 text-sm">공지사항 필독 추가</span>
+                </label>
+
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={showDescription}
+                    onChange={(e) => setShowDescription(e.target.checked)}
+                    className="form-checkbox h-5 w-5 text-sky-500 rounded border-gray-300 focus:ring-sky-500"
+                  />
+                  <span className="ml-2 text-gray-700 text-sm">견적상담 표시</span>
+                </label>
+
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={showStamp}
+                    onChange={(e) => setShowStamp(e.target.checked)}
+                    className="form-checkbox h-5 w-5 text-sky-500 rounded border-gray-300 focus:ring-sky-500"
+                  />
+                  <span className="ml-2 text-gray-700 text-sm">인감도장 표시</span>
+                </label>
+              </div>
+
+              {/* 오른쪽 컨트롤 그룹 */}
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold text-gray-700 mb-1">공지사항 관리</h3>
+
+                <button
+                  onClick={() => {
+                    setShowNotesEditor(!showNotesEditor);
+                    if (!showNotesEditor) {
+                      setNotesContent(noticeItems.join('\n'));
+                    }
+                  }}
+                  className="flex items-center bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm w-full"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                  </svg>
+                  공지사항 수정
+                </button>
+
+                <div className="text-xs text-gray-500">
+                  공지사항을 수정하려면 위 버튼을 클릭하세요.
+                </div>
+
+                {/* finalPayment 금액 수정 인풋 추가 */}
+                <div className="mt-4 pt-3 border-t border-gray-200">
+                  <div className="flex items-center">
+                    <span className="text-sm font-semibold text-gray-700">최종 금액 수정</span>
+                    <input
+                      type="number"
+                      value={estimate.calculatedValues?.finalPayment || 0}
+                      onChange={(e) => {
+                        const newValue = parseInt(e.target.value, 10) || 0;
+                        setEstimate((prev) => ({
+                          ...prev,
+                          calculatedValues: {
+                            ...prev.calculatedValues,
+                            finalPayment: newValue,
+                          },
+                        }));
+                      }}
+                      className="border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <span className="text-xs text-gray-500 tracking-tighter2">
+                    (수정한 금액은 견적서에 즉시 반영되지만 저장되지는 않습니다.)
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 공지사항 수정 에디터 */}
+        {showNotesEditor && (
+          <div className="mb-6 no-print">
+            <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 shadow-sm">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">공지사항 편집</h3>
+              <textarea
+                value={notesContent}
+                onChange={handleNotesContentChange}
+                className="w-full h-32 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="공지사항을 입력하세요. 각 줄은 별도의 항목으로 표시됩니다."
+              ></textarea>
+              {announcementError && (
+                <div className="text-red-500 text-sm mt-1">{announcementError}</div>
+              )}
+              <div className="flex justify-end mt-2 space-x-2">
+                <button
+                  onClick={() => setShowNotesEditor(false)}
+                  disabled={savingAnnouncement}
+                  className={`bg-gray-500 text-white px-3 py-1.5 rounded-md text-sm hover:bg-gray-600 transition-colors ${
+                    savingAnnouncement ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  취소
+                </button>
+                <button
+                  onClick={saveNotesContent}
+                  disabled={savingAnnouncement}
+                  className={`bg-blue-600 text-white px-3 py-1.5 rounded-md text-sm hover:bg-blue-700 transition-colors ${
+                    savingAnnouncement ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  {savingAnnouncement ? '저장 중...' : '저장'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 인쇄 영역 */}
+        <div
+          ref={printRef}
+          className="print-this-section bg-white p-2.5 pt-2.5 pb-2.5 px-4.5 border-2 border-sky-300 rounded-lg shadow-sm"
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ width: '200px', paddingBottom: '10px' }}>
+              <Image
+                src="/textlogo2.png"
+                alt="웰컴 시스템 로고"
+                width={200}
+                height={80}
+                style={{ objectFit: 'contain' }}
+              />
+            </div>
+            <div className="text-center" style={{ flex: 1 }}>
+              <h1 className="text-4xl font-extrabold text-black tracking-extra-widetitle">
+                견 적 서
+              </h1>
+            </div>
+            <div style={{ width: '200px', textAlign: 'right', paddingBottom: '40px' }}>
+              <p className="text-gray-700 tracking-tighter">
+                견적일자: {formatDate(estimate.createdAt)}
+              </p>
+              {/* 출고일자 표시 */}
+              {estimate.paymentInfo?.releaseDate ? (
+                <p style={{ lineHeight: '1' }} className="text-gray-700 tracking-tighter">
+                  출고일자: {formatDate(estimate.paymentInfo.releaseDate)}
+                </p>
+              ) : (
+                <p style={{ lineHeight: '1' }} className="text-gray-700 tracking-tighter">
+                  출고일자:
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </p>
+              )}
+            </div>
+          </div>
+          {/* 고객 정보 and 공급자 정보 */}
+          <div className="flex gap-2 mb-2" style={{ width: '100%' }}>
+            <div
+              style={{ width: '50%', height: 'auto' }}
+              className="border border-sky-200 rounded-lg flex bg-sky-50"
+            >
+              <table style={{ width: '100%' }} className="m-1">
+                <tbody>
+                  <tr style={{ lineHeight: '18px' }}>
+                    <td
+                      style={{ width: '25%' }}
+                      className="text-left text-black font-semibold tracking-extra-widetitler"
+                    >
+                      성 명
+                    </td>
+                    <td style={{ width: '75%' }} className="text-left text-black font-semibold">
+                      {estimate.customerInfo?.name || ''}
+                    </td>
+                  </tr>
+                  <tr style={{ lineHeight: '18px' }}>
+                    <td
+                      style={{ width: '25%' }}
+                      className="text-left text-black font-semibold tracking-wide"
+                    >
+                      연 락 처
+                    </td>
+                    <td style={{ width: '75%' }} className="text-left text-black font-semibold">
+                      {estimate.customerInfo?.phone || ''}
+                    </td>
+                  </tr>
+                  <tr style={{ lineHeight: '18px' }}>
+                    <td
+                      style={{ width: '25%' }}
+                      className="text-left text-black font-semibold tracking-wider"
+                    >
+                      PC 번호
+                    </td>
+                    <td style={{ width: '75%' }} className="text-left text-black font-semibold">
+                      {estimate.customerInfo?.pcNumber || ''}
+                    </td>
+                  </tr>
+                  <tr style={{ lineHeight: '18px' }}>
+                    <td
+                      style={{ width: '25%' }}
+                      className="text-left text-black font-semibold tracking-wider"
+                    >
+                      AS 조건
+                    </td>
+                    <td style={{ width: '75%' }} className="text-left text-black font-semibold">
+                      {estimate.customerInfo?.asCondition || ''}
+                    </td>
+                  </tr>
+                  <tr style={{ lineHeight: '18px' }}>
+                    <td
+                      style={{ width: '25%' }}
+                      className="text-left text-black font-semibold tracking-tight"
+                    >
+                      견적담당
+                    </td>
+                    <td style={{ width: '75%' }} className="text-left text-black font-semibold">
+                      {estimate.customerInfo?.manager || ''}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div
+              style={{ width: '50%', height: 'auto' }}
+              className="border border-sky-200 rounded-lg flex bg-sky-50"
+            >
+              <table style={{ width: '100%' }} className="m-1">
+                <tbody>
+                  <tr style={{ lineHeight: '18px' }}>
+                    <td
+                      className="text-center text-black font-semibold border-r border-sky-200 tracking-extra-wide pr-1"
+                      rowSpan="4"
+                      style={{ writingMode: 'vertical-rl' }}
+                    >
+                      공 급 자
+                    </td>
+                    <td
+                      style={{ width: '25%' }}
+                      className="text-left text-black font-semibold pl-1 tracking-tighter"
+                    >
+                      등록번호
+                    </td>
+                    <td
+                      style={{ width: '37%' }}
+                      className="text-left text-black font-semibold tracking-wide"
+                    >
+                      607-02-70320
+                    </td>
+                    <td
+                      style={{ width: '38%' }}
+                      className="text-center text-left text-black font-semibold border-l border-sky-200 relative"
+                      rowSpan="2"
+                    >
+                      김 선 식
+                      <span style={{ fontSize: '0.6rem' }}> &nbsp;&nbsp;&nbsp;&nbsp;(인)</span>
+                      <span className="relative inline-block">
+                        {showStamp && (
+                          <div
+                            className="absolute"
+                            style={{
+                              top: '-34px',
+                              left: '-36px',
+                              width: '60px',
+                              height: '60px',
+                              zIndex: 10,
+                            }}
+                          >
+                            <Image
+                              src="/stamp.png"
+                              alt="인감도장"
+                              width={60}
+                              height={60}
+                              style={{
+                                transform: 'rotate(0deg)',
+                                objectFit: 'contain',
+                              }}
+                            />
+                          </div>
+                        )}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr style={{ lineHeight: '18px' }}>
+                    <td
+                      style={{ width: '25%' }}
+                      className="text-left text-black font-semibold pl-1 tracking-extra-widetitler"
+                    >
+                      상 호
+                    </td>
+                    <td
+                      style={{ width: '37%' }}
+                      className="text-left text-black font-semibold tracking-extra-wide"
+                    >
+                      웰컴시스템
+                    </td>
+                  </tr>
+                  <tr style={{ lineHeight: '18px' }}>
+                    <td
+                      style={{ width: '25%' }}
+                      className="text-left text-black font-semibold pl-1 tracking-extra-widetitler"
+                    >
+                      주 소
+                    </td>
+                    <td
+                      style={{ width: '40%' }}
+                      className="text-left text-black font-semibold"
+                      colSpan="2"
+                    >
+                      부산시 동래구 온천장로 20 <br />
+                      부산컴퓨터도매상가 209호
+                    </td>
+                  </tr>
+                  <tr style={{ lineHeight: '18px' }}>
+                    <td
+                      style={{ width: '25%' }}
+                      className="text-left text-black font-semibold pl-1 tracking-tighter"
+                    >
+                      전화번호
+                    </td>
+                    <td
+                      style={{ width: '40%' }}
+                      className="text-left text-black font-semibold"
+                      colSpan="2"
+                    >
+                      051-926-6604, 010-8781-8871
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* 금액을 한글로 표시 */}
+
+          <div className="border-2 border-sky-500 rounded-lg bg-sky-300 p-5 mb-2">
+            <div className="text-center text-lg font-bold text-black tracking-wider">
+              {estimate.calculatedValues?.finalPayment
+                ? `총 액: ${numberToKorean(estimate.calculatedValues.finalPayment)} (${estimate.calculatedValues.finalPayment.toLocaleString()}원) ${estimate.paymentInfo?.includeVat ? 'V.A.T포함' : 'V.A.T별도'}`
+                : ''}
+            </div>
+          </div>
+
+          {/* 상품 목록 */}
+          <div style={{ marginBottom: '7px' }}>
+            <table style={{ width: '100%' }} className="border-collapse border border-sky-200">
+              <thead className="bg-sky-100">
+                <tr>
+                  <th
+                    className="border border-sky-200 text-center text-black"
+                    style={{ width: '1%' }}
+                  >
+                    No.
+                  </th>
+                  {/* <th
+                    className="border border-sky-200 text-center text-black"
+                    style={{ width: '12%' }}
+                  >
+                    분 &nbsp;&nbsp;류
+                  </th> */}
+                  <th
+                    className="border border-sky-200 text-center text-black p-1"
+                    style={{ width: '88%' }}
+                  >
+                    내
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;용
+                  </th>
+                  <th
+                    className="border border-sky-200 text-center text-black"
+                    style={{ width: '10%' }}
+                  >
+                    수 량
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* 부품 상품 목록 */}
+                {estimate.tableData && (
+                  <tr className="bg-white">
+                    <td colSpan="3" className="border border-sky-200 text-center font-bold">
+                      부품 상품 목록
+                    </td>
+                  </tr>
+                )}
+                {estimate.tableData &&
+                  estimate.tableData.map((item, index) => (
+                    <tr key={index} className="bg-white">
+                      <td className="border border-sky-200 text-center">{index + 1}</td>
+                      {/* <td className="border border-sky-200 text-center">{item.category || '-'}</td> */}
+                      <td className="border border-sky-200">{item.productName}</td>
+                      <td className="border border-sky-200 text-center">{item.quantity}</td>
+                    </tr>
+                  ))}
+
+                {/* 서비스 상품 목록 */}
+                {estimate.serviceData &&
+                  estimate.serviceData.length > 0 &&
+                  estimate.serviceData.filter((item) => !item.productName.includes('끝자리DC'))
+                    .length > 0 && (
+                    <>
+                      <tr className="bg-white">
+                        <td colSpan="3" className="border border-sky-200 text-center font-bold">
+                          &nbsp;
+                        </td>
+                      </tr>
+                      <tr className="bg-white">
+                        <td colSpan="3" className="border border-sky-200 text-center font-bold">
+                          서비스 상품 목록
+                        </td>
+                      </tr>
+                      {estimate.serviceData
+                        .filter((item) => !item.productName.includes('끝자리DC'))
+                        .map((item, index) => (
+                          <tr key={index} className="bg-white">
+                            <td className="border border-sky-200 text-center">{index + 1}</td>
+                            <td className="border border-sky-200">{item.productName}</td>
+                            <td className="border border-sky-200 text-center">{item.quantity}</td>
+                          </tr>
+                        ))}
+                    </>
+                  )}
+
+                {/* 기타 목록 */}
+                {(estimate.paymentInfo?.laborCost > 0 ||
+                  estimate.paymentInfo?.tuningCost > 0 ||
+                  estimate.paymentInfo?.setupCost > 0 ||
+                  estimate.paymentInfo?.shippingCost > 0) && (
+                  <>
+                    <tr className="bg-white">
+                      <td colSpan="3" className="border border-sky-200 text-center font-bold">
+                        &nbsp;
+                      </td>
+                    </tr>
+                    <tr className="bg-white">
+                      <td colSpan="3" className="border border-sky-200 text-center font-bold">
+                        기타
+                      </td>
+                    </tr>
+                    <tr className="bg-white">
+                      <td className="border border-sky-200 text-center">1</td>
+                      <td className="border border-sky-200">
+                        {[
+                          estimate.paymentInfo?.laborCost > 0 ? `공임비` : '',
+                          estimate.paymentInfo?.tuningCost > 0 ? `튜닝비` : '',
+                          estimate.paymentInfo?.setupCost > 0 ? `세팅비` : '',
+                          estimate.paymentInfo?.shippingCost > 0 ? `배송비` : '',
+                        ]
+                          .filter(Boolean)
+                          .join(', ')}
+                      </td>
+                      <td className="border border-sky-200 text-center">1</td>
+                    </tr>
+                  </>
+                )}
+
+                {/* 빈 행 추가 */}
+                {Array.from({ length: rowEmptyAdd }).map((_, index) => (
+                  <tr key={`empty-${index}`} className="bg-white">
+                    <td className="border border-sky-200 text-center"></td>
+                    {/* <td className="border border-sky-200 text-center"></td> */}
+                    <td className="border border-sky-200">&nbsp;</td>
+                    <td className="border border-sky-200 text-center"></td>
+                  </tr>
+                ))}
+
+                <tr className="bg-sky-100 font-bold">
+                  <td colSpan="3" className="border border-sky-200 p-1 text-black">
+                    <div className="flex justify-between">
+                      <span>부산은행 [064-13-001200-7] (웰컴시스템)</span>
+                      <span>
+                        금액 합계 : {estimate.calculatedValues?.finalPayment?.toLocaleString()}
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* 견적상담 표시 */}
+          {showDescription && estimate.estimateDescription && (
+            <div className="border border-sky-200 rounded-lg mb-2 mt-1 bg-sky-50 p-1">
+              <div className="flex items-center">
+                <span className="text-sm font-bold text-blue-800 mr-2">견적상담</span>
+                <div className="flex-1 text-gray-700 text-sm p-1 bg-white border border-sky-200 rounded-md">
+                  <div className="flex flex-wrap gap-x-4">
+                    {estimate.estimateDescription
+                      .split('\n')
+                      .filter((line) => line.trim() !== '')
+                      .map((line, index) => (
+                        <span key={index}>· {line}</span>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 공지사항 - 체크박스가 체크되었을 때만 표시 */}
+          {showNotes && (
+            <div className="border border-sky-200 rounded-lg p-1 bg-sky-50">
+              <div className="flex items-center">
+                <span className="text-sm font-bold text-blue-800 mr-2">※공지사항 필독※</span>
+                <div className="flex-1 flex flex-wrap gap-x-4 text-xs text-black p-1 bg-white border border-sky-200 rounded-md">
+                  {noticeItems.map((item, index) => (
+                    <span key={index}>· {item}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 감사 인사말 */}
+          <div className="mt-3 mb-1">
+            <div className="relative bg-gradient-to-r from-sky-100 to-blue-100 p-4 rounded-lg border border-sky-200 shadow-sm overflow-hidden">
+              {/* 배경 장식 요소 */}
+              <div className="absolute top-0 right-0 w-40 h-40 opacity-5">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="w-full h-full text-blue-900"
+                >
+                  <path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32l8.4-8.4z" />
+                </svg>
+              </div>
+
+              <div className="text-center relative z-10">
+                <p className="text-xl font-bold text-blue-800 mb-1">
+                  웰컴 시스템을 이용해 주셔서 감사합니다
+                </p>
+                <p className="text-sm text-blue-600">
+                  고객님의 소중한 선택에 진심으로 감사드립니다. 최상의 서비스로 보답하겠습니다.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* 뒤로가기 및 주요 컨트롤 */}
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center pt-3 mb-4">
           <button
             onClick={() => router.back()}
             className="flex items-center text-gray-600 hover:text-gray-800 font-medium transition-colors px-3 py-2 rounded-md hover:bg-gray-100"
@@ -342,646 +986,7 @@ export default function ConsumerQuotePage({ params }) {
             인쇄하기
           </button>
         </div>
-
-        {/* 설정 컨트롤 패널 */}
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* 왼쪽 컨트롤 그룹 */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">문서 설정</h3>
-
-              {/* 빈 행 추가 컨트롤 */}
-              <div className="flex items-center">
-                <span className="text-gray-700 text-sm w-28">빈 행 추가:</span>
-                <div className="flex items-center">
-                  <button
-                    onClick={() => setRowEmptyAdd(prev => Math.max(0, prev - 1))}
-                    className="bg-gray-100 text-gray-700 px-2 py-1 rounded-l-md hover:bg-gray-200 transition-colors border border-gray-300"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </button>
-                  <span className="bg-white px-3 py-1 border-t border-b border-gray-300 min-w-[2rem] text-center">
-                    {rowEmptyAdd}
-                  </span>
-                  <button
-                    onClick={() => setRowEmptyAdd(prev => prev + 1)}
-                    className="bg-gray-100 text-gray-700 px-2 py-1 rounded-r-md hover:bg-gray-200 transition-colors border border-gray-300"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              {/* 체크박스 옵션들 */}
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={showNotes}
-                  onChange={e => setShowNotes(e.target.checked)}
-                  className="form-checkbox h-5 w-5 text-sky-500 rounded border-gray-300 focus:ring-sky-500"
-                />
-                <span className="ml-2 text-gray-700 text-sm">공지사항 필독 추가</span>
-              </label>
-
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={showDescription}
-                  onChange={e => setShowDescription(e.target.checked)}
-                  className="form-checkbox h-5 w-5 text-sky-500 rounded border-gray-300 focus:ring-sky-500"
-                />
-                <span className="ml-2 text-gray-700 text-sm">견적상담 표시</span>
-              </label>
-
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={showStamp}
-                  onChange={e => setShowStamp(e.target.checked)}
-                  className="form-checkbox h-5 w-5 text-sky-500 rounded border-gray-300 focus:ring-sky-500"
-                />
-                <span className="ml-2 text-gray-700 text-sm">인감도장 표시</span>
-              </label>
-            </div>
-
-            {/* 오른쪽 컨트롤 그룹 */}
-            <div className="space-y-1">
-              <h3 className="text-sm font-semibold text-gray-700 mb-1">공지사항 관리</h3>
-
-              <button
-                onClick={() => {
-                  setShowNotesEditor(!showNotesEditor);
-                  if (!showNotesEditor) {
-                    setNotesContent(noticeItems.join('\n'));
-                  }
-                }}
-                className="flex items-center bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm w-full"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-1"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                </svg>
-                공지사항 수정
-              </button>
-
-              <div className="text-xs text-gray-500">
-                공지사항을 수정하려면 위 버튼을 클릭하세요.
-              </div>
-
-              {/* finalPayment 금액 수정 인풋 추가 */}
-              <div className="mt-4 pt-3 border-t border-gray-200">
-                <div className="flex items-center">
-                  <span className="text-sm font-semibold text-gray-700">최종 금액 수정</span>
-                  <input
-                    type="number"
-                    value={estimate.calculatedValues?.finalPayment || 0}
-                    onChange={e => {
-                      const newValue = parseInt(e.target.value, 10) || 0;
-                      setEstimate(prev => ({
-                        ...prev,
-                        calculatedValues: {
-                          ...prev.calculatedValues,
-                          finalPayment: newValue,
-                        },
-                      }));
-                    }}
-                    className="border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <span className="text-xs text-gray-500 tracking-tighter2">
-                  (수정한 금액은 견적서에 즉시 반영되지만 저장되지는 않습니다.)
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
-
-      {/* 공지사항 수정 에디터 */}
-      {showNotesEditor && (
-        <div className="mb-6 no-print">
-          <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 shadow-sm">
-            <h3 className="text-sm font-semibold text-gray-700 mb-2">공지사항 편집</h3>
-            <textarea
-              value={notesContent}
-              onChange={handleNotesContentChange}
-              className="w-full h-32 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="공지사항을 입력하세요. 각 줄은 별도의 항목으로 표시됩니다."
-            ></textarea>
-            {announcementError && (
-              <div className="text-red-500 text-sm mt-1">{announcementError}</div>
-            )}
-            <div className="flex justify-end mt-2 space-x-2">
-              <button
-                onClick={() => setShowNotesEditor(false)}
-                disabled={savingAnnouncement}
-                className={`bg-gray-500 text-white px-3 py-1.5 rounded-md text-sm hover:bg-gray-600 transition-colors ${
-                  savingAnnouncement ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                취소
-              </button>
-              <button
-                onClick={saveNotesContent}
-                disabled={savingAnnouncement}
-                className={`bg-blue-600 text-white px-3 py-1.5 rounded-md text-sm hover:bg-blue-700 transition-colors ${
-                  savingAnnouncement ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                {savingAnnouncement ? '저장 중...' : '저장'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 인쇄 영역 */}
-      <div
-        ref={printRef}
-        className="print-this-section bg-white p-2.5 pt-2.5 pb-2.5 px-4.5 border-2 border-sky-300 rounded-lg shadow-sm"
-      >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ width: '200px', paddingBottom: '10px' }}>
-            <Image
-              src="/wellcomlogopro.png"
-              alt="웰컴 시스템 로고"
-              width={200}
-              height={80}
-              style={{ objectFit: 'contain' }}
-            />
-          </div>
-          <div className="text-center" style={{ flex: 1 }}>
-            <h1 className="text-4xl font-extrabold text-black tracking-extra-widetitle">
-              견 적 서
-            </h1>
-          </div>
-          <div style={{ width: '200px', textAlign: 'right', paddingBottom: '40px' }}>
-            <p className="text-gray-700 tracking-tighter">
-              견적일자: {formatDate(estimate.createdAt)}
-            </p>
-            {/* 출고일자 표시 */}
-            {estimate.paymentInfo?.releaseDate ? (
-              <p style={{ lineHeight: '1' }} className="text-gray-700 tracking-tighter">
-                출고일자: {formatDate(estimate.paymentInfo.releaseDate)}
-              </p>
-            ) : (
-              <p style={{ lineHeight: '1' }} className="text-gray-700 tracking-tighter">
-                출고일자:
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              </p>
-            )}
-          </div>
-        </div>
-        {/* 고객 정보 and 공급자 정보 */}
-        <div className="flex gap-2 mb-2" style={{ width: '100%' }}>
-          <div
-            style={{ width: '50%', height: 'auto' }}
-            className="border border-sky-200 rounded-lg flex bg-sky-50"
-          >
-            <table style={{ width: '100%' }} className="m-1">
-              <tbody>
-                <tr style={{ lineHeight: '18px' }}>
-                  <td
-                    style={{ width: '25%' }}
-                    className="text-left text-black font-semibold tracking-extra-widetitler"
-                  >
-                    성 명
-                  </td>
-                  <td style={{ width: '75%' }} className="text-left text-black font-semibold">
-                    {estimate.customerInfo?.name || ''}
-                  </td>
-                </tr>
-                <tr style={{ lineHeight: '18px' }}>
-                  <td
-                    style={{ width: '25%' }}
-                    className="text-left text-black font-semibold tracking-wide"
-                  >
-                    연 락 처
-                  </td>
-                  <td style={{ width: '75%' }} className="text-left text-black font-semibold">
-                    {estimate.customerInfo?.phone || ''}
-                  </td>
-                </tr>
-                <tr style={{ lineHeight: '18px' }}>
-                  <td
-                    style={{ width: '25%' }}
-                    className="text-left text-black font-semibold tracking-wider"
-                  >
-                    PC 번호
-                  </td>
-                  <td style={{ width: '75%' }} className="text-left text-black font-semibold">
-                    {estimate.customerInfo?.pcNumber || ''}
-                  </td>
-                </tr>
-                <tr style={{ lineHeight: '18px' }}>
-                  <td
-                    style={{ width: '25%' }}
-                    className="text-left text-black font-semibold tracking-wider"
-                  >
-                    AS 조건
-                  </td>
-                  <td style={{ width: '75%' }} className="text-left text-black font-semibold">
-                    {estimate.customerInfo?.asCondition || ''}
-                  </td>
-                </tr>
-                <tr style={{ lineHeight: '18px' }}>
-                  <td
-                    style={{ width: '25%' }}
-                    className="text-left text-black font-semibold tracking-tight"
-                  >
-                    견적담당
-                  </td>
-                  <td style={{ width: '75%' }} className="text-left text-black font-semibold">
-                    {estimate.customerInfo?.manager || ''}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div
-            style={{ width: '50%', height: 'auto' }}
-            className="border border-sky-200 rounded-lg flex bg-sky-50"
-          >
-            <table style={{ width: '100%' }} className="m-1">
-              <tbody>
-                <tr style={{ lineHeight: '18px' }}>
-                  <td
-                    className="text-center text-black font-semibold border-r border-sky-200 tracking-extra-wide pr-1"
-                    rowSpan="4"
-                    style={{ writingMode: 'vertical-rl' }}
-                  >
-                    공 급 자
-                  </td>
-                  <td
-                    style={{ width: '25%' }}
-                    className="text-left text-black font-semibold pl-1 tracking-tighter"
-                  >
-                    등록번호
-                  </td>
-                  <td
-                    style={{ width: '37%' }}
-                    className="text-left text-black font-semibold tracking-wide"
-                  >
-                    607-02-70320
-                  </td>
-                  <td
-                    style={{ width: '38%' }}
-                    className="text-center text-left text-black font-semibold border-l border-sky-200 relative"
-                    rowSpan="2"
-                  >
-                    김 선 식
-                    <span style={{ fontSize: '0.6rem' }}> &nbsp;&nbsp;&nbsp;&nbsp;(인)</span>
-                    <span className="relative inline-block">
-                      {showStamp && (
-                        <div
-                          className="absolute"
-                          style={{
-                            top: '-34px',
-                            left: '-36px',
-                            width: '60px',
-                            height: '60px',
-                            zIndex: 10,
-                          }}
-                        >
-                          <Image
-                            src="/stamp.png"
-                            alt="인감도장"
-                            width={60}
-                            height={60}
-                            style={{
-                              transform: 'rotate(0deg)',
-                              objectFit: 'contain',
-                            }}
-                          />
-                        </div>
-                      )}
-                    </span>
-                  </td>
-                </tr>
-                <tr style={{ lineHeight: '18px' }}>
-                  <td
-                    style={{ width: '25%' }}
-                    className="text-left text-black font-semibold pl-1 tracking-extra-widetitler"
-                  >
-                    상 호
-                  </td>
-                  <td
-                    style={{ width: '37%' }}
-                    className="text-left text-black font-semibold tracking-extra-wide"
-                  >
-                    웰컴시스템
-                  </td>
-                </tr>
-                <tr style={{ lineHeight: '18px' }}>
-                  <td
-                    style={{ width: '25%' }}
-                    className="text-left text-black font-semibold pl-1 tracking-extra-widetitler"
-                  >
-                    주 소
-                  </td>
-                  <td
-                    style={{ width: '40%' }}
-                    className="text-left text-black font-semibold"
-                    colSpan="2"
-                  >
-                    부산시 동래구 온천장로 20 <br />
-                    부산컴퓨터도매상가 209호
-                  </td>
-                </tr>
-                <tr style={{ lineHeight: '18px' }}>
-                  <td
-                    style={{ width: '25%' }}
-                    className="text-left text-black font-semibold pl-1 tracking-tighter"
-                  >
-                    전화번호
-                  </td>
-                  <td
-                    style={{ width: '40%' }}
-                    className="text-left text-black font-semibold"
-                    colSpan="2"
-                  >
-                    051-926-6604, 010-8781-8871
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* 금액을 한글로 표시 */}
-
-        <div className="border-2 border-sky-500 rounded-lg bg-sky-300 p-5 mb-2">
-          <div className="text-center text-lg font-bold text-black tracking-wider">
-            {estimate.calculatedValues?.finalPayment
-              ? `총 액: ${numberToKorean(estimate.calculatedValues.finalPayment)} (${estimate.calculatedValues.finalPayment.toLocaleString()}원) ${estimate.paymentInfo?.includeVat ? 'V.A.T포함' : 'V.A.T별도'}`
-              : ''}
-          </div>
-        </div>
-
-        {/* 상품 목록 */}
-        <div style={{ marginBottom: '7px' }}>
-          <table style={{ width: '100%' }} className="border-collapse border border-sky-200">
-            <thead className="bg-sky-100">
-              <tr>
-                <th
-                  className="border border-sky-200 text-center text-black"
-                  style={{ width: '1%' }}
-                >
-                  No.
-                </th>
-                {/* <th
-                  className="border border-sky-200 text-center text-black"
-                  style={{ width: '12%' }}
-                >
-                  분 &nbsp;&nbsp;류
-                </th> */}
-                <th
-                  className="border border-sky-200 text-center text-black p-1"
-                  style={{ width: '88%' }}
-                >
-                  내
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;용
-                </th>
-                <th
-                  className="border border-sky-200 text-center text-black"
-                  style={{ width: '10%' }}
-                >
-                  수 량
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {/* 부품 상품 목록 */}
-              {estimate.tableData && (
-                <tr className="bg-white">
-                  <td colSpan="3" className="border border-sky-200 text-center font-bold">
-                    부품 상품 목록
-                  </td>
-                </tr>
-              )}
-              {estimate.tableData &&
-                estimate.tableData.map((item, index) => (
-                  <tr key={index} className="bg-white">
-                    <td className="border border-sky-200 text-center">{index + 1}</td>
-                    {/* <td className="border border-sky-200 text-center">{item.category || '-'}</td> */}
-                    <td className="border border-sky-200">{item.productName}</td>
-                    <td className="border border-sky-200 text-center">{item.quantity}</td>
-                  </tr>
-                ))}
-
-              {/* 서비스 상품 목록 */}
-              {estimate.serviceData &&
-                estimate.serviceData.length > 0 &&
-                estimate.serviceData.filter(item => !item.productName.includes('끝자리DC')).length >
-                  0 && (
-                  <>
-                    <tr className="bg-white">
-                      <td colSpan="3" className="border border-sky-200 text-center font-bold">
-                        &nbsp;
-                      </td>
-                    </tr>
-                    <tr className="bg-white">
-                      <td colSpan="3" className="border border-sky-200 text-center font-bold">
-                        서비스 상품 목록
-                      </td>
-                    </tr>
-                    {estimate.serviceData
-                      .filter(item => !item.productName.includes('끝자리DC'))
-                      .map((item, index) => (
-                        <tr key={index} className="bg-white">
-                          <td className="border border-sky-200 text-center">{index + 1}</td>
-                          <td className="border border-sky-200">{item.productName}</td>
-                          <td className="border border-sky-200 text-center">{item.quantity}</td>
-                        </tr>
-                      ))}
-                  </>
-                )}
-
-              {/* 기타 목록 */}
-              {(estimate.paymentInfo?.laborCost > 0 ||
-                estimate.paymentInfo?.tuningCost > 0 ||
-                estimate.paymentInfo?.setupCost > 0 ||
-                estimate.paymentInfo?.shippingCost > 0) && (
-                <>
-                  <tr className="bg-white">
-                    <td colSpan="3" className="border border-sky-200 text-center font-bold">
-                      &nbsp;
-                    </td>
-                  </tr>
-                  <tr className="bg-white">
-                    <td colSpan="3" className="border border-sky-200 text-center font-bold">
-                      기타
-                    </td>
-                  </tr>
-                  <tr className="bg-white">
-                    <td className="border border-sky-200 text-center">1</td>
-                    <td className="border border-sky-200">
-                      {[
-                        estimate.paymentInfo?.laborCost > 0 ? `공임비` : '',
-                        estimate.paymentInfo?.tuningCost > 0 ? `튜닝비` : '',
-                        estimate.paymentInfo?.setupCost > 0 ? `세팅비` : '',
-                        estimate.paymentInfo?.shippingCost > 0 ? `배송비` : '',
-                      ]
-                        .filter(Boolean)
-                        .join(', ')}
-                    </td>
-                    <td className="border border-sky-200 text-center">1</td>
-                  </tr>
-                </>
-              )}
-
-              {/* 빈 행 추가 */}
-              {Array.from({ length: rowEmptyAdd }).map((_, index) => (
-                <tr key={`empty-${index}`} className="bg-white">
-                  <td className="border border-sky-200 text-center"></td>
-                  {/* <td className="border border-sky-200 text-center"></td> */}
-                  <td className="border border-sky-200">&nbsp;</td>
-                  <td className="border border-sky-200 text-center"></td>
-                </tr>
-              ))}
-
-              <tr className="bg-sky-100 font-bold">
-                <td colSpan="3" className="border border-sky-200 p-1 text-black">
-                  <div className="flex justify-between">
-                    <span>부산은행 [064-13-001200-7] (웰컴시스템)</span>
-                    <span>
-                      금액 합계 : {estimate.calculatedValues?.finalPayment?.toLocaleString()}
-                    </span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* 견적상담 표시 */}
-        {showDescription && estimate.estimateDescription && (
-          <div className="border border-sky-200 rounded-lg mb-2 mt-1 bg-sky-50 p-1">
-            <div className="flex items-center">
-              <span className="text-sm font-bold text-blue-800 mr-2">견적상담</span>
-              <div className="flex-1 text-gray-700 text-sm p-1 bg-white border border-sky-200 rounded-md">
-                <div className="flex flex-wrap gap-x-4">
-                  {estimate.estimateDescription
-                    .split('\n')
-                    .filter(line => line.trim() !== '')
-                    .map((line, index) => (
-                      <span key={index}>· {line}</span>
-                    ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 공지사항 - 체크박스가 체크되었을 때만 표시 */}
-        {showNotes && (
-          <div className="border border-sky-200 rounded-lg p-1 bg-sky-50">
-            <div className="flex items-center">
-              <span className="text-sm font-bold text-blue-800 mr-2">※공지사항 필독※</span>
-              <div className="flex-1 flex flex-wrap gap-x-4 text-xs text-black p-1 bg-white border border-sky-200 rounded-md">
-                {noticeItems.map((item, index) => (
-                  <span key={index}>· {item}</span>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 감사 인사말 */}
-        <div className="mt-3 mb-1">
-          <div className="relative bg-gradient-to-r from-sky-100 to-blue-100 p-4 rounded-lg border border-sky-200 shadow-sm overflow-hidden">
-            {/* 배경 장식 요소 */}
-            <div className="absolute top-0 right-0 w-40 h-40 opacity-5">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="w-full h-full text-blue-900"
-              >
-                <path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32l8.4-8.4z" />
-              </svg>
-            </div>
-
-            <div className="text-center relative z-10">
-              <p className="text-xl font-bold text-blue-800 mb-1">
-                웰컴 시스템을 이용해 주셔서 감사합니다
-              </p>
-              <p className="text-sm text-blue-600">
-                고객님의 소중한 선택에 진심으로 감사드립니다. 최상의 서비스로 보답하겠습니다.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 뒤로가기 및 주요 컨트롤 */}
-      <div className="flex justify-between items-center pt-3 mb-4">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center text-gray-600 hover:text-gray-800 font-medium transition-colors px-3 py-2 rounded-md hover:bg-gray-100"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 mr-1"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z"
-              clipRule="evenodd"
-            />
-          </svg>
-          돌아가기
-        </button>
-
-        <button
-          onClick={handlePrint}
-          className="flex items-center bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg shadow transition-colors"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 mr-1"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z"
-              clipRule="evenodd"
-            />
-          </svg>
-          인쇄하기
-        </button>
-      </div>
-    </div>
+    </KingOnlySection>
   );
 }
