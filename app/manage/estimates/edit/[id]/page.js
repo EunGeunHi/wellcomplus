@@ -16,7 +16,12 @@ export default function EstimateEditPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-  const [notification, setNotification] = useState({ message: '', show: false, fadeOut: false });
+  const [notification, setNotification] = useState({
+    message: '',
+    show: false,
+    fadeOut: false,
+    type: 'info',
+  });
   const [focusedInput, setFocusedInput] = useState(null);
   // notes 메모 상태 관리
   const [showNotesModal, setShowNotesModal] = useState(false);
@@ -484,31 +489,31 @@ export default function EstimateEditPage() {
   };
 
   // 알림 메시지 표시 함수
-  const showNotification = (message) => {
+  const showNotification = (message, type = 'info') => {
     // 이미 메시지가 표시 중이라면 먼저 제거
     if (notification.show) {
-      setNotification({ message: '', show: false, fadeOut: false });
+      setNotification({ message: '', show: false, fadeOut: false, type: 'info' });
       setTimeout(() => {
-        showNotificationWithEffect(message);
+        showNotificationWithEffect(message, type);
       }, 100);
     } else {
-      showNotificationWithEffect(message);
+      showNotificationWithEffect(message, type);
     }
   };
 
-  const showNotificationWithEffect = (message) => {
+  const showNotificationWithEffect = (message, type) => {
     // 메시지 표시
-    setNotification({ message, show: true, fadeOut: false });
+    setNotification({ message, show: true, fadeOut: false, type });
 
-    // 2.5초 후 fadeOut 효과 시작
+    // 5초 후 fadeOut 효과 시작
     setTimeout(() => {
       setNotification((prev) => ({ ...prev, fadeOut: true }));
 
       // 0.5초의 fadeOut 효과 후 메시지 완전히 제거
       setTimeout(() => {
-        setNotification({ message: '', show: false, fadeOut: false });
+        setNotification({ message: '', show: false, fadeOut: false, type: 'info' });
       }, 500);
-    }, 2500);
+    }, 5000);
   };
 
   // 포커스 이벤트 핸들러
@@ -669,29 +674,14 @@ export default function EstimateEditPage() {
         throw new Error(errorData.error || '견적 수정 중 오류가 발생했습니다.');
       }
 
-      alert('견적이 성공적으로 수정되었습니다.');
+      showNotification('견적이 성공적으로 수정되었습니다.', 'success');
 
-      // 캐시 무효화를 위한 추가 조치
-      try {
-        await fetch('/api/invalidate-cache', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ path: '/manage/estimates/search' }),
-        });
-      } catch (error) {
-        console.error('캐시 무효화 요청 실패:', error);
-      }
-
-      // 로컬 스토리지에 타임스탬프 저장
-      localStorage.setItem('estimatesRefreshTimestamp', Date.now().toString());
-
-      // 상세 페이지로 이동
-      const timestamp = new Date().getTime();
-      // window.location.href를 사용해 완전히 새로운 페이지 로드 강제
-      window.location.href = `/manage/estimates/search?refresh=${timestamp}`;
+      router.push('/manage/estimates/search');
     } catch (err) {
       console.error('견적 수정 오류:', err);
-      alert(`수정 실패: ${err.message}`);
+      showNotification(`수정 실패: ${err.message}`, 'error');
+      // 스크롤을 최상단으로 이동
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setSubmitting(false);
     }
@@ -853,7 +843,13 @@ export default function EstimateEditPage() {
           {/* 알림 메시지 표시 영역 - 상단 가운데 위치로 변경 */}
           {notification.show && (
             <div
-              className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg ${
+              className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 ${
+                notification.type === 'success'
+                  ? 'bg-green-500'
+                  : notification.type === 'error'
+                    ? 'bg-red-500'
+                    : 'bg-blue-500'
+              } text-white px-6 py-3 rounded-lg shadow-lg ${
                 notification.fadeOut ? 'opacity-0' : 'opacity-100'
               } transition-opacity duration-500`}
             >

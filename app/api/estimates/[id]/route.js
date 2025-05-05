@@ -45,6 +45,19 @@ export const PUT = withKingAuthAPI(async (request, { params, session }) => {
     // 요청 본문 파싱
     const updatedData = await request.json();
 
+    // 필수 필드 유효성 검사
+    if (!updatedData.estimateType || updatedData.estimateType.trim() === '') {
+      return NextResponse.json({ error: '견적 유형은 필수 항목입니다.' }, { status: 400 });
+    }
+
+    if (
+      !updatedData.customerInfo ||
+      !updatedData.customerInfo.name ||
+      updatedData.customerInfo.name.trim() === ''
+    ) {
+      return NextResponse.json({ error: '고객 이름은 필수 항목입니다.' }, { status: 400 });
+    }
+
     // 수정일 업데이트 - Date 객체로 저장
     updatedData.updatedAt = new Date();
 

@@ -14,7 +14,7 @@ export const POST = withKingAuthAPI(async (request, { session }) => {
     // 필수 정보 검증
     if (!estimateData.estimateType || !estimateData.customerInfo.name) {
       return NextResponse.json(
-        { error: '필수 정보가 누락되었습니다. 견적 유형과 고객 정보는 필수입니다.' },
+        { error: '필수 정보가 누락되었습니다. \n견적 유형과 고객 이름은 필수입니다.' },
         { status: 400 }
       );
     }

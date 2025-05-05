@@ -6,7 +6,6 @@ import { KingOnlySection } from '@/app/components/ProtectedContent';
 import KingFallback from '@/app/components/kingFallback';
 import { formatDate } from '@/utils/dateFormat';
 import { formatNumber } from '@/utils/numberUtils';
-import Link from 'next/link';
 import { FaFileAlt } from 'react-icons/fa';
 
 export default function EstimateDetailPage() {
@@ -75,28 +74,7 @@ export default function EstimateDetailPage() {
         throw new Error(errorData.error || '견적 삭제 중 오류가 발생했습니다.');
       }
 
-      // 삭제 성공 시 목록 페이지로 이동
-      alert('견적이 성공적으로 삭제되었습니다.');
-
-      // 캐시 무효화를 위한 추가 조치
-      // 1. 서버로 캐시 무효화 요청
-      try {
-        await fetch('/api/invalidate-cache', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ path: '/manage/estimates/search' }),
-        });
-      } catch (error) {
-        console.error('캐시 무효화 요청 실패:', error);
-      }
-
-      // 2. 로컬 스토리지에 타임스탬프 저장 (검색 페이지에서 감지)
-      localStorage.setItem('estimatesRefreshTimestamp', Date.now().toString());
-
-      // 3. 타임스탬프 쿼리 추가 및 리디렉션
-      const timestamp = new Date().getTime();
-      // window.location.href를 사용해 완전히 새로운 페이지 로드 강제
-      window.location.href = `/manage/estimates/search?refresh=${timestamp}`;
+      router.push('/manage/estimates/search');
     } catch (err) {
       console.error('견적 삭제 오류:', err);
       alert(`삭제 실패: ${err.message}`);
