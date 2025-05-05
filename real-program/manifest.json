@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "다나와 견적 추출기",
+  "name": "다나와 견적 추출기 real-program",
   "description": "다나와 견적을 웰컴플러스 견적 시스템에 자동으로 붙여넣기",
   "version": "1.0",
   "icons": {
