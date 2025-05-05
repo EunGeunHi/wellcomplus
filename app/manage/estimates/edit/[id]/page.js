@@ -71,27 +71,40 @@ export default function EstimateEditPage() {
   // 계산 로직을 수행하는 순수 함수 - 별도로 분리하여 재사용 가능
   const calculateEstimateValues = (estimateData) => {
     // 상품 합계 계산
-    const productTotal = estimateData.tableData.reduce((total, item) => {
-      // 현금가에서 콤마와 원 제거 후 숫자로 변환
-      const price = item.price
-        ? Number(item.price.toString().replace(/,/g, '').replace('원', ''))
-        : 0;
-      return total + price;
-    }, 0);
+    const productTotal =
+      estimateData.tableData?.reduce((total, item) => {
+        // 현금가에서 콤마와 원 제거 후 숫자로 변환
+        const price = item.price
+          ? Number(item.price.toString().replace(/,/g, '').replace('원', ''))
+          : 0;
+        return total + price;
+      }, 0) || 0;
+
+    // paymentInfo가 없는 경우 기본값 제공
+    const paymentInfo = estimateData.paymentInfo || {
+      laborCost: 0,
+      tuningCost: 0,
+      setupCost: 0,
+      warrantyFee: 0,
+      discount: 0,
+      roundingType: '',
+      includeVat: false,
+      vatRate: 0,
+    };
 
     // 추가 비용 계산
     const additionalCosts =
-      (estimateData.paymentInfo.laborCost || 0) +
-      (estimateData.paymentInfo.tuningCost || 0) +
-      (estimateData.paymentInfo.setupCost || 0) +
-      (estimateData.paymentInfo.warrantyFee || 0) -
-      (estimateData.paymentInfo.discount || 0);
+      (paymentInfo.laborCost || 0) +
+      (paymentInfo.tuningCost || 0) +
+      (paymentInfo.setupCost || 0) +
+      (paymentInfo.warrantyFee || 0) -
+      (paymentInfo.discount || 0);
 
     // 총 구입 금액
     let totalPurchase = productTotal + additionalCosts;
 
     // roundingType에 따라 totalPurchase 값 처리
-    const roundingType = estimateData.paymentInfo.roundingType;
+    const roundingType = paymentInfo.roundingType;
     if (roundingType) {
       let divisor = 100; // 기본값
       if (roundingType === '100down') divisor = 100;
@@ -104,11 +117,11 @@ export default function EstimateEditPage() {
     }
 
     // VAT 계산
-    const vatRate = (estimateData.paymentInfo.vatRate || 10) / 100;
+    const vatRate = (paymentInfo.vatRate || 10) / 100;
     let vatAmount = 0;
 
     // VAT 포함 여부에 따른 계산
-    if (estimateData.paymentInfo.includeVat) {
+    if (paymentInfo.includeVat) {
       // VAT 체크 함
       vatAmount = Math.round(totalPurchase * vatRate);
     } else {
@@ -148,11 +161,14 @@ export default function EstimateEditPage() {
     // 데이터가 없거나 로드가 완료되지 않은 경우 실행하지 않음
     if (!estimate || !dataLoaded) return;
 
+    // paymentInfo 객체가 없는 경우 처리
+    if (!estimate.paymentInfo) return;
+
     // 사용자가 금액 관련 필드를 변경했는지 확인
     const hasPriceChange = Object.values(manuallyChanged).some((changed) => changed);
 
     // 버림 타입이 있고, 사용자가 금액 필드를 변경한 경우에만 실행
-    if (estimate.paymentInfo.roundingType && hasPriceChange) {
+    if (estimate.paymentInfo?.roundingType && hasPriceChange) {
       // 서비스 물품 중 "끝자리DC"로 시작하는 항목 제거
       const filteredServiceData =
         estimate.serviceData?.filter((item) => !item.productName.startsWith('끝자리DC')) || [];
@@ -212,7 +228,38 @@ export default function EstimateEditPage() {
         }
 
         const data = await response.json();
-        setEstimate(data.estimate);
+
+        // paymentInfo 객체가 없거나 필수 속성이 없는 경우 기본값으로 초기화
+        const estimateWithDefaults = {
+          ...data.estimate,
+          // paymentInfo가 없으면 기본 객체로 초기화
+          paymentInfo: data.estimate.paymentInfo || {
+            laborCost: 0,
+            tuningCost: 0,
+            setupCost: 0,
+            warrantyFee: 0,
+            discount: 0,
+            deposit: 0,
+            shippingCost: 0,
+            includeVat: false,
+            vatRate: 0,
+            roundingType: '',
+            paymentMethod: '',
+          },
+          // calculatedValues가 없으면 기본 객체로 초기화
+          calculatedValues: data.estimate.calculatedValues || {
+            productTotal: 0,
+            vatAmount: 0,
+            totalPurchase: 0,
+            finalPayment: 0,
+          },
+          // tableData가 없으면 빈 배열로 초기화
+          tableData: data.estimate.tableData || [],
+          // serviceData가 없으면 빈 배열로 초기화
+          serviceData: data.estimate.serviceData || [],
+        };
+
+        setEstimate(estimateWithDefaults);
 
         // 직접 입력 필드 상태 설정
         setIsPaymentMethodDirectInput(
@@ -355,6 +402,38 @@ export default function EstimateEditPage() {
 
   // 결제 정보 금액 버튼 클릭 핸들러
   const handlePaymentButtonClick = (field, amount) => {
+    // paymentInfo 객체가 없는 경우 초기화
+    if (!estimate.paymentInfo) {
+      const paymentInfo = {
+        laborCost: 0,
+        tuningCost: 0,
+        setupCost: 0,
+        warrantyFee: 0,
+        discount: 0,
+        deposit: 0,
+        shippingCost: 0,
+        includeVat: false,
+        vatRate: 0,
+        roundingType: '',
+        paymentMethod: '',
+      };
+
+      // 해당 필드에 금액 설정
+      paymentInfo[field] = amount;
+
+      setEstimate({
+        ...estimate,
+        paymentInfo,
+      });
+
+      // 데이터 로드가 완료된 경우 사용자 변경으로 표시
+      if (dataLoaded) {
+        setManuallyChanged((prev) => ({ ...prev, [field]: true }));
+      }
+
+      return;
+    }
+
     // 현재 값이 이미 해당 금액이면 0으로 리셋, 아니면 해당 금액으로 설정
     const currentAmount = estimate.paymentInfo[field] || 0;
     const newAmount = currentAmount === amount ? 0 : amount;
@@ -595,6 +674,27 @@ export default function EstimateEditPage() {
 
   // 버림 타입 변경 핸들러
   const handleRoundingTypeClick = (type) => {
+    // paymentInfo 객체가 없는 경우 초기화
+    if (!estimate.paymentInfo) {
+      setEstimate({
+        ...estimate,
+        paymentInfo: {
+          laborCost: 0,
+          tuningCost: 0,
+          setupCost: 0,
+          warrantyFee: 0,
+          discount: 0,
+          deposit: 0,
+          shippingCost: 0,
+          includeVat: false,
+          vatRate: 0,
+          roundingType: type,
+          paymentMethod: '',
+        },
+      });
+      return;
+    }
+
     // 이미 선택된 타입이면 선택 해제(빈 문자열로 설정), 아니면 해당 타입으로 설정
     const newType = estimate.paymentInfo.roundingType === type ? '' : type;
 
@@ -619,8 +719,8 @@ export default function EstimateEditPage() {
       return;
     }
 
-    // 현재 totalPurchase 값 가져오기
-    const currentTotal = estimate.calculatedValues.totalPurchase;
+    // 현재 totalPurchase 값 가져오기 (없으면 0으로 초기화)
+    const currentTotal = estimate.calculatedValues?.totalPurchase || 0;
 
     // 버림 단위 설정
     let divisor = 100; // 기본값: 백단위
@@ -662,6 +762,30 @@ export default function EstimateEditPage() {
 
   // 결제 방법 선택 핸들러
   const handlePaymentMethodClick = (method) => {
+    // paymentInfo 객체가 없는 경우 초기화
+    if (!estimate.paymentInfo) {
+      setEstimate({
+        ...estimate,
+        paymentInfo: {
+          laborCost: 0,
+          tuningCost: 0,
+          setupCost: 0,
+          warrantyFee: 0,
+          discount: 0,
+          deposit: 0,
+          shippingCost: 0,
+          includeVat: method === '카드' || method === '카드결제 DC',
+          vatRate: method === '카드' ? 10 : method === '카드결제 DC' ? 5 : 0,
+          roundingType: '',
+          paymentMethod: method === '직접입력' ? '' : method,
+        },
+      });
+
+      // 직접 입력 모드 설정
+      setIsPaymentMethodDirectInput(method === '직접입력');
+      return;
+    }
+
     // 일반 결제 방법 버튼을 클릭한 경우
     if (method !== '직접입력') {
       // 이미 선택된 방법이면 선택 해제(빈 문자열로 설정), 아니면 해당 방법으로 설정

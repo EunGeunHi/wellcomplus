@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { KingOnlySection } from '@/app/components/ProtectedContent';
 import KingFallback from '@/app/components/kingFallback';
 import { formatDate } from '@/utils/dateFormat';
@@ -32,6 +32,25 @@ export default function EstimateDetailPage() {
 
         const data = await response.json();
         setEstimate(data.estimate);
+
+        // 이전 검색 조건(URL 파라미터) 저장
+        if (typeof window !== 'undefined') {
+          // 현재 URL에서 referrer 파라미터 확인
+          const urlParams = new URLSearchParams(window.location.search);
+          const hasSearchParams = urlParams.has('from_search');
+
+          // 이전 페이지가 검색 페이지인 경우에만 검색 파라미터 저장
+          if (hasSearchParams) {
+            // 'id'와 'from_search' 파라미터를 제외한 모든 검색 파라미터 저장
+            const searchParams = {};
+            urlParams.forEach((value, key) => {
+              if (key !== 'id' && key !== 'from_search') {
+                searchParams[key] = value;
+              }
+            });
+            localStorage.setItem('estimateSearchParams', JSON.stringify(searchParams));
+          }
+        }
       } catch (err) {
         console.error('견적 상세 조회 오류:', err);
         setError(err.message);
@@ -45,7 +64,29 @@ export default function EstimateDetailPage() {
 
   // 뒤로 가기
   const handleGoBack = () => {
-    router.push(`/manage/estimates/search`);
+    // 저장된 검색 조건이 있는지 확인
+    if (typeof window !== 'undefined') {
+      const savedParams = localStorage.getItem('estimateSearchParams');
+
+      if (savedParams) {
+        try {
+          // 저장된 검색 파라미터 복원
+          const searchParams = JSON.parse(savedParams);
+          const queryString = new URLSearchParams(searchParams).toString();
+
+          // 검색 조건이 있으면 해당 조건으로 검색 페이지 이동
+          if (queryString) {
+            router.push(`/manage/estimates/search?${queryString}`);
+            return;
+          }
+        } catch (error) {
+          console.error('검색 파라미터 복원 중 오류:', error);
+        }
+      }
+    }
+
+    // 저장된 검색 조건이 없으면 기본 검색 페이지로 이동
+    router.push('/manage/estimates/search');
   };
 
   // 수정 페이지로 이동

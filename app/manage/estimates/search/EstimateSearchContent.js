@@ -248,7 +248,11 @@ export default function EstimateSearchContent() {
 
   // 견적 상세 페이지로 이동하는 핸들러 추가
   const handleRowClick = (estimateId) => {
-    router.push(`/manage/estimates/detail/${estimateId}`);
+    // 현재 URL의 검색 파라미터를 유지하기 위해 from_search 파라미터 추가
+    const currentParams = new URLSearchParams(searchParams.toString());
+    currentParams.append('from_search', 'true');
+
+    router.push(`/manage/estimates/detail/${estimateId}?${currentParams.toString()}`);
   };
 
   // 견적서 페이지로 이동하는 핸들러 추가
