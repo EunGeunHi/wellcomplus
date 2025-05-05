@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { formatDate } from '@/utils/dateFormat'; // dateFormat 유틸리티
 import Link from 'next/link';
+import { FaFileAlt } from 'react-icons/fa'; // 견적서 아이콘 import 추가
 
 export default function EstimateSearchContent() {
   const router = useRouter();
@@ -260,12 +261,12 @@ export default function EstimateSearchContent() {
     <>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">견적 검색</h1>
-        <div>
+        <div className="flex flex-row space-x-2 whitespace-nowrap">
           <Link
             href="/manage/quote/statement"
-            className="bg-green-500 mr-2 hover:bg-green-600 text-white px-4 py-2 rounded"
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center"
           >
-            거래명세표인쇄
+            <FaFileAlt className="mr-1" /> 거래명세표인쇄
           </Link>
           <Link
             href="/manage/estimates/create"
@@ -352,7 +353,7 @@ export default function EstimateSearchContent() {
               <th className="px-4 py-2 text-left">연락처</th>
               <th className="px-4 py-2 text-left">계약상태</th>
               <th className="px-4 py-2 text-left">생성일</th>
-              <th className="px-4 py-2 text-left">견적서</th>
+              <th className="px-4 py-2 text-center">견적서</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -363,10 +364,10 @@ export default function EstimateSearchContent() {
                   className="hover:bg-gray-50 cursor-pointer"
                   onClick={() => handleRowClick(estimate._id)}
                 >
-                  <td className="px-4 py-2">{estimate.estimateType || '없음'}</td>
-                  <td className="px-4 py-2">{estimate.customerInfo.name || '-'}</td>
-                  <td className="px-4 py-2">{estimate.customerInfo.phone || '-'}</td>
-                  <td className="px-4 py-2">
+                  <td className="px-3 py-1">{estimate.estimateType || '없음'}</td>
+                  <td className="px-3 py-1">{estimate.customerInfo.name || '-'}</td>
+                  <td className="px-3 py-1">{estimate.customerInfo.phone || '-'}</td>
+                  <td className="px-3 py-1">
                     <span
                       className={
                         estimate.isContractor ? 'text-green-600 font-medium' : 'text-gray-500'
@@ -375,18 +376,19 @@ export default function EstimateSearchContent() {
                       {estimate.isContractor ? '계약자' : '비계약자'}
                     </span>
                   </td>
-                  <td className="px-4 py-2">
+                  <td className="px-3 py-1">
                     {estimate.createdAt
                       ? formatDate(estimate.createdAt, { shortFormat: true })
                       : '-'}
                   </td>
-                  <td className="px-4 py-2">
-                    <span
-                      className="text-blue-500 hover:text-blue-700 cursor-pointer"
+                  <td className="px-3 py-1 text-center">
+                    <button
+                      className="bg-green-500 hover:bg-green-600 text-white px-5 py-[3px] rounded flex items-center justify-center mx-auto"
                       onClick={(e) => handleQuoteClick(e, estimate._id)}
+                      title="견적서 인쇄"
                     >
-                      견적서
-                    </span>
+                      <FaFileAlt className="text-lg" />
+                    </button>
                   </td>
                 </tr>
               ))

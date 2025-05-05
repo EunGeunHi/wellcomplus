@@ -7,6 +7,7 @@ import KingFallback from '@/app/components/kingFallback';
 import { formatDate } from '@/utils/dateFormat';
 import { formatNumber } from '@/utils/numberUtils';
 import Link from 'next/link';
+import { FaFileAlt } from 'react-icons/fa';
 
 export default function EstimateDetailPage() {
   const params = useParams();
@@ -104,6 +105,11 @@ export default function EstimateDetailPage() {
     }
   };
 
+  // 견적서 페이지로 이동하는 핸들러
+  const handleQuoteClick = () => {
+    router.push(`/manage/quote/${id}`);
+  };
+
   if (loading) {
     return (
       <KingOnlySection fallback={<KingFallback />}>
@@ -155,13 +161,26 @@ export default function EstimateDetailPage() {
       <div className="bg-gray-50 w-full py-6">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex flex-wrap justify-between items-center mb-6">
-            <div>
-              <h1 className="text-2xl font-bold">견적 상세 정보</h1>
-              <div className="mt-1 inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                {estimate.estimateType || '없음'}
+            <div className="flex">
+              <h1 className="text-2xl font-bold mr-2">견적 상세 정보</h1>
+              <div className="flex gap-2 mt-1">
+                <div className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                  {estimate.estimateType || '없음'}
+                </div>
+                <div
+                  className={`inline-block px-3 py-1 ${estimate.isContractor ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'} rounded-full text-sm font-semibold`}
+                >
+                  {estimate.isContractor ? '계약자' : '비계약자'}
+                </div>
               </div>
             </div>
             <div className="flex space-x-2 mt-2 md:mt-0">
+              <button
+                onClick={handleQuoteClick}
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center"
+              >
+                <FaFileAlt className="mr-1" /> 견적서 인쇄
+              </button>
               <button
                 onClick={handleEdit}
                 className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
@@ -188,7 +207,7 @@ export default function EstimateDetailPage() {
           {/* 고객 정보 */}
           <div className="bg-white p-6 rounded-lg shadow mb-6">
             <h2 className="text-xl font-semibold mb-4 pb-2 border-b">고객 정보</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <p className="text-gray-600">이름</p>
                 <p className="font-medium">{estimate.customerInfo.name || '-'}</p>
@@ -512,6 +531,12 @@ export default function EstimateDetailPage() {
 
           {/* 하단 버튼 영역 */}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <button
+              onClick={handleQuoteClick}
+              className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg shadow flex items-center justify-center"
+            >
+              <FaFileAlt className="mr-1" /> 견적서 인쇄
+            </button>
             <button
               onClick={handleEdit}
               className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow"
