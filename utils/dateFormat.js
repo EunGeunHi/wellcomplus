@@ -1,19 +1,20 @@
 /**
  * 날짜 문자열을 한국 형식으로 포맷팅하는 유틸리티 함수들
  */
-
+//formatDate(estimate.createdAt, { hyphen: true }
 /**
  * ISO 형식의 날짜 문자열을 한국 날짜 형식(YYYY년 MM월 DD일)으로 변환
  * @param {string} dateString - 변환할 날짜 문자열 (ISO 형식: YYYY-MM-DDTHH:mm:ss.sssZ)
  * @param {Object} options - 포맷 옵션
  * @param {boolean} options.withTime - 시간 포함 여부 (기본값: false)
  * @param {boolean} options.shortFormat - 짧은 형식 사용 여부 (기본값: false, ex: 2023.05.21)
+ * @param {boolean} options.hyphen - 하이픈(-) 구분자 형식 사용 여부 (기본값: false, ex: 2023-05-21)
  * @returns {string} 포맷된 날짜 문자열
  */
 export function formatDate(dateString, options = {}) {
   if (!dateString) return '';
 
-  const { withTime = false, shortFormat = false } = options;
+  const { withTime = false, shortFormat = false, hyphen = false } = options;
 
   try {
     const date = new Date(dateString);
@@ -21,6 +22,15 @@ export function formatDate(dateString, options = {}) {
     // 날짜가 유효하지 않은 경우
     if (isNaN(date.getTime())) {
       return '';
+    }
+
+    // 하이픈(-) 형식 처리 ('2023-05-21' 형식)
+    if (hyphen) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+
+      return `${year}-${month}-${day}`;
     }
 
     // 한국 시간대 적용

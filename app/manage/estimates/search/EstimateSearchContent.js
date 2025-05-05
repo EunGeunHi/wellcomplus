@@ -377,9 +377,7 @@ export default function EstimateSearchContent() {
                     </span>
                   </td>
                   <td className="px-3 py-1">
-                    {estimate.createdAt
-                      ? formatDate(estimate.createdAt, { shortFormat: true })
-                      : '-'}
+                    {estimate.createdAt ? formatDate(estimate.createdAt, { hyphen: true }) : '-'}
                   </td>
                   <td className="px-3 py-1 text-center">
                     <button

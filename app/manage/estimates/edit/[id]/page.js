@@ -4,10 +4,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { KingOnlySection } from '@/app/components/ProtectedContent';
 import KingFallback from '@/app/components/kingFallback';
-import { formatDate } from '@/utils/dateFormat';
 import { formatNumber } from '@/utils/numberUtils';
-import { formatPhoneNumberString } from '@/utils/phoneFormatter';
-import Link from 'next/link';
+import { formatKoreanPhoneNumber } from '@/utils/phoneFormatter';
 
 export default function EstimateEditPage() {
   const params = useParams();
@@ -223,7 +221,7 @@ export default function EstimateEditPage() {
         ...estimate,
         customerInfo: {
           ...estimate.customerInfo,
-          [name]: formatPhoneNumberString(value),
+          [name]: formatKoreanPhoneNumber(value, 'overflowing'),
         },
       });
     } else {

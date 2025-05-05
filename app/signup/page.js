@@ -7,7 +7,7 @@ import { signIn } from 'next-auth/react';
 import { FcGoogle } from 'react-icons/fc';
 import { RiKakaoTalkFill } from 'react-icons/ri';
 import { SiNaver } from 'react-icons/si';
-import { formatPhoneNumber, isValidPhoneNumber } from '@/utils/phoneFormatter';
+import { formatKoreanPhoneNumber, isValidPhoneNumber } from '@/utils/phoneFormatter';
 
 /**
  * 회원가입 페이지 컴포넌트
@@ -36,7 +36,7 @@ export default function SignupPage() {
 
     // 전화번호인 경우 포맷팅 적용
     if (name === 'phoneNumber') {
-      const formattedValue = formatPhoneNumber(value);
+      const formattedValue = formatKoreanPhoneNumber(value);
       setFormData((prev) => ({ ...prev, [name]: formattedValue }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
@@ -197,7 +197,7 @@ export default function SignupPage() {
               value={formData.phoneNumber}
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-              placeholder="숫자만 입력하세요 (예: 01012345678)"
+              placeholder="숫자만 입력하세요"
               maxLength={13} // 하이픈 포함 최대 길이
             />
             <p className="mt-1 text-xs text-gray-500">

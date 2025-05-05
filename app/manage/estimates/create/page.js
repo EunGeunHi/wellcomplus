@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { KingOnlySection } from '@/app/components/ProtectedContent';
 import KingFallback from '@/app/components/kingFallback';
 import { formatNumber } from '@/utils/numberUtils';
-import { formatPhoneNumberString } from '@/utils/phoneFormatter';
+import { formatKoreanPhoneNumber } from '@/utils/phoneFormatter';
 
 export default function EstimateCreatePage() {
   const router = useRouter();
@@ -218,7 +218,7 @@ export default function EstimateCreatePage() {
         ...estimate,
         customerInfo: {
           ...estimate.customerInfo,
-          [name]: formatPhoneNumberString(value),
+          [name]: formatKoreanPhoneNumber(value, 'overflowing'),
         },
       });
     } else {
