@@ -45,7 +45,7 @@ export default function EstimateDetailPage() {
 
   // 뒤로 가기
   const handleGoBack = () => {
-    router.back();
+    router.push(`/manage/estimates/search`);
   };
 
   // 수정 페이지로 이동
@@ -467,6 +467,91 @@ export default function EstimateDetailPage() {
                         ? `${formatNumber(estimate.calculatedValues.totalPurchase)}원`
                         : '-'}
                     </span>
+                  </div>
+                  <div className="text-xs text-gray-500 ml-4">
+                    {/* 값이 0이 아닌 항목들을 필터링 */}
+                    {(() => {
+                      // 먼저 유효한 항목만 필터링
+                      if (!estimate) return null;
+
+                      const items = [
+                        estimate.calculatedValues?.productTotal > 0
+                          ? `상품/부품(${formatNumber(estimate.calculatedValues.productTotal)}원)`
+                          : null,
+                        estimate.paymentInfo?.laborCost > 0
+                          ? `공임비(${formatNumber(estimate.paymentInfo.laborCost)}원)`
+                          : null,
+                        estimate.paymentInfo?.setupCost > 0
+                          ? `세팅비(${formatNumber(estimate.paymentInfo.setupCost)}원)`
+                          : null,
+                        estimate.paymentInfo?.tuningCost > 0
+                          ? `튜닝금액(${formatNumber(estimate.paymentInfo.tuningCost)}원)`
+                          : null,
+                        estimate.paymentInfo?.warrantyFee > 0
+                          ? `보증관리비(${formatNumber(estimate.paymentInfo.warrantyFee)}원)`
+                          : null,
+                        estimate.paymentInfo?.discount > 0
+                          ? `할인(-${formatNumber(estimate.paymentInfo.discount)}원)`
+                          : null,
+                        // 버림 타입이 활성화된 경우 버려진 금액 표시
+                        (() => {
+                          if (estimate.paymentInfo?.roundingType) {
+                            // 현재 총 구입 금액 (버려지기 전 금액)
+                            const originalTotal =
+                              estimate.calculatedValues?.productTotal +
+                              (estimate.paymentInfo?.laborCost || 0) +
+                              (estimate.paymentInfo?.tuningCost || 0) +
+                              (estimate.paymentInfo?.setupCost || 0) +
+                              (estimate.paymentInfo?.warrantyFee || 0) -
+                              (estimate.paymentInfo?.discount || 0);
+
+                            // 버림 단위 설정
+                            let divisor = 100; // 기본값: 백단위
+                            if (estimate.paymentInfo.roundingType === '1000down') divisor = 1000;
+                            if (estimate.paymentInfo.roundingType === '10000down') divisor = 10000;
+
+                            // 버려진 금액 계산
+                            const quotient = Math.floor(originalTotal / divisor);
+                            const roundedTotal = quotient * divisor;
+                            const remainder = originalTotal - roundedTotal;
+
+                            // 버려진 금액이 있는 경우만 표시
+                            if (remainder > 0) {
+                              return `끝자리 버림(-${formatNumber(remainder)}원)`;
+                            }
+                          }
+                          return null;
+                        })(),
+                      ].filter(Boolean);
+
+                      // 요소가 없으면 빈 배열 반환
+                      if (items.length === 0) return null;
+
+                      // 결과를 담을 JSX 요소 배열
+                      const result = [];
+
+                      // 항목들을 순회하면서 2개씩 처리
+                      for (let i = 0; i < items.length; i++) {
+                        const isLastItemInRow = i % 2 === 1 || i === items.length - 1;
+                        const hasNextItem = i < items.length - 1;
+
+                        // 현재 항목 추가
+                        result.push(items[i]);
+
+                        // "+ " 추가 (다음 항목이 있고 현재 항목이 줄의 끝이 아닌 경우)
+                        if (hasNextItem && !isLastItemInRow) {
+                          result.push(' + ');
+                        }
+
+                        // 줄의 끝이고 다음 항목이 있으면 "+ " 추가하고 줄바꿈
+                        if (isLastItemInRow && hasNextItem) {
+                          result.push(' + ');
+                          result.push(<br key={`br-${i}`} />);
+                        }
+                      }
+
+                      return result;
+                    })()}
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">VAT 금액:</span>

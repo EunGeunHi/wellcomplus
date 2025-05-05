@@ -25,6 +25,10 @@ export default function EstimateEditPage() {
   const [focusedInput, setFocusedInput] = useState(null);
   // notes 메모 상태 관리
   const [showNotesModal, setShowNotesModal] = useState(false);
+  // 초기 데이터 로드 여부 추적
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
+  // 금액 필드 수동 변경 여부 추적
+  const [priceFieldsChanged, setPriceFieldsChanged] = useState(false);
 
   // 견적 유형 옵션
   const estimateTypeOptions = ['예전데이터', '컴퓨터견적', '프린터견적', '노트북견적', 'AS관련'];
@@ -37,6 +41,18 @@ export default function EstimateEditPage() {
     tuningCost: false,
     setupCost: false,
     warrantyFee: false,
+  });
+
+  // 데이터 로드 완료 여부 추적 (이 값이 true일 때만 사용자 변경으로 간주)
+  const [dataLoaded, setDataLoaded] = useState(false);
+  // 사용자가 변경한 필드 추적
+  const [manuallyChanged, setManuallyChanged] = useState({
+    tableData: false,
+    laborCost: false,
+    tuningCost: false,
+    setupCost: false,
+    warrantyFee: false,
+    discount: false,
   });
 
   // 메모 변경 핸들러
@@ -116,15 +132,27 @@ export default function EstimateEditPage() {
   useEffect(() => {
     if (estimate) {
       calculateValues();
+
+      // 초기 데이터 로드시에만 priceFieldsChanged를 false로 유지
+      if (!initialDataLoaded) {
+        setInitialDataLoaded(true);
+      } else {
+        // 초기 로드 이후의 변경은 사용자에 의한 것으로 간주
+        setPriceFieldsChanged(true);
+      }
     }
   }, [estimate?.tableData, estimate?.paymentInfo]);
 
   // 버림 타입 자동 해제를 위한 useEffect
   useEffect(() => {
-    if (!estimate) return;
+    // 데이터가 없거나 로드가 완료되지 않은 경우 실행하지 않음
+    if (!estimate || !dataLoaded) return;
 
-    // 버림 타입이 선택되어 있는 경우에만 실행
-    if (estimate.paymentInfo.roundingType) {
+    // 사용자가 금액 관련 필드를 변경했는지 확인
+    const hasPriceChange = Object.values(manuallyChanged).some((changed) => changed);
+
+    // 버림 타입이 있고, 사용자가 금액 필드를 변경한 경우에만 실행
+    if (estimate.paymentInfo.roundingType && hasPriceChange) {
       // 서비스 물품 중 "끝자리DC"로 시작하는 항목 제거
       const filteredServiceData =
         estimate.serviceData?.filter((item) => !item.productName.startsWith('끝자리DC')) || [];
@@ -141,15 +169,18 @@ export default function EstimateEditPage() {
 
       // 알림 메시지 표시
       showNotification('금액 변경으로 인해 버림 타입이 자동으로 해제되었습니다.');
+
+      // 변경 플래그 초기화
+      setManuallyChanged({
+        tableData: false,
+        laborCost: false,
+        tuningCost: false,
+        setupCost: false,
+        warrantyFee: false,
+        discount: false,
+      });
     }
-  }, [
-    estimate?.calculatedValues?.productTotal, // 상품/부품 합계 변경 감지
-    estimate?.paymentInfo?.laborCost, // 공임비 변경 감지
-    estimate?.paymentInfo?.setupCost, // 세팅비 변경 감지
-    estimate?.paymentInfo?.tuningCost, // 튜닝금액 변경 감지
-    estimate?.paymentInfo?.warrantyFee, // 보증관리비 변경 감지
-    estimate?.paymentInfo?.discount, // 할인 변경 감지
-  ]);
+  }, [dataLoaded, estimate?.calculatedValues?.productTotal, manuallyChanged]);
 
   // 금액 계산 함수 - UI 상태 업데이트
   const calculateValues = () => {
@@ -205,6 +236,11 @@ export default function EstimateEditPage() {
             }
           }
         }
+
+        // 데이터 로드가 완료되면 상태 변수 설정 (모든 초기화 처리 후)
+        setTimeout(() => {
+          setDataLoaded(true);
+        }, 500);
       } catch (err) {
         console.error('견적 상세 조회 오류:', err);
         setError(err.message);
@@ -214,6 +250,19 @@ export default function EstimateEditPage() {
     };
 
     fetchEstimate();
+
+    // 컴포넌트 언마운트 시 상태 초기화
+    return () => {
+      setDataLoaded(false);
+      setManuallyChanged({
+        tableData: false,
+        laborCost: false,
+        tuningCost: false,
+        setupCost: false,
+        warrantyFee: false,
+        discount: false,
+      });
+    };
   }, [id]);
 
   // 고객 정보 변경 핸들러
@@ -244,6 +293,14 @@ export default function EstimateEditPage() {
   const handlePaymentInfoChange = (e) => {
     const { name, value, type, checked } = e.target;
     let processedValue;
+
+    // 금액 필드인 경우 사용자 변경 표시
+    if (
+      dataLoaded &&
+      ['laborCost', 'tuningCost', 'setupCost', 'warrantyFee', 'discount'].includes(name)
+    ) {
+      setManuallyChanged((prev) => ({ ...prev, [name]: true }));
+    }
 
     if (type === 'checkbox') {
       processedValue = checked;
@@ -301,6 +358,11 @@ export default function EstimateEditPage() {
     // 현재 값이 이미 해당 금액이면 0으로 리셋, 아니면 해당 금액으로 설정
     const currentAmount = estimate.paymentInfo[field] || 0;
     const newAmount = currentAmount === amount ? 0 : amount;
+
+    // 금액이 변경되고 데이터 로드가 완료된 경우 사용자 변경으로 표시
+    if (dataLoaded && currentAmount !== newAmount) {
+      setManuallyChanged((prev) => ({ ...prev, [field]: true }));
+    }
 
     setEstimate({
       ...estimate,
@@ -360,6 +422,11 @@ export default function EstimateEditPage() {
 
   // 상품 정보 변경 핸들러
   const handleTableDataChange = (index, field, value) => {
+    if (dataLoaded) {
+      // 데이터 로딩 완료 후 사용자 변경으로 표시
+      setManuallyChanged((prev) => ({ ...prev, tableData: true }));
+    }
+
     const updatedTableData = [...estimate.tableData];
 
     // 가격 필드인 경우 숫자만 입력 가능하도록 처리
@@ -676,7 +743,7 @@ export default function EstimateEditPage() {
 
       showNotification('견적이 성공적으로 수정되었습니다.', 'success');
 
-      router.push('/manage/estimates/search');
+      router.push(`/manage/estimates/detail/${id}`);
     } catch (err) {
       console.error('견적 수정 오류:', err);
       showNotification(`수정 실패: ${err.message}`, 'error');
