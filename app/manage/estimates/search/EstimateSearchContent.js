@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { formatDate } from '@/utils/dateFormat'; // dateFormat 유틸리티
 import Link from 'next/link';
@@ -9,6 +9,8 @@ import { FaFileAlt } from 'react-icons/fa'; // 견적서 아이콘 import 추가
 export default function EstimateSearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const isInitialLoadRef = useRef(true);
+  const abortControllerRef = useRef(null);
 
   // 상태 관리
   const [keyword, setKeyword] = useState('');
@@ -51,100 +53,147 @@ export default function EstimateSearchContent() {
     }
   }, [searchParams]);
 
+  // 쿼리 파라미터 상태를 메모이제이션
+  const queryParams = useMemo(() => {
+    return {
+      keyword: searchParams.get('keyword') || '',
+      searchType: searchParams.get('searchType') || 'all',
+      estimateType: searchParams.get('estimateType') || '',
+      contractorStatus: searchParams.get('contractorStatus') || '',
+      page: parseInt(searchParams.get('page') || '1', 10),
+    };
+  }, [searchParams]);
+
   // URL 쿼리 파라미터에서 상태 초기화
   useEffect(() => {
-    const queryKeyword = searchParams.get('keyword') || '';
-    const querySearchType = searchParams.get('searchType') || 'all';
-    const queryEstimateType = searchParams.get('estimateType') || '';
-    const queryContractorStatus = searchParams.get('contractorStatus') || '';
-    const queryPage = parseInt(searchParams.get('page') || '1', 10);
-    const queryRefresh = searchParams.get('refresh'); // 리프레시 파라미터 확인
+    // 이전 요청 취소
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
 
-    setKeyword(queryKeyword);
-    setSearchType(querySearchType);
-    setEstimateType(queryEstimateType);
-    setContractorStatus(queryContractorStatus);
+    setKeyword(queryParams.keyword);
+    setSearchType(queryParams.searchType);
+    setEstimateType(queryParams.estimateType);
+    setContractorStatus(queryParams.contractorStatus);
     setPagination((prev) => ({
       ...prev,
-      page: queryPage,
+      page: queryParams.page,
     }));
 
-    // refresh 파라미터가 있으면 캐시를 무시하고 새로 데이터를 가져옴
-    const forceRefresh = !!queryRefresh;
+    // 항상 최신 데이터를 가져오도록 forceRefresh를 true로 설정
+    const forceRefresh = true;
 
     // 모든 경우에 검색 실행 (키워드가 없어도 전체 데이터 조회)
     searchEstimates(
-      queryKeyword,
-      querySearchType,
-      queryEstimateType,
-      queryContractorStatus,
-      queryPage,
+      queryParams.keyword,
+      queryParams.searchType,
+      queryParams.estimateType,
+      queryParams.contractorStatus,
+      queryParams.page,
       forceRefresh
     );
-  }, [searchParams]);
 
-  // 검색 실행 함수
-  const searchEstimates = async (
-    searchKeyword,
-    searchTypeValue,
-    estimateTypeValue,
-    contractorStatusValue,
-    page = 1,
-    forceRefresh = false
-  ) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const queryParams = new URLSearchParams({
-        keyword: searchKeyword,
-        searchType: searchTypeValue,
-        page: page.toString(),
-        limit: pagination.limit.toString(),
-        sort: 'createdAt_desc',
-      });
-
-      // 견적 타입이 선택된 경우에만 쿼리에 추가
-      if (estimateTypeValue) {
-        queryParams.set('estimateType', estimateTypeValue);
-      }
-
-      // 계약자 상태가 선택된 경우에만 쿼리에 추가
-      if (contractorStatusValue) {
-        queryParams.set('contractorStatus', contractorStatusValue);
-      }
-
-      // 캐시 강제 무효화를 위한 파라미터 추가
-      if (forceRefresh) {
-        queryParams.set('_', Date.now().toString());
-      }
-
-      const response = await fetch(`/api/estimates/search?${queryParams.toString()}`, {
-        // 캐시 방지를 위한 헤더 추가
-        headers: forceRefresh
-          ? {
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              Pragma: 'no-cache',
-              Expires: '0',
-            }
-          : {},
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '검색 중 오류가 발생했습니다.');
-      }
-
-      const data = await response.json();
-      setEstimates(data.estimates);
-      setPagination(data.pagination);
-    } catch (err) {
-      console.error('검색 오류:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    // 초기 로드 이후에는 false로 변경
+    if (isInitialLoadRef.current) {
+      isInitialLoadRef.current = false;
     }
-  };
+  }, [queryParams]);
+
+  // 검색 실행 함수 (useCallback으로 메모이제이션)
+  const searchEstimates = useCallback(
+    async (
+      searchKeyword,
+      searchTypeValue,
+      estimateTypeValue,
+      contractorStatusValue,
+      page = 1,
+      forceRefresh = false
+    ) => {
+      setLoading(true);
+      setError(null);
+
+      // 이전 요청 취소
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      // 새 요청을 위한 AbortController 생성
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
+
+      try {
+        const queryParams = new URLSearchParams({
+          keyword: searchKeyword,
+          searchType: searchTypeValue,
+          page: page.toString(),
+          limit: pagination.limit.toString(),
+          sort: 'createdAt_desc',
+        });
+
+        // 견적 타입이 선택된 경우에만 쿼리에 추가
+        if (estimateTypeValue) {
+          queryParams.set('estimateType', estimateTypeValue);
+        }
+
+        // 계약자 상태가 선택된 경우에만 쿼리에 추가
+        if (contractorStatusValue) {
+          queryParams.set('contractorStatus', contractorStatusValue);
+        }
+
+        // 캐시 강제 무효화를 위한 파라미터 추가
+        if (forceRefresh) {
+          queryParams.set('_', Date.now().toString());
+        }
+
+        // 데이터 요청 시작 시간 기록
+        const requestStartTime = performance.now();
+
+        const response = await fetch(`/api/estimates/search?${queryParams.toString()}`, {
+          // 캐시 방지를 위한 헤더 추가
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            Pragma: 'no-cache',
+            Expires: '0',
+          },
+          // 캐시를 무시하고 항상 네트워크에서 새로운 데이터를 가져오도록 설정
+          cache: 'no-store',
+          // 요청 취소를 위한 signal 추가
+          signal: abortController.signal,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || '검색 중 오류가 발생했습니다.');
+        }
+
+        const data = await response.json();
+
+        // 요청 완료 시간 계산 및 로깅 (개발 중에만 표시)
+        const requestEndTime = performance.now();
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`검색 요청 소요 시간: ${(requestEndTime - requestStartTime).toFixed(2)}ms`);
+        }
+
+        // 컴포넌트가 마운트된 경우에만 상태 업데이트
+        if (!abortController.signal.aborted) {
+          setEstimates(data.estimates);
+          setPagination(data.pagination);
+        }
+      } catch (err) {
+        // AbortError는 무시 (요청 취소로 인한 오류)
+        if (err.name !== 'AbortError') {
+          console.error('검색 오류:', err);
+          setError(err.message);
+        }
+      } finally {
+        // 컴포넌트가 마운트된 경우에만 로딩 상태 변경
+        if (!abortController.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    },
+    [pagination.limit]
+  );
 
   // 검색 핸들러
   const handleSearch = (e) => {

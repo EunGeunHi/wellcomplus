@@ -91,5 +91,17 @@ const EstimateSchema = new mongoose.Schema({
   },
 });
 
+// 검색 성능 향상을 위한 인덱스 추가
+EstimateSchema.index({ createdAt: -1 }); // 생성일 기준 정렬 인덱스
+EstimateSchema.index({ estimateType: 1 }); // 견적 타입 검색 인덱스
+EstimateSchema.index({ isContractor: 1 }); // 계약자 상태 검색 인덱스
+EstimateSchema.index({ 'customerInfo.name': 1 }); // 이름 검색 인덱스
+EstimateSchema.index({ 'customerInfo.phone': 1 }); // 전화번호 검색 인덱스
+EstimateSchema.index({ 'customerInfo.pcNumber': 1 }); // PC번호 검색 인덱스
+EstimateSchema.index({ 'customerInfo.contractType': 1 }); // 계약구분 검색 인덱스
+
+// 복합 인덱스 추가 (자주 함께 사용되는 필드들)
+EstimateSchema.index({ estimateType: 1, isContractor: 1, createdAt: -1 }); // 견적 타입, 계약자 상태, 생성일 복합 인덱스
+
 // mongoose.models 객체에 EstimateSchema가 있으면 그것을 사용하고, 없으면 새로 만듭니다.
 export default mongoose.models.Estimate || mongoose.model('Estimate', EstimateSchema);

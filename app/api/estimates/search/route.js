@@ -78,19 +78,21 @@ export const GET = withKingAuthAPI(async (req, { session }) => {
       estimateType: 1, // 견적 타입 추가
       isContractor: 1, // 계약자 상태 추가
       createdAt: 1,
+      _id: 1, // ID는 항상 필요
     };
 
-    // Promise.all을 사용하여 병렬 처리
+    // 병렬로 카운트와 데이터 조회 실행
     const [total, estimates] = await Promise.all([
       // 전체 문서 수 조회 (페이지네이션을 위해)
-      Estimate.countDocuments(query),
+      Estimate.countDocuments(query).exec(),
 
       // 필요한 데이터만 가져오기
       Estimate.find(query, projection)
         .sort({ createdAt: -1 }) // 생성일 내림차순 정렬(최신순)
         .skip(skip)
         .limit(limit)
-        .lean(), // JSON으로 변환 성능 향상
+        .lean() // JSON으로 변환 성능 향상
+        .exec(),
     ]);
 
     // 결과 캐싱 힌트 추가
@@ -104,8 +106,8 @@ export const GET = withKingAuthAPI(async (req, { session }) => {
       },
     });
 
-    // 5분 동안 캐싱 (브라우저와 CDN)
-    response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=300');
+    // 캐싱 시간 단축 (10초로 설정)
+    response.headers.set('Cache-Control', 'public, max-age=10, s-maxage=10');
 
     return response;
   } catch (error) {
