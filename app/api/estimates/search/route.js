@@ -87,7 +87,7 @@ export const GET = withKingAuthAPI(async (req, { session }) => {
 
       // 필요한 데이터만 가져오기
       Estimate.find(query, projection)
-        .sort({ createdAt: -1 }) // 최신순 정렬
+        .sort({ createdAt: -1 }) // 생성일 내림차순 정렬(최신순)
         .skip(skip)
         .limit(limit)
         .lean(), // JSON으로 변환 성능 향상

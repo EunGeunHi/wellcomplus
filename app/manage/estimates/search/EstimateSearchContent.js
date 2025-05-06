@@ -236,7 +236,6 @@ export default function EstimateSearchContent() {
     { value: '노트북견적', label: '노트북견적' },
     { value: 'AS관련', label: 'AS관련' },
     { value: '예전데이터', label: '예전데이터' },
-    { value: '없음', label: '없음' },
   ];
 
   // 계약자 상태 옵션
