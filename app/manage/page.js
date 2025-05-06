@@ -17,6 +17,15 @@ export default function ManagePage() {
             <p className="text-gray-600">등록된 견적 정보를 검색하고 관리합니다.</p>
           </Link>
 
+          <a
+            href="/chrome-expansion-program.zip"
+            download
+            className="bg-white hover:bg-blue-50 border border-gray-200 p-6 rounded-lg shadow-sm transition-colors flex flex-col items-start"
+          >
+            <h2 className="text-xl font-semibold mb-2">확장 프로그램 다운로드</h2>
+            <p className="text-gray-600">확장 프로그램 파일을 다운로드합니다.</p>
+          </a>
+
           {/* 추가 관리 메뉴 */}
         </div>
       </KingOnlySection>
