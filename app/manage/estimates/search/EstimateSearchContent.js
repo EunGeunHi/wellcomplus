@@ -402,6 +402,7 @@ export default function EstimateSearchContent() {
             <tr>
               <th className="px-4 py-2 text-left">견적 타입</th>
               <th className="px-4 py-2 text-left">이름</th>
+              <th className="px-4 py-2 text-left">PC번호</th>
               <th className="px-4 py-2 text-left">연락처</th>
               <th className="px-4 py-2 text-left">계약상태</th>
               <th className="px-4 py-2 text-left">생성일</th>
@@ -418,6 +419,7 @@ export default function EstimateSearchContent() {
                 >
                   <td className="px-3 py-1">{estimate.estimateType || '없음'}</td>
                   <td className="px-3 py-1">{estimate.customerInfo.name || '-'}</td>
+                  <td className="px-3 py-1">{estimate.customerInfo.pcNumber || '-'}</td>
                   <td className="px-3 py-1">{estimate.customerInfo.phone || '-'}</td>
                   <td className="px-3 py-1">
                     <span
@@ -444,7 +446,7 @@ export default function EstimateSearchContent() {
               ))
             ) : (
               <tr>
-                <td colSpan="6" className="px-4 py-6 text-center">
+                <td colSpan="7" className="px-4 py-6 text-center">
                   {loading ? '데이터를 불러오는 중...' : '검색 결과가 없습니다.'}
                 </td>
               </tr>
