@@ -48,6 +48,14 @@ export const GET = withKingAuthAPI(async (req, { session }) => {
             { 'customerInfo.pcNumber': { $regex: keyword, $options: 'i' } },
             { 'customerInfo.contractType': { $regex: keyword, $options: 'i' } },
             { 'customerInfo.content': { $regex: keyword, $options: 'i' } },
+            // 추가 검색 필드
+            { notes: { $regex: keyword, $options: 'i' } },
+            { estimateDescription: { $regex: keyword, $options: 'i' } },
+            { 'tableData.productName': { $regex: keyword, $options: 'i' } },
+            { 'tableData.productCode': { $regex: keyword, $options: 'i' } },
+            { 'tableData.distributor': { $regex: keyword, $options: 'i' } },
+            { 'tableData.reconfirm': { $regex: keyword, $options: 'i' } },
+            { 'tableData.remarks': { $regex: keyword, $options: 'i' } },
           ],
         };
       } else if (searchType === 'name') {
@@ -60,6 +68,20 @@ export const GET = withKingAuthAPI(async (req, { session }) => {
         keywordQuery = { 'customerInfo.contractType': { $regex: keyword, $options: 'i' } };
       } else if (searchType === 'content') {
         keywordQuery = { 'customerInfo.content': { $regex: keyword, $options: 'i' } };
+      } else if (searchType === 'notes') {
+        keywordQuery = { notes: { $regex: keyword, $options: 'i' } };
+      } else if (searchType === 'estimateDescription') {
+        keywordQuery = { estimateDescription: { $regex: keyword, $options: 'i' } };
+      } else if (searchType === 'productName') {
+        keywordQuery = { 'tableData.productName': { $regex: keyword, $options: 'i' } };
+      } else if (searchType === 'productCode') {
+        keywordQuery = { 'tableData.productCode': { $regex: keyword, $options: 'i' } };
+      } else if (searchType === 'distributor') {
+        keywordQuery = { 'tableData.distributor': { $regex: keyword, $options: 'i' } };
+      } else if (searchType === 'reconfirm') {
+        keywordQuery = { 'tableData.reconfirm': { $regex: keyword, $options: 'i' } };
+      } else if (searchType === 'remarks') {
+        keywordQuery = { 'tableData.remarks': { $regex: keyword, $options: 'i' } };
       }
 
       // 견적 타입과 키워드 검색 조건을 함께 적용
@@ -80,6 +102,25 @@ export const GET = withKingAuthAPI(async (req, { session }) => {
       createdAt: 1,
       _id: 1, // ID는 항상 필요
     };
+
+    // tableData 검색 필드일 경우, 매칭된 tableData 항목의 첫 번째 요소 정보 추가
+    if (
+      searchType === 'productName' ||
+      searchType === 'productCode' ||
+      searchType === 'distributor' ||
+      searchType === 'reconfirm' ||
+      searchType === 'remarks'
+    ) {
+      projection['tableData.$'] = 1; // 매칭된 첫 번째 tableData 항목만 가져오기
+    }
+
+    // notes나 estimateDescription 필드일 경우 해당 필드도 가져오기
+    if (searchType === 'notes') {
+      projection.notes = 1;
+    }
+    if (searchType === 'estimateDescription') {
+      projection.estimateDescription = 1;
+    }
 
     // 병렬로 카운트와 데이터 조회 실행
     const [total, estimates] = await Promise.all([

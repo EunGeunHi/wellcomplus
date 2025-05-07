@@ -100,6 +100,15 @@ EstimateSchema.index({ 'customerInfo.phone': 1 }); // 전화번호 검색 인덱
 EstimateSchema.index({ 'customerInfo.pcNumber': 1 }); // PC번호 검색 인덱스
 EstimateSchema.index({ 'customerInfo.contractType': 1 }); // 계약구분 검색 인덱스
 
+// 새로 추가된 검색 필드 인덱스
+EstimateSchema.index({ notes: 1 }); // 참고사항 검색 인덱스
+EstimateSchema.index({ estimateDescription: 1 }); // 견적설명 검색 인덱스
+EstimateSchema.index({ 'tableData.productName': 1 }); // 상품명 검색 인덱스
+EstimateSchema.index({ 'tableData.productCode': 1 }); // 상품코드 검색 인덱스
+EstimateSchema.index({ 'tableData.distributor': 1 }); // 총판 검색 인덱스
+EstimateSchema.index({ 'tableData.reconfirm': 1 }); // 재조사 검색 인덱스
+EstimateSchema.index({ 'tableData.remarks': 1 }); // 비고 검색 인덱스
+
 // 복합 인덱스 추가 (자주 함께 사용되는 필드들)
 EstimateSchema.index({ estimateType: 1, isContractor: 1, createdAt: -1 }); // 견적 타입, 계약자 상태, 생성일 복합 인덱스
 

@@ -275,6 +275,13 @@ export default function EstimateSearchContent() {
     { value: 'pcNumber', label: 'PC번호' },
     { value: 'contractType', label: '계약구분' },
     { value: 'content', label: '내용' },
+    { value: 'notes', label: '참고사항' },
+    { value: 'estimateDescription', label: '견적설명' },
+    { value: 'productName', label: '상품명' },
+    { value: 'productCode', label: '상품코드' },
+    { value: 'distributor', label: '총판' },
+    { value: 'reconfirm', label: '재조사' },
+    { value: 'remarks', label: '비고' },
   ];
 
   // 견적 타입 옵션
@@ -394,6 +401,28 @@ export default function EstimateSearchContent() {
 
       {/* 에러 메시지 */}
       {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
+
+      {/* 검색 결과 정보 */}
+      <div className="mb-3 flex justify-between items-center">
+        <div>
+          <span className="font-medium">총 {pagination.total}개</span>의 견적 데이터
+          {keyword && (
+            <>
+              {' '}
+              중 <span className="text-blue-600 font-medium">'{keyword}'</span>
+              {searchType !== 'all' && (
+                <> ({searchTypeOptions.find((option) => option.value === searchType)?.label})</>
+              )}{' '}
+              검색 결과
+            </>
+          )}
+        </div>
+        {estimateType && (
+          <div className="bg-gray-100 px-3 py-1 rounded text-sm">
+            견적 타입: <span className="font-medium">{estimateType}</span>
+          </div>
+        )}
+      </div>
 
       {/* 검색 결과 테이블 */}
       <div className="bg-white rounded-lg shadow overflow-x-auto">
