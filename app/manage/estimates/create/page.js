@@ -907,10 +907,23 @@ export default function EstimateCreatePage() {
     }
   };
 
+  // 일반 키 입력 핸들러 - 모든 인풋에서 엔터키 기본 동작 방지
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // 엔터키 기본 동작 방지
+    }
+  };
+
   return (
     <KingOnlySection fallback={<KingFallback />}>
       <div className="bg-gray-50 min-h-screen w-full font-['NanumGothic']">
-        <form onSubmit={handleSubmit} className="max-w-6xl mx-auto px-4 py-6">
+        <form
+          onSubmit={handleSubmit}
+          className="max-w-6xl mx-auto px-4 py-6"
+          onKeyDown={(e) =>
+            e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && e.preventDefault()
+          }
+        >
           {/* 알림 메시지 표시 영역 - 상단 가운데 위치로 변경 */}
           {notification.show && (
             <div
@@ -980,6 +993,7 @@ export default function EstimateCreatePage() {
                   name="name"
                   value={estimate.customerInfo.name}
                   onChange={handleCustomerInfoChange}
+                  onKeyDown={handleKeyDown}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
@@ -990,6 +1004,7 @@ export default function EstimateCreatePage() {
                   name="phone"
                   value={estimate.customerInfo.phone}
                   onChange={handleCustomerInfoChange}
+                  onKeyDown={handleKeyDown}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
@@ -1000,6 +1015,7 @@ export default function EstimateCreatePage() {
                   name="pcNumber"
                   value={estimate.customerInfo.pcNumber}
                   onChange={handleCustomerInfoChange}
+                  onKeyDown={handleKeyDown}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
@@ -1466,6 +1482,7 @@ export default function EstimateCreatePage() {
                           type="text"
                           value={item.category || ''}
                           onChange={(e) => handleTableDataChange(index, 'category', e.target.value)}
+                          onKeyDown={handleKeyDown}
                           onFocus={() => handleFocus(index, 'category')}
                           onBlur={handleBlur}
                           className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
@@ -1480,6 +1497,7 @@ export default function EstimateCreatePage() {
                           onChange={(e) =>
                             handleTableDataChange(index, 'productName', e.target.value)
                           }
+                          onKeyDown={handleKeyDown}
                           onFocus={() => handleFocus(index, 'productName')}
                           onBlur={handleBlur}
                           className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
@@ -1492,6 +1510,7 @@ export default function EstimateCreatePage() {
                           type="text"
                           value={item.quantity || ''}
                           onChange={(e) => handleTableDataChange(index, 'quantity', e.target.value)}
+                          onKeyDown={handleKeyDown}
                           onFocus={() => handleFocus(index, 'quantity')}
                           onBlur={handleBlur}
                           className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
@@ -1504,6 +1523,7 @@ export default function EstimateCreatePage() {
                           type="text"
                           value={item.price || ''}
                           onChange={(e) => handleTableDataChange(index, 'price', e.target.value)}
+                          onKeyDown={handleKeyDown}
                           onFocus={() => handleFocus(index, 'price')}
                           onBlur={handleBlur}
                           className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
@@ -1518,6 +1538,7 @@ export default function EstimateCreatePage() {
                           onChange={(e) =>
                             handleTableDataChange(index, 'productCode', e.target.value)
                           }
+                          onKeyDown={handleKeyDown}
                           onFocus={() => handleFocus(index, 'productCode')}
                           onBlur={handleBlur}
                           className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
@@ -1537,7 +1558,10 @@ export default function EstimateCreatePage() {
                             onChange={(e) =>
                               handleTableDataChange(index, 'distributor', e.target.value)
                             }
-                            onKeyDown={handleAutocompleteKeyDown}
+                            onKeyDown={(e) => {
+                              handleAutocompleteKeyDown(e);
+                              handleKeyDown(e);
+                            }}
                             onFocus={() => {
                               handleFocus(index, 'distributor');
                               // 입력값 유무와 상관없이 자동완성 표시
@@ -1602,7 +1626,10 @@ export default function EstimateCreatePage() {
                             onChange={(e) =>
                               handleTableDataChange(index, 'reconfirm', e.target.value)
                             }
-                            onKeyDown={handleAutocompleteKeyDown}
+                            onKeyDown={(e) => {
+                              handleAutocompleteKeyDown(e);
+                              handleKeyDown(e);
+                            }}
                             onFocus={() => {
                               handleFocus(index, 'reconfirm');
                               // 입력값 유무와 상관없이 자동완성 표시
@@ -1659,6 +1686,7 @@ export default function EstimateCreatePage() {
                         <textarea
                           value={item.remarks || ''}
                           onChange={(e) => handleTableDataChange(index, 'remarks', e.target.value)}
+                          onKeyDown={handleKeyDown}
                           onFocus={() => handleFocus(index, 'remarks')}
                           onBlur={handleBlur}
                           rows="1"
@@ -1790,6 +1818,7 @@ export default function EstimateCreatePage() {
                               onChange={(e) =>
                                 handleServiceDataChange(index, 'productName', e.target.value)
                               }
+                              onKeyDown={handleKeyDown}
                               className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm"
                             />
                           </td>
@@ -1800,6 +1829,7 @@ export default function EstimateCreatePage() {
                               onChange={(e) =>
                                 handleServiceDataChange(index, 'quantity', e.target.value)
                               }
+                              onKeyDown={handleKeyDown}
                               className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm"
                             />
                           </td>
@@ -1809,6 +1839,7 @@ export default function EstimateCreatePage() {
                               onChange={(e) =>
                                 handleServiceDataChange(index, 'remarks', e.target.value)
                               }
+                              onKeyDown={handleKeyDown}
                               rows="1"
                               className="w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm h-[30px]"
                             ></textarea>
@@ -1877,6 +1908,7 @@ export default function EstimateCreatePage() {
                             : formatNumber(estimate.paymentInfo.laborCost)
                         }
                         onChange={handlePaymentInfoChange}
+                        onKeyDown={handleKeyDown}
                         className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       />
                     ) : (
@@ -1928,6 +1960,7 @@ export default function EstimateCreatePage() {
                             : formatNumber(estimate.paymentInfo.tuningCost)
                         }
                         onChange={handlePaymentInfoChange}
+                        onKeyDown={handleKeyDown}
                         className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       />
                     ) : (
@@ -1979,6 +2012,7 @@ export default function EstimateCreatePage() {
                             : formatNumber(estimate.paymentInfo.setupCost)
                         }
                         onChange={handlePaymentInfoChange}
+                        onKeyDown={handleKeyDown}
                         className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       />
                     ) : (
@@ -2032,6 +2066,7 @@ export default function EstimateCreatePage() {
                             : formatNumber(estimate.paymentInfo.warrantyFee)
                         }
                         onChange={handlePaymentInfoChange}
+                        onKeyDown={handleKeyDown}
                         className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       />
                     ) : (
@@ -2054,6 +2089,7 @@ export default function EstimateCreatePage() {
                           : formatNumber(estimate.paymentInfo.discount)
                       }
                       onChange={handlePaymentInfoChange}
+                      onKeyDown={handleKeyDown}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
@@ -2069,6 +2105,7 @@ export default function EstimateCreatePage() {
                           : formatNumber(estimate.paymentInfo.deposit)
                       }
                       onChange={handlePaymentInfoChange}
+                      onKeyDown={handleKeyDown}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
@@ -2121,6 +2158,7 @@ export default function EstimateCreatePage() {
                         name="paymentMethod"
                         value={estimate.paymentInfo.paymentMethod}
                         onChange={handlePaymentInfoChange}
+                        onKeyDown={handleKeyDown}
                         placeholder="결제 방법 입력"
                         className="mt-2 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       />
@@ -2151,6 +2189,7 @@ export default function EstimateCreatePage() {
                       name="vatRate"
                       value={estimate.paymentInfo.vatRate === 0 ? '' : estimate.paymentInfo.vatRate}
                       onChange={handlePaymentInfoChange}
+                      onKeyDown={handleKeyDown}
                       disabled={!estimate.paymentInfo.includeVat}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
@@ -2169,6 +2208,7 @@ export default function EstimateCreatePage() {
                           : formatNumber(estimate.paymentInfo.shippingCost)
                       }
                       onChange={handlePaymentInfoChange}
+                      onKeyDown={handleKeyDown}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
@@ -2179,6 +2219,7 @@ export default function EstimateCreatePage() {
                       name="releaseDate"
                       value={estimate.paymentInfo.releaseDate}
                       onChange={handlePaymentInfoChange}
+                      onKeyDown={handleKeyDown}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
