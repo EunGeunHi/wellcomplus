@@ -37,58 +37,76 @@ export const GET = withKingAuthAPI(async (req, { session }) => {
     }
 
     if (keyword) {
-      let keywordQuery;
+      // 검색어를 공백으로 분리하여 각 단어에 대해 검색 조건 생성
+      const keywordArray = keyword
+        .trim()
+        .split(/\s+/)
+        .filter((word) => word.length > 0);
 
-      if (searchType === 'all') {
-        // 전체 검색 - 여러 필드에서 검색
-        keywordQuery = {
-          $or: [
-            { 'customerInfo.name': { $regex: keyword, $options: 'i' } },
-            { 'customerInfo.phone': { $regex: keyword, $options: 'i' } },
-            { 'customerInfo.pcNumber': { $regex: keyword, $options: 'i' } },
-            { 'customerInfo.contractType': { $regex: keyword, $options: 'i' } },
-            { 'customerInfo.content': { $regex: keyword, $options: 'i' } },
-            // 추가 검색 필드
-            { notes: { $regex: keyword, $options: 'i' } },
-            { estimateDescription: { $regex: keyword, $options: 'i' } },
-            { 'tableData.productName': { $regex: keyword, $options: 'i' } },
-            { 'tableData.productCode': { $regex: keyword, $options: 'i' } },
-            { 'tableData.distributor': { $regex: keyword, $options: 'i' } },
-            { 'tableData.reconfirm': { $regex: keyword, $options: 'i' } },
-            { 'tableData.remarks': { $regex: keyword, $options: 'i' } },
-          ],
-        };
-      } else if (searchType === 'name') {
-        keywordQuery = { 'customerInfo.name': { $regex: keyword, $options: 'i' } };
-      } else if (searchType === 'phone') {
-        keywordQuery = { 'customerInfo.phone': { $regex: keyword, $options: 'i' } };
-      } else if (searchType === 'pcNumber') {
-        keywordQuery = { 'customerInfo.pcNumber': { $regex: keyword, $options: 'i' } };
-      } else if (searchType === 'contractType') {
-        keywordQuery = { 'customerInfo.contractType': { $regex: keyword, $options: 'i' } };
-      } else if (searchType === 'content') {
-        keywordQuery = { 'customerInfo.content': { $regex: keyword, $options: 'i' } };
-      } else if (searchType === 'notes') {
-        keywordQuery = { notes: { $regex: keyword, $options: 'i' } };
-      } else if (searchType === 'estimateDescription') {
-        keywordQuery = { estimateDescription: { $regex: keyword, $options: 'i' } };
-      } else if (searchType === 'productName') {
-        keywordQuery = { 'tableData.productName': { $regex: keyword, $options: 'i' } };
-      } else if (searchType === 'productCode') {
-        keywordQuery = { 'tableData.productCode': { $regex: keyword, $options: 'i' } };
-      } else if (searchType === 'distributor') {
-        keywordQuery = { 'tableData.distributor': { $regex: keyword, $options: 'i' } };
-      } else if (searchType === 'reconfirm') {
-        keywordQuery = { 'tableData.reconfirm': { $regex: keyword, $options: 'i' } };
-      } else if (searchType === 'remarks') {
-        keywordQuery = { 'tableData.remarks': { $regex: keyword, $options: 'i' } };
-      }
+      if (keywordArray.length > 0) {
+        let keywordQueries = [];
 
-      // 견적 타입과 키워드 검색 조건을 함께 적용
-      if (Object.keys(query).length > 0) {
-        query = { $and: [query, keywordQuery] };
-      } else {
-        query = keywordQuery;
+        // 각 검색어에 대한 쿼리 생성
+        for (const word of keywordArray) {
+          let fieldQuery;
+
+          if (searchType === 'all') {
+            // 전체 검색 - 여러 필드에서 검색
+            fieldQuery = {
+              $or: [
+                { 'customerInfo.name': { $regex: word, $options: 'i' } },
+                { 'customerInfo.phone': { $regex: word, $options: 'i' } },
+                { 'customerInfo.pcNumber': { $regex: word, $options: 'i' } },
+                { 'customerInfo.contractType': { $regex: word, $options: 'i' } },
+                { 'customerInfo.content': { $regex: word, $options: 'i' } },
+                // 추가 검색 필드
+                { notes: { $regex: word, $options: 'i' } },
+                { estimateDescription: { $regex: word, $options: 'i' } },
+                { 'tableData.productName': { $regex: word, $options: 'i' } },
+                { 'tableData.productCode': { $regex: word, $options: 'i' } },
+                { 'tableData.distributor': { $regex: word, $options: 'i' } },
+                { 'tableData.reconfirm': { $regex: word, $options: 'i' } },
+                { 'tableData.remarks': { $regex: word, $options: 'i' } },
+              ],
+            };
+          } else if (searchType === 'name') {
+            fieldQuery = { 'customerInfo.name': { $regex: word, $options: 'i' } };
+          } else if (searchType === 'phone') {
+            fieldQuery = { 'customerInfo.phone': { $regex: word, $options: 'i' } };
+          } else if (searchType === 'pcNumber') {
+            fieldQuery = { 'customerInfo.pcNumber': { $regex: word, $options: 'i' } };
+          } else if (searchType === 'contractType') {
+            fieldQuery = { 'customerInfo.contractType': { $regex: word, $options: 'i' } };
+          } else if (searchType === 'content') {
+            fieldQuery = { 'customerInfo.content': { $regex: word, $options: 'i' } };
+          } else if (searchType === 'notes') {
+            fieldQuery = { notes: { $regex: word, $options: 'i' } };
+          } else if (searchType === 'estimateDescription') {
+            fieldQuery = { estimateDescription: { $regex: word, $options: 'i' } };
+          } else if (searchType === 'productName') {
+            fieldQuery = { 'tableData.productName': { $regex: word, $options: 'i' } };
+          } else if (searchType === 'productCode') {
+            fieldQuery = { 'tableData.productCode': { $regex: word, $options: 'i' } };
+          } else if (searchType === 'distributor') {
+            fieldQuery = { 'tableData.distributor': { $regex: word, $options: 'i' } };
+          } else if (searchType === 'reconfirm') {
+            fieldQuery = { 'tableData.reconfirm': { $regex: word, $options: 'i' } };
+          } else if (searchType === 'remarks') {
+            fieldQuery = { 'tableData.remarks': { $regex: word, $options: 'i' } };
+          }
+
+          keywordQueries.push(fieldQuery);
+        }
+
+        // 모든 단어가 포함되어야 하므로 $and 연산자 사용
+        let keywordQuery = { $and: keywordQueries };
+
+        // 견적 타입과 키워드 검색 조건을 함께 적용
+        if (Object.keys(query).length > 0) {
+          query = { $and: [query, keywordQuery] };
+        } else {
+          query = keywordQuery;
+        }
       }
     }
 
