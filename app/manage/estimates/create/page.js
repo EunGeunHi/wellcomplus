@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { KingOnlySection } from '@/app/components/ProtectedContent';
 import KingFallback from '@/app/components/kingFallback';
@@ -19,6 +19,47 @@ export default function EstimateCreatePage() {
   const [focusedInput, setFocusedInput] = useState(null);
   // notes 메모 상태 관리
   const [showNotesModal, setShowNotesModal] = useState(false);
+
+  // 자동완성 기능을 위한 상태 추가
+  const [autocompleteOptions, setAutocompleteOptions] = useState([]);
+  const [showAutocomplete, setShowAutocomplete] = useState(false);
+  const [autocompleteField, setAutocompleteField] = useState(null);
+  const [autocompleteIndex, setAutocompleteIndex] = useState(null);
+  const [selectedOptionIndex, setSelectedOptionIndex] = useState(-1); // 키보드 탐색용 선택 인덱스
+
+  // 자동완성 단어 목록
+  const autocompleteWords = [
+    '아버지',
+    '어머니',
+    '사랑합니다',
+    '김창은',
+    '김창준',
+    '김선식',
+    '소성옥',
+  ];
+
+  // 자동완성 ref (외부 클릭 감지용)
+  const autocompleteDistributorRef = useRef(null);
+  const autocompleteReconfirmRef = useRef(null);
+
+  // 외부 클릭 시 자동완성 닫기
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        autocompleteDistributorRef.current &&
+        !autocompleteDistributorRef.current.contains(event.target) &&
+        autocompleteReconfirmRef.current &&
+        !autocompleteReconfirmRef.current.contains(event.target)
+      ) {
+        setShowAutocomplete(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // 오늘 날짜 기준으로 PC번호 기본값 생성 (예: 2024년 5월 -> 2405PC)
   const getDefaultPcNumber = () => {
@@ -355,7 +396,7 @@ export default function EstimateCreatePage() {
     });
   };
 
-  // 상품 정보 변경 핸들러
+  // 상품 정보 변경 핸들러 (자동완성 기능 추가)
   const handleTableDataChange = (index, field, value) => {
     const updatedTableData = [...estimate.tableData];
 
@@ -372,6 +413,19 @@ export default function EstimateCreatePage() {
         ...updatedTableData[index],
         [field]: value,
       };
+
+      // 총판이나 재조사 필드인 경우 자동완성 설정
+      if (field === 'distributor' || field === 'reconfirm') {
+        const filteredOptions = autocompleteWords.filter((word) =>
+          word.toLowerCase().includes(value.toLowerCase())
+        );
+
+        setAutocompleteOptions(filteredOptions);
+        setShowAutocomplete(filteredOptions.length > 0 && value.length > 0);
+        setAutocompleteField(field);
+        setAutocompleteIndex(index);
+        setSelectedOptionIndex(-1); // 선택 인덱스 초기화
+      }
     }
 
     setEstimate({
@@ -780,6 +834,76 @@ export default function EstimateCreatePage() {
           },
         });
       }
+    }
+  };
+
+  // 자동완성 항목 선택 핸들러
+  const handleAutocompleteSelect = (value) => {
+    if (autocompleteField && autocompleteIndex !== null) {
+      const updatedTableData = [...estimate.tableData];
+      updatedTableData[autocompleteIndex] = {
+        ...updatedTableData[autocompleteIndex],
+        [autocompleteField]: value,
+      };
+
+      setEstimate({
+        ...estimate,
+        tableData: updatedTableData,
+      });
+
+      setShowAutocomplete(false);
+    }
+  };
+
+  // 강조 표시 함수 - 검색어와 일치하는 부분을 강조
+  const highlightMatch = (text, query) => {
+    if (!query) return text;
+
+    const regex = new RegExp(`(${query})`, 'gi');
+    const parts = text.split(regex);
+
+    return (
+      <>
+        {parts.map((part, i) =>
+          regex.test(part) ? (
+            <span key={i} className="font-bold text-blue-600">
+              {part}
+            </span>
+          ) : (
+            part
+          )
+        )}
+      </>
+    );
+  };
+
+  // 키보드 탐색 핸들러
+  const handleAutocompleteKeyDown = (e) => {
+    if (!showAutocomplete) return;
+
+    // 방향키 위 (38), 아래 (40), 엔터 (13), Esc (27)
+    if (e.keyCode === 40) {
+      // 아래 방향키
+      e.preventDefault();
+      if (autocompleteOptions.length > 0) {
+        setSelectedOptionIndex((prev) => (prev < autocompleteOptions.length - 1 ? prev + 1 : 0));
+      }
+    } else if (e.keyCode === 38) {
+      // 위 방향키
+      e.preventDefault();
+      if (autocompleteOptions.length > 0) {
+        setSelectedOptionIndex((prev) => (prev > 0 ? prev - 1 : autocompleteOptions.length - 1));
+      }
+    } else if (e.keyCode === 13 && selectedOptionIndex >= 0) {
+      // 엔터
+      e.preventDefault();
+      if (autocompleteOptions[selectedOptionIndex]) {
+        handleAutocompleteSelect(autocompleteOptions[selectedOptionIndex]);
+      }
+    } else if (e.keyCode === 27) {
+      // Esc
+      e.preventDefault();
+      setShowAutocomplete(false);
     }
   };
 
@@ -1279,7 +1403,7 @@ export default function EstimateCreatePage() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="min-w-full">
+              <table className="min-w-full ">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center w-[40px]">
@@ -1402,32 +1526,134 @@ export default function EstimateCreatePage() {
                         />
                       </td>
                       <td className="px-1 py-1">
-                        <input
-                          type="text"
-                          value={item.distributor || ''}
-                          onChange={(e) =>
-                            handleTableDataChange(index, 'distributor', e.target.value)
-                          }
-                          onFocus={() => handleFocus(index, 'distributor')}
-                          onBlur={handleBlur}
-                          className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
-                            focusedInput === `${index}-distributor` ? 'w-[250px]' : 'w-full'
-                          }`}
-                        />
+                        <div
+                          className="relative"
+                          ref={autocompleteDistributorRef}
+                          style={{ overflow: 'visible' }}
+                        >
+                          <input
+                            type="text"
+                            value={item.distributor || ''}
+                            onChange={(e) =>
+                              handleTableDataChange(index, 'distributor', e.target.value)
+                            }
+                            onKeyDown={handleAutocompleteKeyDown}
+                            onFocus={() => {
+                              handleFocus(index, 'distributor');
+                              // 입력값 유무와 상관없이 자동완성 표시
+                              if (item.distributor && item.distributor.length > 0) {
+                                const filteredOptions = autocompleteWords.filter((word) =>
+                                  word.toLowerCase().includes(item.distributor.toLowerCase())
+                                );
+                                setAutocompleteOptions(filteredOptions);
+                              } else {
+                                setAutocompleteOptions(autocompleteWords);
+                              }
+                              setShowAutocomplete(true);
+                              setAutocompleteField('distributor');
+                              setAutocompleteIndex(index);
+                              setSelectedOptionIndex(-1); // 선택 인덱스 초기화
+                            }}
+                            onBlur={handleBlur}
+                            className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
+                              focusedInput === `${index}-distributor` ? 'w-[250px]' : 'w-full'
+                            }`}
+                          />
+                          {showAutocomplete &&
+                            autocompleteField === 'distributor' &&
+                            autocompleteIndex === index && (
+                              <div className="absolute top-full left-0 mt-1 w-[250px] bg-white shadow-xl max-h-60 rounded-md py-1 text-sm overflow-auto z-50 border border-gray-200 transition-all duration-200 ease-in-out">
+                                {autocompleteOptions.length === 0 ? (
+                                  <div className="px-4 py-2 text-gray-500 italic">
+                                    일치하는 항목이 없습니다
+                                  </div>
+                                ) : (
+                                  autocompleteOptions.map((option, optionIndex) => (
+                                    <div
+                                      key={optionIndex}
+                                      className={`px-4 py-2 cursor-pointer transition-colors duration-150 ${
+                                        selectedOptionIndex === optionIndex
+                                          ? 'bg-blue-100 font-medium'
+                                          : 'hover:bg-blue-50'
+                                      }`}
+                                      onMouseDown={(e) => {
+                                        e.preventDefault(); // 입력 필드의 blur 이벤트를 방지
+                                        handleAutocompleteSelect(option);
+                                      }}
+                                      onMouseEnter={() => setSelectedOptionIndex(optionIndex)}
+                                    >
+                                      {highlightMatch(option, item.distributor)}
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            )}
+                        </div>
                       </td>
                       <td className="px-1 py-1">
-                        <input
-                          type="text"
-                          value={item.reconfirm || ''}
-                          onChange={(e) =>
-                            handleTableDataChange(index, 'reconfirm', e.target.value)
-                          }
-                          onFocus={() => handleFocus(index, 'reconfirm')}
-                          onBlur={handleBlur}
-                          className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
-                            focusedInput === `${index}-reconfirm` ? 'w-[250px]' : 'w-full'
-                          }`}
-                        />
+                        <div
+                          className="relative"
+                          ref={autocompleteReconfirmRef}
+                          style={{ overflow: 'visible' }}
+                        >
+                          <input
+                            type="text"
+                            value={item.reconfirm || ''}
+                            onChange={(e) =>
+                              handleTableDataChange(index, 'reconfirm', e.target.value)
+                            }
+                            onKeyDown={handleAutocompleteKeyDown}
+                            onFocus={() => {
+                              handleFocus(index, 'reconfirm');
+                              // 입력값 유무와 상관없이 자동완성 표시
+                              if (item.reconfirm && item.reconfirm.length > 0) {
+                                const filteredOptions = autocompleteWords.filter((word) =>
+                                  word.toLowerCase().includes(item.reconfirm.toLowerCase())
+                                );
+                                setAutocompleteOptions(filteredOptions);
+                              } else {
+                                setAutocompleteOptions(autocompleteWords);
+                              }
+                              setShowAutocomplete(true);
+                              setAutocompleteField('reconfirm');
+                              setAutocompleteIndex(index);
+                              setSelectedOptionIndex(-1); // 선택 인덱스 초기화
+                            }}
+                            onBlur={handleBlur}
+                            className={`border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm transition-all duration-100 ${
+                              focusedInput === `${index}-reconfirm` ? 'w-[250px]' : 'w-full'
+                            }`}
+                          />
+                          {showAutocomplete &&
+                            autocompleteField === 'reconfirm' &&
+                            autocompleteIndex === index && (
+                              <div className="absolute top-full left-0 mt-1 w-[250px] bg-white shadow-xl max-h-60 rounded-md py-1 text-sm overflow-auto z-50 border border-gray-200 transition-all duration-200 ease-in-out">
+                                {autocompleteOptions.length === 0 ? (
+                                  <div className="px-4 py-2 text-gray-500 italic">
+                                    일치하는 항목이 없습니다
+                                  </div>
+                                ) : (
+                                  autocompleteOptions.map((option, optionIndex) => (
+                                    <div
+                                      key={optionIndex}
+                                      className={`px-4 py-2 cursor-pointer transition-colors duration-150 ${
+                                        selectedOptionIndex === optionIndex
+                                          ? 'bg-blue-100 font-medium'
+                                          : 'hover:bg-blue-50'
+                                      }`}
+                                      onMouseDown={(e) => {
+                                        e.preventDefault(); // 입력 필드의 blur 이벤트를 방지
+                                        handleAutocompleteSelect(option);
+                                      }}
+                                      onMouseEnter={() => setSelectedOptionIndex(optionIndex)}
+                                    >
+                                      {highlightMatch(option, item.reconfirm)}
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            )}
+                        </div>
                       </td>
                       <td className="px-1 py-1">
                         <textarea
