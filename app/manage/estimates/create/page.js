@@ -27,16 +27,19 @@ export default function EstimateCreatePage() {
   const [autocompleteIndex, setAutocompleteIndex] = useState(null);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(-1); // 키보드 탐색용 선택 인덱스
 
-  // 자동완성 단어 목록
-  const autocompleteWords = [
-    '아버지',
-    '어머니',
-    '사랑합니다',
-    '김창은',
-    '김창준',
-    '김선식',
-    '소성옥',
+  // 총판과 재조사 자동완성 단어 목록 분리
+  const distributorWords = [
+    '패밀리',
+    '바이트',
+    'JNP',
+    '컴퓨존',
+    '랜드',
+    '미라클',
+    '남선정보',
+    '서울컴퓨터',
   ];
+
+  const reconfirmWords = ['CS이노베이션', '제이씨현', '피씨디렉트', '서린'];
 
   // 자동완성 ref (외부 클릭 감지용)
   const autocompleteDistributorRef = useRef(null);
@@ -415,8 +418,18 @@ export default function EstimateCreatePage() {
       };
 
       // 총판이나 재조사 필드인 경우 자동완성 설정
-      if (field === 'distributor' || field === 'reconfirm') {
-        const filteredOptions = autocompleteWords.filter((word) =>
+      if (field === 'distributor') {
+        const filteredOptions = distributorWords.filter((word) =>
+          word.toLowerCase().includes(value.toLowerCase())
+        );
+
+        setAutocompleteOptions(filteredOptions);
+        setShowAutocomplete(filteredOptions.length > 0 && value.length > 0);
+        setAutocompleteField(field);
+        setAutocompleteIndex(index);
+        setSelectedOptionIndex(-1); // 선택 인덱스 초기화
+      } else if (field === 'reconfirm') {
+        const filteredOptions = reconfirmWords.filter((word) =>
           word.toLowerCase().includes(value.toLowerCase())
         );
 
@@ -1566,12 +1579,12 @@ export default function EstimateCreatePage() {
                               handleFocus(index, 'distributor');
                               // 입력값 유무와 상관없이 자동완성 표시
                               if (item.distributor && item.distributor.length > 0) {
-                                const filteredOptions = autocompleteWords.filter((word) =>
+                                const filteredOptions = distributorWords.filter((word) =>
                                   word.toLowerCase().includes(item.distributor.toLowerCase())
                                 );
                                 setAutocompleteOptions(filteredOptions);
                               } else {
-                                setAutocompleteOptions(autocompleteWords);
+                                setAutocompleteOptions(distributorWords);
                               }
                               setShowAutocomplete(true);
                               setAutocompleteField('distributor');
@@ -1634,12 +1647,12 @@ export default function EstimateCreatePage() {
                               handleFocus(index, 'reconfirm');
                               // 입력값 유무와 상관없이 자동완성 표시
                               if (item.reconfirm && item.reconfirm.length > 0) {
-                                const filteredOptions = autocompleteWords.filter((word) =>
+                                const filteredOptions = reconfirmWords.filter((word) =>
                                   word.toLowerCase().includes(item.reconfirm.toLowerCase())
                                 );
                                 setAutocompleteOptions(filteredOptions);
                               } else {
-                                setAutocompleteOptions(autocompleteWords);
+                                setAutocompleteOptions(reconfirmWords);
                               }
                               setShowAutocomplete(true);
                               setAutocompleteField('reconfirm');
