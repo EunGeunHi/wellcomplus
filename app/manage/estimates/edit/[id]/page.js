@@ -1173,7 +1173,7 @@ export default function EstimateEditPage() {
 
   return (
     <KingOnlySection fallback={<KingFallback />}>
-      <div className="bg-gray-50 min-h-screen w-full font-['NanumGothic']">
+      <div className="bg-[#C5E3BF] min-h-screen w-full font-['NanumGothic']">
         <form
           onSubmit={handleSubmit}
           className="max-w-6xl mx-auto px-4 py-6"
