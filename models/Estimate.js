@@ -34,7 +34,7 @@ const EstimateSchema = new mongoose.Schema({
       price: String, // 현금가
       productCode: String, // 상품코드
       distributor: String, // 총판
-      reconfirm: String, // 재조사
+      reconfirm: String, // 제제조사
       remarks: String, // 비고
     },
   ],

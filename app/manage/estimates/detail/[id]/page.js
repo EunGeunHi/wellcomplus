@@ -320,7 +320,7 @@ export default function EstimateDetailPage() {
                     </th>
                     <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">총판</th>
                     <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">
-                      재조사
+                      제조사
                     </th>
                     <th className="px-3 py-2 text-left text-sm font-medium text-gray-500">비고</th>
                   </tr>

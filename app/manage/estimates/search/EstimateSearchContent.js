@@ -280,7 +280,7 @@ export default function EstimateSearchContent() {
     { value: 'productName', label: '상품명' },
     { value: 'productCode', label: '상품코드' },
     { value: 'distributor', label: '총판' },
-    { value: 'reconfirm', label: '재조사' },
+    { value: 'reconfirm', label: '제조사' },
     { value: 'remarks', label: '비고' },
   ];
 

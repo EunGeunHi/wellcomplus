@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+
 import { useRouter } from 'next/navigation';
 import { KingOnlySection } from '@/app/components/ProtectedContent';
 import KingFallback from '@/app/components/kingFallback';
@@ -27,7 +28,7 @@ export default function EstimateCreatePage() {
   const [autocompleteIndex, setAutocompleteIndex] = useState(null);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(-1); // 키보드 탐색용 선택 인덱스
 
-  // 총판과 재조사 자동완성 단어 목록 분리
+  // 총판과 제조사 자동완성 단어 목록 분리
   const distributorWords = [
     '패밀리',
     '바이트',
@@ -417,7 +418,7 @@ export default function EstimateCreatePage() {
         [field]: value,
       };
 
-      // 총판이나 재조사 필드인 경우 자동완성 설정
+      // 총판이나 제조사 필드인 경우 자동완성 설정
       if (field === 'distributor') {
         const filteredOptions = distributorWords.filter((word) =>
           word.toLowerCase().includes(value.toLowerCase())
@@ -1457,7 +1458,7 @@ export default function EstimateCreatePage() {
                       총판
                     </th>
                     <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
-                      재조사
+                      제조사
                     </th>
                     <th className="px-1 py-1 text-left text-sm font-medium text-gray-500 text-center">
                       비고
