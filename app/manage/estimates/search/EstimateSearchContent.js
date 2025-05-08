@@ -269,7 +269,7 @@ export default function EstimateSearchContent() {
 
   // 검색 타입 옵션
   const searchTypeOptions = [
-    { value: 'all', label: '전체' },
+    { value: 'all', label: '전체(데이터 범위)' },
     { value: 'name', label: '이름' },
     { value: 'phone', label: '전화번호' },
     { value: 'pcNumber', label: 'PC번호' },
@@ -286,12 +286,13 @@ export default function EstimateSearchContent() {
 
   // 견적 타입 옵션
   const estimateTypeOptions = [
-    { value: '', label: '견적 타입' },
-    { value: '컴퓨터견적', label: '컴퓨터견적' },
-    { value: '프린터견적', label: '프린터견적' },
-    { value: '노트북견적', label: '노트북견적' },
+    { value: '', label: '전체(견적타입)' },
+    { value: '컴퓨터', label: '컴퓨터' },
+    { value: '프린터', label: '프린터' },
+    { value: '노트북', label: '노트북' },
     { value: 'AS관련', label: 'AS관련' },
     { value: '예전데이터', label: '예전데이터' },
+    { value: '사업자', label: '사업자' },
   ];
 
   // 계약자 상태 옵션

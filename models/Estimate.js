@@ -5,7 +5,7 @@ const EstimateSchema = new mongoose.Schema({
   // 견적 유형 분류
   estimateType: {
     type: String,
-    enum: ['예전데이터', '컴퓨터견적', '프린터견적', '노트북견적', 'AS관련'],
+    enum: ['예전데이터', '컴퓨터', '프린터', '노트북', 'AS관련', '사업자'],
     default: '없음', // 기본값 설정
   },
 

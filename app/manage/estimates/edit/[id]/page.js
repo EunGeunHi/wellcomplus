@@ -56,7 +56,7 @@ export default function EstimateEditPage() {
   const autocompleteReconfirmRef = useRef(null);
 
   // 견적 유형 옵션
-  const estimateTypeOptions = ['예전데이터', '컴퓨터견적', '프린터견적', '노트북견적', 'AS관련'];
+  const estimateTypeOptions = ['컴퓨터', '프린터', '노트북', 'AS관련', '사업자', '예전데이터'];
 
   // 직접 입력 UI 상태 관리를 위한 별도의 상태
   const [isPaymentMethodDirectInput, setIsPaymentMethodDirectInput] = useState(false);

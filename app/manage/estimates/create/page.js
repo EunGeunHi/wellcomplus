@@ -74,7 +74,7 @@ export default function EstimateCreatePage() {
   };
 
   // 견적 유형 옵션
-  const estimateTypeOptions = ['예전데이터', '컴퓨터견적', '프린터견적', '노트북견적', 'AS관련'];
+  const estimateTypeOptions = ['컴퓨터', '프린터', '노트북', 'AS관련', '사업자', '예전데이터'];
 
   // 초기 견적 상태 설정
   const [estimate, setEstimate] = useState({
