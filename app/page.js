@@ -68,7 +68,7 @@ export default function Home() {
               <div className="bg-blue-50 p-4 rounded-xl w-16 h-16 flex items-center justify-center mb-6">
                 <ShieldCheck className="w-8 h-8 text-[#3661EB]" />
               </div>
-              <h3 className="text-2xl font-bold mb-3">평생 무상 AS</h3>
+              <h3 className="text-2xl font-bold mb-3">폐기 시까지 AS 보장</h3>
               <p className="text-gray-600 mb-4 flex-grow">
                 한번 고객은 영원한 고객! 구매 후에도 안심하세요. 전문 기술진의 신속한 서비스를 평생
                 보장합니다.
