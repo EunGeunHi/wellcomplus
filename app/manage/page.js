@@ -17,6 +17,14 @@ export default function ManagePage() {
             <p className="text-gray-600">등록된 견적 정보를 검색하고 관리합니다.</p>
           </Link>
 
+          <Link
+            href="/manage/record/search"
+            className="bg-white hover:bg-blue-50 border border-gray-200 p-6 rounded-lg shadow-sm transition-colors"
+          >
+            <h2 className="text-xl font-semibold mb-2">자료/기록 데이터</h2>
+            <p className="text-gray-600">자료와 기록 데이터를 관리하고 조회합니다.</p>
+          </Link>
+
           <a
             href="/chrome-expansion-program.zip"
             download

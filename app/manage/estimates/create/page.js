@@ -29,6 +29,7 @@ export default function EstimateCreatePage() {
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(-1); // 키보드 탐색용 선택 인덱스
 
   // 총판과 제조사 자동완성 단어 목록 분리
+  //총판판
   const distributorWords = [
     '패밀리',
     '바이트',
@@ -39,7 +40,7 @@ export default function EstimateCreatePage() {
     '남선정보',
     '서울컴퓨터',
   ];
-
+  //제조사
   const reconfirmWords = ['CS이노베이션', '제이씨현', '피씨디렉트', '서린'];
 
   // 자동완성 ref (외부 클릭 감지용)
