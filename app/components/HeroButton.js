@@ -5,7 +5,7 @@ import Link from 'next/link';
 export default function HeroButton() {
   return (
     <div className="mt-10 flex flex-col sm:flex-row gap-4">
-      <Link href="/userpage/application/computer">
+      <Link href="/userpage/application">
         <button
           className="group bg-gradient-to-r from-blue-600 to-sky-500 px-8 py-4 rounded-lg text-white 
                   font-['ShillaCulture'] font-medium text-lg hover:shadow-lg hover:shadow-sky-200 transition-all duration-300"
