@@ -19,6 +19,17 @@ export default function ConsumerQuotePage({ params }) {
   const [savingAnnouncement, setSavingAnnouncement] = useState(false);
   const [announcementError, setAnnouncementError] = useState(null);
   const [rowEmptyAdd, setRowEmptyAdd] = useState(0); // 빈 행 추가를 위한 상태 변수 추가
+  const [activeTemplateTab, setActiveTemplateTab] = useState(0); // 활성화된 탭 인덱스
+  const [templateContents, setTemplateContents] = useState(['', '', '', '', '']); // 5개의 탭에 대한 내용
+  const [templateNames, setTemplateNames] = useState([
+    '기본 템플릿',
+    '템플릿 2',
+    '템플릿 3',
+    '템플릿 4',
+    '템플릿 5',
+  ]); // 템플릿 이름
+  const [editingTemplateName, setEditingTemplateName] = useState(false); // 템플릿 이름 편집 모드
+  const [editedTemplateName, setEditedTemplateName] = useState(''); // 편집 중인 템플릿 이름
   const router = useRouter();
   const printRef = useRef(null);
   const { id } = params;
@@ -101,9 +112,23 @@ export default function ConsumerQuotePage({ params }) {
 
         const data = await response.json();
 
-        if (data.success && data.announcement) {
+        if (data.success) {
+          // 탭 템플릿 데이터 설정
+          if (data.templates && Array.isArray(data.templates)) {
+            setTemplateContents(data.templates);
+            setActiveTemplateTab(data.activeTemplate || 0);
+          }
+
+          // 템플릿 이름 설정
+          if (data.templateNames && Array.isArray(data.templateNames)) {
+            setTemplateNames(data.templateNames);
+          }
+
+          // 현재 활성화된 공지사항으로 공지사항 항목 설정
+          const activeContent = data.announcement || '';
+
           // 줄바꿈을 기준으로 공지사항을 배열로 변환
-          const items = data.announcement
+          const items = activeContent
             .split('\n')
             .filter((line) => line.trim() !== '')
             .map((line) => line.trim());
@@ -155,11 +180,22 @@ export default function ConsumerQuotePage({ params }) {
   // 공지사항 수정 처리 함수 추가
   const handleNotesContentChange = (e) => {
     setNotesContent(e.target.value);
+
+    // 현재 활성화된 탭의 내용 업데이트
+    const newTemplateContents = [...templateContents];
+    newTemplateContents[activeTemplateTab] = e.target.value;
+    setTemplateContents(newTemplateContents);
+  };
+
+  // 탭 변경 처리 함수
+  const handleTabChange = (tabIndex) => {
+    setActiveTemplateTab(tabIndex);
+    setNotesContent(templateContents[tabIndex]);
   };
 
   // 공지사항 저장 함수 추가
   const saveNotesContent = async () => {
-    if (!notesContent.trim()) {
+    if (!templateContents[activeTemplateTab].trim()) {
       return;
     }
 
@@ -168,7 +204,7 @@ export default function ConsumerQuotePage({ params }) {
       setAnnouncementError(null);
 
       // 줄바꿈을 기준으로 텍스트를 분리하여 배열로 변환
-      const newNoticeItems = notesContent
+      const newNoticeItems = templateContents[activeTemplateTab]
         .split('\n')
         .filter((line) => line.trim() !== '') // 빈 줄 제거
         .map((line) => line.trim());
@@ -180,7 +216,8 @@ export default function ConsumerQuotePage({ params }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          announcement: notesContent,
+          announcement: templateContents[activeTemplateTab],
+          templateIndex: activeTemplateTab,
         }),
       });
 
@@ -202,6 +239,53 @@ export default function ConsumerQuotePage({ params }) {
       setAnnouncementError(err.message);
     } finally {
       setSavingAnnouncement(false);
+    }
+  };
+
+  // 템플릿 이름 편집 시작
+  const startEditingTemplateName = () => {
+    setEditingTemplateName(true);
+    setEditedTemplateName(templateNames[activeTemplateTab]);
+  };
+
+  // 템플릿 이름 변경 취소
+  const cancelEditingTemplateName = () => {
+    setEditingTemplateName(false);
+  };
+
+  // 템플릿 이름 저장
+  const saveTemplateName = async () => {
+    if (!editedTemplateName.trim()) {
+      return;
+    }
+
+    try {
+      const newTemplateNames = [...templateNames];
+      newTemplateNames[activeTemplateTab] = editedTemplateName;
+      setTemplateNames(newTemplateNames);
+
+      // API를 통해 템플릿 이름과 내용 저장
+      const response = await fetch('/api/quote/consumer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          announcement: templateContents[activeTemplateTab],
+          templateIndex: activeTemplateTab,
+          templateName: editedTemplateName,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '템플릿 이름 저장 중 오류가 발생했습니다.');
+      }
+
+      setEditingTemplateName(false);
+    } catch (err) {
+      console.error('Error saving template name:', err);
+      setAnnouncementError(err.message);
     }
   };
 
@@ -396,7 +480,8 @@ export default function ConsumerQuotePage({ params }) {
                   onClick={() => {
                     setShowNotesEditor(!showNotesEditor);
                     if (!showNotesEditor) {
-                      setNotesContent(noticeItems.join('\n'));
+                      // 현재 활성화된 탭의 내용을 설정
+                      setNotesContent(templateContents[activeTemplateTab]);
                     }
                   }}
                   className="flex items-center bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm w-full"
@@ -425,6 +510,98 @@ export default function ConsumerQuotePage({ params }) {
           <div className="mb-6 no-print">
             <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 shadow-sm">
               <h3 className="text-sm font-semibold text-gray-700 mb-2">공지사항 편집</h3>
+
+              {/* 탭 UI 추가 */}
+              <div className="flex flex-wrap border-b border-gray-200 mb-3">
+                {[0, 1, 2, 3, 4].map((index) => (
+                  <div key={index} className="flex items-center">
+                    <button
+                      onClick={() => handleTabChange(index)}
+                      className={`py-2 px-4 text-sm font-medium relative ${
+                        activeTemplateTab === index
+                          ? 'text-blue-600 border-b-2 border-blue-600 -mb-[2px] z-10'
+                          : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      {templateNames[index] || `템플릿 ${index + 1}`}
+                    </button>
+                    {activeTemplateTab === index && (
+                      <button
+                        onClick={startEditingTemplateName}
+                        className="text-gray-400 hover:text-blue-600 ml-1"
+                        title="템플릿 이름 편집"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-3.5 w-3.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* 템플릿 이름 편집 UI */}
+              {editingTemplateName && (
+                <div className="mb-3 flex items-center">
+                  <input
+                    type="text"
+                    value={editedTemplateName}
+                    onChange={(e) => setEditedTemplateName(e.target.value)}
+                    className="flex-1 border border-gray-300 rounded-l-md text-sm px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="템플릿 이름 입력"
+                    autoFocus
+                  />
+                  <button
+                    onClick={saveTemplateName}
+                    className="bg-blue-600 text-white px-3 py-1.5 border border-blue-600 text-sm hover:bg-blue-700"
+                  >
+                    저장
+                  </button>
+                  <button
+                    onClick={cancelEditingTemplateName}
+                    className="bg-gray-200 text-gray-600 px-3 py-1.5 border border-gray-300 rounded-r-md text-sm hover:bg-gray-300"
+                  >
+                    취소
+                  </button>
+                </div>
+              )}
+
+              {/* 템플릿 사용 안내 */}
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-2 mb-3 text-xs text-blue-800">
+                <p className="flex items-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <span>
+                    <strong>참고:</strong> 여기서 수정한 템플릿은 사용자용 견적서에서 공통으로
+                    사용됩니다. 한 견적서에서 템플릿을 수정하면 다른 사용자용 견적서에도 동일하게
+                    적용됩니다.
+                  </span>
+                </p>
+              </div>
+
               <textarea
                 value={notesContent}
                 onChange={handleNotesContentChange}
