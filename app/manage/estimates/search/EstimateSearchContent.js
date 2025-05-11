@@ -436,7 +436,7 @@ export default function EstimateSearchContent() {
               <th className="px-4 py-2 text-left">연락처</th>
               <th className="px-4 py-2 text-left w-[100px]">계약상태</th>
               <th className="px-4 py-2 text-left w-[120px]">생성일</th>
-              <th className="px-4 py-2 text-center w-[60px]">견적서</th>
+              <th className="px-4 py-2 text-center w-[85px]">견적서</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">

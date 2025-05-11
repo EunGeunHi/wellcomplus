@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { KingOnlySection } from '@/app/components/ProtectedContent';
+import KingFallback from '@/app/components/kingFallback';
 
 export default function AddEditRecordPage() {
   const router = useRouter();
@@ -160,164 +162,168 @@ export default function AddEditRecordPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h1 className="text-2xl font-bold mb-6">{isEditMode ? '레코드 수정' : '새 레코드 생성'}</h1>
+    <KingOnlySection fallback={<KingFallback />}>
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h1 className="text-2xl font-bold mb-6">
+            {isEditMode ? '레코드 수정' : '새 레코드 생성'}
+          </h1>
 
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            {success}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="category" className="block text-gray-700 font-medium mb-2">
-              분류
-            </label>
-            <select
-              id="category"
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="없음">없음</option>
-              <option value="자료">자료</option>
-              <option value="기록">기록</option>
-            </select>
-          </div>
-
-          <div className="mb-4">
-            <label htmlFor="title" className="block text-gray-700 font-medium mb-2">
-              제목 *
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label htmlFor="name" className="block text-gray-700 font-medium mb-2">
-              이름
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label htmlFor="content" className="block text-gray-700 font-medium mb-2">
-              내용
-            </label>
-            <textarea
-              id="content"
-              name="content"
-              value={formData.content}
-              onChange={handleChange}
-              rows="6"
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            ></textarea>
-          </div>
-
-          {/* 기존 파일 목록 */}
-          {isEditMode && existingFiles.length > 0 && (
-            <div className="mb-4">
-              <label className="block text-gray-700 font-medium mb-2">기존 파일</label>
-
-              <div className="mb-2">
-                <label className="inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={keepExistingFiles}
-                    onChange={() => setKeepExistingFiles(!keepExistingFiles)}
-                    className="form-checkbox h-5 w-5 text-blue-600"
-                  />
-                  <span className="ml-2 text-gray-700">기존 파일 유지</span>
-                </label>
-              </div>
-
-              <ul className="list-disc pl-5">
-                {existingFiles.map((file, index) => (
-                  <li key={index} className="mb-1">
-                    <a
-                      href={getFileDownloadUrl(recordId, index)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      {file.fileName} ({Math.round(file.fileSize / 1024)} KB)
-                    </a>
-                  </li>
-                ))}
-              </ul>
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              {error}
             </div>
           )}
 
-          {/* 파일 업로드 */}
-          <div className="mb-6">
-            <label htmlFor="files" className="block text-gray-700 font-medium mb-2">
-              파일 첨부 (.hw, .xlsx, .png 등)
-            </label>
-            <input
-              type="file"
-              id="files"
-              name="files"
-              onChange={handleFileChange}
-              multiple
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <p className="text-gray-500 text-sm mt-1">여러 파일을 선택할 수 있습니다.</p>
+          {success && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+              {success}
+            </div>
+          )}
 
-            {/* 선택한 파일 미리보기 */}
-            {files.length > 0 && (
-              <div className="mt-2">
-                <p className="text-sm font-medium">선택한 파일:</p>
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label htmlFor="category" className="block text-gray-700 font-medium mb-2">
+                분류
+              </label>
+              <select
+                id="category"
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="없음">없음</option>
+                <option value="자료">자료</option>
+                <option value="기록">기록</option>
+              </select>
+            </div>
+
+            <div className="mb-4">
+              <label htmlFor="title" className="block text-gray-700 font-medium mb-2">
+                제목 *
+              </label>
+              <input
+                type="text"
+                id="title"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+
+            <div className="mb-4">
+              <label htmlFor="name" className="block text-gray-700 font-medium mb-2">
+                이름
+              </label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label htmlFor="content" className="block text-gray-700 font-medium mb-2">
+                내용
+              </label>
+              <textarea
+                id="content"
+                name="content"
+                value={formData.content}
+                onChange={handleChange}
+                rows="6"
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              ></textarea>
+            </div>
+
+            {/* 기존 파일 목록 */}
+            {isEditMode && existingFiles.length > 0 && (
+              <div className="mb-4">
+                <label className="block text-gray-700 font-medium mb-2">기존 파일</label>
+
+                <div className="mb-2">
+                  <label className="inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={keepExistingFiles}
+                      onChange={() => setKeepExistingFiles(!keepExistingFiles)}
+                      className="form-checkbox h-5 w-5 text-blue-600"
+                    />
+                    <span className="ml-2 text-gray-700">기존 파일 유지</span>
+                  </label>
+                </div>
+
                 <ul className="list-disc pl-5">
-                  {files.map((file, index) => (
-                    <li key={index} className="text-sm">
-                      {file.name} ({Math.round(file.size / 1024)} KB)
+                  {existingFiles.map((file, index) => (
+                    <li key={index} className="mb-1">
+                      <a
+                        href={getFileDownloadUrl(recordId, index)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        {file.fileName} ({Math.round(file.fileSize / 1024)} KB)
+                      </a>
                     </li>
                   ))}
                 </ul>
               </div>
             )}
-          </div>
 
-          <div className="flex justify-between">
-            <Link
-              href="/manage/record/search"
-              className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-gray-500"
-            >
-              취소
-            </Link>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-            >
-              {isLoading ? '처리 중...' : isEditMode ? '수정하기' : '생성하기'}
-            </button>
-          </div>
-        </form>
+            {/* 파일 업로드 */}
+            <div className="mb-6">
+              <label htmlFor="files" className="block text-gray-700 font-medium mb-2">
+                파일 첨부 (.hw, .xlsx, .png 등)
+              </label>
+              <input
+                type="file"
+                id="files"
+                name="files"
+                onChange={handleFileChange}
+                multiple
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="text-gray-500 text-sm mt-1">여러 파일을 선택할 수 있습니다.</p>
+
+              {/* 선택한 파일 미리보기 */}
+              {files.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-sm font-medium">선택한 파일:</p>
+                  <ul className="list-disc pl-5">
+                    {files.map((file, index) => (
+                      <li key={index} className="text-sm">
+                        {file.name} ({Math.round(file.size / 1024)} KB)
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-between">
+              <Link
+                href="/manage/record/search"
+                className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                취소
+              </Link>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              >
+                {isLoading ? '처리 중...' : isEditMode ? '수정하기' : '생성하기'}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </KingOnlySection>
   );
 }
