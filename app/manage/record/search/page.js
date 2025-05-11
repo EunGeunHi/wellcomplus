@@ -175,6 +175,21 @@ export default function RecordSearchPage() {
     }
   };
 
+  // 행 클릭 시 상세 페이지로 이동
+  const handleRowClick = (id, e) => {
+    // 이벤트 발생 요소가 링크나 버튼이면 무시
+    if (
+      e.target.tagName === 'A' ||
+      e.target.tagName === 'BUTTON' ||
+      e.target.closest('a') ||
+      e.target.closest('button')
+    ) {
+      return;
+    }
+
+    router.push(`/manage/record/${id}`);
+  };
+
   // 필터 초기화 처리
   const handleResetFilters = () => {
     setSearch('');
@@ -323,7 +338,11 @@ export default function RecordSearchPage() {
                 </tr>
               ) : (
                 records.map((record) => (
-                  <tr key={record._id} className="hover:bg-gray-50">
+                  <tr
+                    key={record._id}
+                    className="hover:bg-gray-50 cursor-pointer"
+                    onClick={(e) => handleRowClick(record._id, e)}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${getCategoryBadgeStyle(

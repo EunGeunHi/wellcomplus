@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Record from '@/models/Record';
-import { withKingAuthAPI } from '../../middleware';
+import { withKingAuthAPI } from '@/app/api/middleware';
 import mongoose from 'mongoose';
 
 // GET 요청 처리 - 기존 레코드 조회
@@ -16,17 +16,17 @@ async function getHandler(req, { params }) {
       return NextResponse.json({ error: '유효하지 않은 레코드 ID입니다.' }, { status: 400 });
     }
 
-    // 레코드 조회
+    // 레코드 조회 - 파일 데이터는 제외하고 필요한 정보만 가져옴
     const record = await Record.findById(id);
 
     if (!record) {
       return NextResponse.json({ error: '레코드를 찾을 수 없습니다.' }, { status: 404 });
     }
 
-    // 파일 데이터는 제외하고 파일 메타데이터만 반환
+    // 레코드 데이터를 객체로 변환
     const recordData = record.toObject();
 
-    // 파일 정보 가공
+    // 파일 정보 가공 - 데이터는 제외하고 메타데이터만 반환
     if (recordData.file && recordData.file.length > 0) {
       recordData.file = recordData.file.map((file) => ({
         fileName: file.fileName,
