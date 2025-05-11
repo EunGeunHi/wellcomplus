@@ -35,9 +35,7 @@ export default function RecordSearchContent() {
 
   // 상태 정의
   const [search, setSearch] = useState(currentSearch);
-  const [debouncedSearch, setDebouncedSearch] = useState(currentSearch);
   const [categoryFilter, setCategoryFilter] = useState(currentCategory);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState('');
 
   // SWR을 사용한 데이터 패칭
@@ -64,27 +62,27 @@ export default function RecordSearchContent() {
     });
   }, []);
 
-  // Debounce 적용된 검색어 업데이트
-  const updateSearchDebounced = useCallback(
+  // Debounce 적용된 검색어 변경 핸들러
+  const handleSearchChange = useCallback(
     debounce((value) => {
-      setDebouncedSearch(value);
+      setSearch(value);
     }, 300), // 300ms 디바운스
     []
   );
 
+  // 즉시 검색어 상태 업데이트 (디바운스 없이)
+  const updateSearchImmediate = (e) => {
+    const value = e.target.value;
+    setSearch(value);
+    // 디바운스 처리를 위한 함수 호출
+    handleSearchChange(value);
+  };
+
   // 페이지와 검색어, 카테고리 필터가 변경될 때 상태 업데이트
   useEffect(() => {
     setSearch(currentSearch);
-    setDebouncedSearch(currentSearch);
     setCategoryFilter(currentCategory);
   }, [currentSearch, currentCategory]);
-
-  // 검색어 변경 핸들러
-  const handleSearchChange = (e) => {
-    const value = e.target.value;
-    setSearch(value);
-    updateSearchDebounced(value);
-  };
 
   // 인증 체크
   useEffect(() => {
@@ -152,9 +150,12 @@ export default function RecordSearchContent() {
   const handleSearch = (e) => {
     e.preventDefault();
 
-    // 검색어와 카테고리 필터, 페이지 1로 URL 업데이트
+    // 진행 중인 디바운스 취소
+    handleSearchChange.cancel();
+
+    // URL 업데이트 (히스토리에 기록)
     const params = new URLSearchParams();
-    if (debouncedSearch) params.append('search', debouncedSearch);
+    if (search) params.append('search', search);
     if (categoryFilter !== '전체') params.append('category', categoryFilter);
     params.append('page', '1');
 
@@ -177,35 +178,6 @@ export default function RecordSearchContent() {
     params.append('page', newPage.toString());
 
     router.push(`/manage/record/search?${params.toString()}`);
-  };
-
-  // 레코드 삭제 처리
-  const handleDelete = async (id) => {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
-
-    setIsDeleting(true);
-
-    try {
-      const response = await fetch(`/api/records/delete/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '삭제 처리 중 오류가 발생했습니다.');
-      }
-
-      // 삭제 성공 후 캐시 무효화 및 데이터 갱신
-      invalidateAllRecordCache();
-      refreshData();
-
-      alert('레코드가 삭제되었습니다.');
-    } catch (error) {
-      setError(error.message);
-      alert(`오류: ${error.message}`);
-    } finally {
-      setIsDeleting(false);
-    }
   };
 
   // 날짜 포맷팅 함수
@@ -255,7 +227,6 @@ export default function RecordSearchContent() {
   // 필터 초기화 처리
   const handleResetFilters = () => {
     setSearch('');
-    setDebouncedSearch('');
     setCategoryFilter('전체');
     router.push('/manage/record/search');
   };
@@ -297,7 +268,7 @@ export default function RecordSearchContent() {
                   type="text"
                   id="search"
                   value={search}
-                  onChange={handleSearchChange}
+                  onChange={updateSearchImmediate}
                   placeholder="제목으로 검색..."
                   className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -384,7 +355,7 @@ export default function RecordSearchContent() {
                   등록일
                 </th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  관리
+                  수정
                 </th>
               </tr>
             </thead>
@@ -462,16 +433,6 @@ export default function RecordSearchContent() {
                       >
                         수정
                       </Link>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(record._id);
-                        }}
-                        disabled={isDeleting}
-                        className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                      >
-                        삭제
-                      </button>
                     </td>
                   </tr>
                 ))

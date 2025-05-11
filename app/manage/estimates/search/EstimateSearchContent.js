@@ -5,53 +5,40 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { formatDate } from '@/utils/dateFormat'; // dateFormat 유틸리티
 import Link from 'next/link';
 import { FaFileAlt } from 'react-icons/fa'; // 견적서 아이콘 import 추가
+import useSWR, { mutate } from 'swr';
+import { debounce } from 'lodash';
+
+// SWR fetcher 함수 정의
+const fetcher = async (url) => {
+  const response = await fetch(url, {
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      Pragma: 'no-cache',
+      Expires: '0',
+    },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    throw new Error('데이터를 불러오는데 실패했습니다.');
+  }
+
+  return response.json();
+};
 
 export default function EstimateSearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isInitialLoadRef = useRef(true);
-  const abortControllerRef = useRef(null);
 
   // 상태 관리
   const [keyword, setKeyword] = useState('');
+  const [debouncedKeyword, setDebouncedKeyword] = useState('');
   const [searchType, setSearchType] = useState('all');
   const [estimateType, setEstimateType] = useState('');
   const [contractorStatus, setContractorStatus] = useState('');
-  const [estimates, setEstimates] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 15,
-    total: 0,
-    totalPages: 0,
-  });
   const [error, setError] = useState(null);
   const [refreshTimestamp, setRefreshTimestamp] = useState(null);
-
-  // localStorage의 refreshTimestamp 감지하기 위한 효과
-  useEffect(() => {
-    // localStorage에서 타임스탬프 확인
-    const storedTimestamp = localStorage.getItem('estimatesRefreshTimestamp');
-    if (storedTimestamp && (!refreshTimestamp || storedTimestamp > refreshTimestamp)) {
-      setRefreshTimestamp(storedTimestamp);
-      // 즉시 데이터 새로고침
-      const queryKeyword = searchParams.get('keyword') || '';
-      const querySearchType = searchParams.get('searchType') || 'all';
-      const queryEstimateType = searchParams.get('estimateType') || '';
-      const queryContractorStatus = searchParams.get('contractorStatus') || '';
-      const queryPage = parseInt(searchParams.get('page') || '1', 10);
-
-      // 캐시 방지를 위한 추가 파라미터
-      searchEstimates(
-        queryKeyword,
-        querySearchType,
-        queryEstimateType,
-        queryContractorStatus,
-        queryPage,
-        true // forceRefresh
-      );
-    }
-  }, [searchParams]);
 
   // 쿼리 파라미터 상태를 메모이제이션
   const queryParams = useMemo(() => {
@@ -64,34 +51,79 @@ export default function EstimateSearchContent() {
     };
   }, [searchParams]);
 
-  // URL 쿼리 파라미터에서 상태 초기화
-  useEffect(() => {
-    // 이전 요청 취소
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+  // SWR 캐시 키 생성
+  const cacheKey = useMemo(() => {
+    const params = new URLSearchParams({
+      keyword: queryParams.keyword,
+      searchType: queryParams.searchType,
+      page: queryParams.page.toString(),
+      limit: '15',
+      sort: 'createdAt_desc',
+      _: Date.now().toString(), // 캐시 방지용 타임스탬프
+    });
+
+    if (queryParams.estimateType) {
+      params.set('estimateType', queryParams.estimateType);
     }
 
+    if (queryParams.contractorStatus) {
+      params.set('contractorStatus', queryParams.contractorStatus);
+    }
+
+    return `/api/estimates/search?${params.toString()}`;
+  }, [queryParams]);
+
+  // SWR을 사용한 데이터 패칭
+  const {
+    data,
+    error: swrError,
+    isLoading: loading,
+    mutate: refreshData,
+  } = useSWR(cacheKey, fetcher, {
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+    revalidateIfStale: true,
+    dedupingInterval: 10000, // 10초 동안 같은 요청은 중복 방지
+  });
+
+  const estimates = data?.estimates || [];
+  const pagination = data?.pagination || { page: 1, limit: 15, total: 0, totalPages: 0 };
+
+  // 모든 견적 캐시 무효화 함수
+  const invalidateAllEstimateCache = useCallback(() => {
+    // 캐시 패턴을 무효화 (estimates 관련 모든 API 요청)
+    mutate((key) => typeof key === 'string' && key.includes('/api/estimates'), undefined, {
+      revalidate: true,
+    });
+  }, []);
+
+  // Debounce 적용된 검색어 업데이트
+  const updateKeywordDebounced = useCallback(
+    debounce((value) => {
+      setDebouncedKeyword(value);
+    }, 300), // 300ms 디바운스
+    []
+  );
+
+  // localStorage의 refreshTimestamp 감지하기 위한 효과
+  useEffect(() => {
+    // localStorage에서 타임스탬프 확인
+    const storedTimestamp = localStorage.getItem('estimatesRefreshTimestamp');
+    if (storedTimestamp && (!refreshTimestamp || storedTimestamp > refreshTimestamp)) {
+      setRefreshTimestamp(storedTimestamp);
+      // 즉시 데이터 새로고침
+      invalidateAllEstimateCache();
+      refreshData();
+    }
+  }, [refreshTimestamp, invalidateAllEstimateCache, refreshData]);
+
+  // URL 쿼리 파라미터에서 상태 초기화
+  useEffect(() => {
     setKeyword(queryParams.keyword);
+    setDebouncedKeyword(queryParams.keyword);
     setSearchType(queryParams.searchType);
     setEstimateType(queryParams.estimateType);
     setContractorStatus(queryParams.contractorStatus);
-    setPagination((prev) => ({
-      ...prev,
-      page: queryParams.page,
-    }));
-
-    // 항상 최신 데이터를 가져오도록 forceRefresh를 true로 설정
-    const forceRefresh = true;
-
-    // 모든 경우에 검색 실행 (키워드가 없어도 전체 데이터 조회)
-    searchEstimates(
-      queryParams.keyword,
-      queryParams.searchType,
-      queryParams.estimateType,
-      queryParams.contractorStatus,
-      queryParams.page,
-      forceRefresh
-    );
 
     // 초기 로드 이후에는 false로 변경
     if (isInitialLoadRef.current) {
@@ -99,101 +131,67 @@ export default function EstimateSearchContent() {
     }
   }, [queryParams]);
 
-  // 검색 실행 함수 (useCallback으로 메모이제이션)
-  const searchEstimates = useCallback(
-    async (
-      searchKeyword,
-      searchTypeValue,
-      estimateTypeValue,
-      contractorStatusValue,
-      page = 1,
-      forceRefresh = false
-    ) => {
-      setLoading(true);
+  // SWR 에러 처리
+  useEffect(() => {
+    if (swrError) {
+      setError(swrError.message);
+    } else {
       setError(null);
+    }
+  }, [swrError]);
 
-      // 이전 요청 취소
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+  // 컴포넌트가 마운트될 때 localStorage에서 캐시 무효화 플래그 확인
+  useEffect(() => {
+    // Focus 이벤트 핸들러 - 브라우저 탭이 활성화될 때마다 실행
+    const handleFocus = () => {
+      const needsRefresh = localStorage.getItem('estimatesNeedRefresh');
+      if (needsRefresh === 'true') {
+        // 캐시 무효화 및 데이터 갱신
+        invalidateAllEstimateCache();
+        refreshData();
+        // 플래그 초기화
+        localStorage.removeItem('estimatesNeedRefresh');
       }
+    };
 
-      // 새 요청을 위한 AbortController 생성
-      const abortController = new AbortController();
-      abortControllerRef.current = abortController;
+    // 이전에 저장된 refresh 플래그 확인
+    handleFocus();
 
-      try {
-        const queryParams = new URLSearchParams({
-          keyword: searchKeyword,
-          searchType: searchTypeValue,
-          page: page.toString(),
-          limit: pagination.limit.toString(),
-          sort: 'createdAt_desc',
-        });
+    // 브라우저 focus 이벤트 리스너 등록
+    window.addEventListener('focus', handleFocus);
 
-        // 견적 타입이 선택된 경우에만 쿼리에 추가
-        if (estimateTypeValue) {
-          queryParams.set('estimateType', estimateTypeValue);
-        }
-
-        // 계약자 상태가 선택된 경우에만 쿼리에 추가
-        if (contractorStatusValue) {
-          queryParams.set('contractorStatus', contractorStatusValue);
-        }
-
-        // 캐시 강제 무효화를 위한 파라미터 추가
-        if (forceRefresh) {
-          queryParams.set('_', Date.now().toString());
-        }
-
-        // 데이터 요청 시작 시간 기록
-        const requestStartTime = performance.now();
-
-        const response = await fetch(`/api/estimates/search?${queryParams.toString()}`, {
-          // 캐시 방지를 위한 헤더 추가
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            Pragma: 'no-cache',
-            Expires: '0',
-          },
-          // 캐시를 무시하고 항상 네트워크에서 새로운 데이터를 가져오도록 설정
-          cache: 'no-store',
-          // 요청 취소를 위한 signal 추가
-          signal: abortController.signal,
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || '검색 중 오류가 발생했습니다.');
-        }
-
-        const data = await response.json();
-
-        // 요청 완료 시간 계산 및 로깅 (개발 중에만 표시)
-        const requestEndTime = performance.now();
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`검색 요청 소요 시간: ${(requestEndTime - requestStartTime).toFixed(2)}ms`);
-        }
-
-        // 컴포넌트가 마운트된 경우에만 상태 업데이트
-        if (!abortController.signal.aborted) {
-          setEstimates(data.estimates);
-          setPagination(data.pagination);
-        }
-      } catch (err) {
-        // AbortError는 무시 (요청 취소로 인한 오류)
-        if (err.name !== 'AbortError') {
-          console.error('검색 오류:', err);
-          setError(err.message);
-        }
-      } finally {
-        // 컴포넌트가 마운트된 경우에만 로딩 상태 변경
-        if (!abortController.signal.aborted) {
-          setLoading(false);
-        }
+    // 페이지 접속 시 항상 최신 데이터 확인을 위한 이벤트 리스너
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // 캐시를 무효화하고 새로운 데이터를 가져옴
+        refreshData();
       }
-    },
-    [pagination.limit]
-  );
+    };
+
+    // 페이지 가시성 변화 이벤트 등록
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // 페이지 이동 후 돌아오면 자동으로 데이터 갱신
+    if (
+      performance?.navigation?.type === 2 ||
+      (performance?.getEntriesByType &&
+        performance.getEntriesByType('navigation')[0]?.type === 'back_forward')
+    ) {
+      refreshData();
+    }
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [invalidateAllEstimateCache, refreshData]);
+
+  // 검색어 변경 핸들러
+  const handleKeywordChange = (e) => {
+    const value = e.target.value;
+    setKeyword(value);
+    updateKeywordDebounced(value);
+  };
 
   // 검색 핸들러
   const handleSearch = (e) => {
@@ -331,6 +329,10 @@ export default function EstimateSearchContent() {
           <Link
             href="/manage/estimates/create"
             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+            onClick={() => {
+              // 새 페이지로 이동 시 캐시를 무효화 플래그 설정
+              localStorage.setItem('estimatesNeedRefresh', 'true');
+            }}
           >
             새로운 데이터 추가
           </Link>
@@ -385,7 +387,7 @@ export default function EstimateSearchContent() {
             <input
               type="text"
               value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
+              onChange={handleKeywordChange}
               placeholder="검색어를 입력하세요 (전체 목록 보기: 빈칸)"
               className="w-full p-2 border border-gray-300 rounded"
             />
