@@ -990,6 +990,15 @@ export default function EstimateEditPage() {
         throw new Error(errorData.error || '견적 수정 중 오류가 발생했습니다.');
       }
 
+      // 성공적으로 수정되면 localStorage에 캐시 무효화 트리거 설정
+      localStorage.setItem('estimatesRefreshTimestamp', Date.now().toString());
+      localStorage.setItem('estimatesNeedRefresh', 'true');
+      localStorage.setItem('lastModifiedEstimateId', id);
+      localStorage.setItem('lastModifiedEstimateAction', 'update');
+
+      // 수정 플래그 제거 (수정 완료)
+      localStorage.removeItem('estimateBeingEdited');
+
       showNotification('견적이 성공적으로 수정되었습니다.', 'success');
 
       router.push(`/manage/estimates/detail/${id}`);

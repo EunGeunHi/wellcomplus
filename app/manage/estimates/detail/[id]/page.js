@@ -62,6 +62,19 @@ export default function EstimateDetailPage() {
     fetchEstimate();
   }, [id]);
 
+  // 데이터 변경을 알리는 함수 (수정/삭제 시 활용)
+  const notifyDataChanged = (action) => {
+    // 모든 견적 데이터 캐시를 무효화하도록 타임스탬프 업데이트
+    localStorage.setItem('estimatesRefreshTimestamp', Date.now().toString());
+
+    // 데이터 변경 플래그 설정 (검색 페이지에서 감지 용도)
+    localStorage.setItem('estimatesNeedRefresh', 'true');
+
+    // 특정 ID에 대한 변경 정보 저장
+    localStorage.setItem('lastModifiedEstimateId', id);
+    localStorage.setItem('lastModifiedEstimateAction', action);
+  };
+
   // 뒤로 가기
   const handleGoBack = () => {
     // 저장된 검색 조건이 있는지 확인
@@ -91,6 +104,8 @@ export default function EstimateDetailPage() {
 
   // 수정 페이지로 이동
   const handleEdit = () => {
+    // 수정 페이지로 이동 시 데이터 변경 플래그 설정
+    localStorage.setItem('estimateBeingEdited', id);
     router.push(`/manage/estimates/edit/${id}`);
   };
 
@@ -115,6 +130,10 @@ export default function EstimateDetailPage() {
         throw new Error(errorData.error || '견적 삭제 중 오류가 발생했습니다.');
       }
 
+      // 삭제 성공 시 데이터 변경을 알림
+      notifyDataChanged('delete');
+
+      // 삭제 후 검색 페이지로 이동
       router.push('/manage/estimates/search');
     } catch (err) {
       console.error('견적 삭제 오류:', err);

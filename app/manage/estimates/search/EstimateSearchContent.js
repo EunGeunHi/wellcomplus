@@ -59,7 +59,6 @@ export default function EstimateSearchContent() {
       page: queryParams.page.toString(),
       limit: '15',
       sort: 'createdAt_desc',
-      _: Date.now().toString(), // 캐시 방지용 타임스탬프
     });
 
     if (queryParams.estimateType) {
@@ -83,7 +82,25 @@ export default function EstimateSearchContent() {
     revalidateOnFocus: true,
     revalidateOnReconnect: true,
     revalidateIfStale: true,
-    dedupingInterval: 10000, // 10초 동안 같은 요청은 중복 방지
+    dedupingInterval: 60000, // 1분으로 증가
+    focusThrottleInterval: 10000, // 포커스 이벤트 제한
+    revalidateOnMount: true,
+    refreshInterval: 0, // 자동 갱신 비활성화
+    suspense: false, // 필요에 따라 Suspense 모드 활성화 가능
+    onSuccess: (data) => {
+      // 성공 시 localStorage에 저장하여 다음 방문 시 활용
+      localStorage.setItem('estimatesLastData', JSON.stringify(data));
+      localStorage.setItem('estimatesLastFetch', Date.now().toString());
+    },
+    fallbackData: (() => {
+      // localStorage에서 초기 데이터 로드
+      try {
+        const cached = localStorage.getItem('estimatesLastData');
+        return cached ? JSON.parse(cached) : null;
+      } catch (e) {
+        return null;
+      }
+    })(),
   });
 
   const estimates = data?.estimates || [];
@@ -117,6 +134,84 @@ export default function EstimateSearchContent() {
     }
   }, [refreshTimestamp, invalidateAllEstimateCache, refreshData]);
 
+  // 페이지 로드/포커스 시 데이터 변경 감지 및 갱신
+  useEffect(() => {
+    // 페이지 로드 시 새로고침 필요 여부 확인
+    const checkAndRefresh = () => {
+      const needsRefresh = localStorage.getItem('estimatesNeedRefresh');
+      if (needsRefresh === 'true') {
+        console.log('데이터 변경 감지: 견적 목록 새로고침');
+        // 캐시 무효화 및 데이터 갱신
+        invalidateAllEstimateCache();
+        refreshData();
+        // 플래그 초기화
+        localStorage.removeItem('estimatesNeedRefresh');
+      }
+
+      // 특정 ID 수정/삭제 감지
+      const lastModifiedId = localStorage.getItem('lastModifiedEstimateId');
+      const lastModifiedAction = localStorage.getItem('lastModifiedEstimateAction');
+
+      if (lastModifiedId && lastModifiedAction) {
+        console.log(`${lastModifiedAction} 작업 감지: ID ${lastModifiedId}`);
+        // 특정 ID 관련 캐시 무효화
+        invalidateAllEstimateCache(); // 전체 캐시 무효화
+        refreshData();
+
+        // 플래그 초기화
+        localStorage.removeItem('lastModifiedEstimateId');
+        localStorage.removeItem('lastModifiedEstimateAction');
+      }
+
+      // 수정 완료 감지
+      const editedId = localStorage.getItem('estimateBeingEdited');
+      if (editedId) {
+        // 수정 중인 ID가 있었다면 캐시 무효화 (수정 페이지 방문 후 돌아온 경우)
+        invalidateAllEstimateCache();
+        refreshData();
+        localStorage.removeItem('estimateBeingEdited');
+      }
+    };
+
+    // 초기 로드 시 확인
+    checkAndRefresh();
+
+    // 포커스 이벤트 핸들러 - 브라우저 탭이 활성화될 때마다 실행
+    const handleFocus = () => {
+      checkAndRefresh();
+    };
+
+    // 페이지 가시성 변화 이벤트 핸들러
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkAndRefresh();
+      }
+    };
+
+    // 이벤트 리스너 등록
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // 스토리지 이벤트 리스너 (다른 탭에서 변경 감지)
+    const handleStorageChange = (event) => {
+      if (
+        event.key === 'estimatesRefreshTimestamp' ||
+        event.key === 'estimatesNeedRefresh' ||
+        event.key === 'lastModifiedEstimateId'
+      ) {
+        checkAndRefresh();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [invalidateAllEstimateCache, refreshData]);
+
   // URL 쿼리 파라미터에서 상태 초기화
   useEffect(() => {
     setKeyword(queryParams.keyword);
@@ -139,52 +234,6 @@ export default function EstimateSearchContent() {
       setError(null);
     }
   }, [swrError]);
-
-  // 컴포넌트가 마운트될 때 localStorage에서 캐시 무효화 플래그 확인
-  useEffect(() => {
-    // Focus 이벤트 핸들러 - 브라우저 탭이 활성화될 때마다 실행
-    const handleFocus = () => {
-      const needsRefresh = localStorage.getItem('estimatesNeedRefresh');
-      if (needsRefresh === 'true') {
-        // 캐시 무효화 및 데이터 갱신
-        invalidateAllEstimateCache();
-        refreshData();
-        // 플래그 초기화
-        localStorage.removeItem('estimatesNeedRefresh');
-      }
-    };
-
-    // 이전에 저장된 refresh 플래그 확인
-    handleFocus();
-
-    // 브라우저 focus 이벤트 리스너 등록
-    window.addEventListener('focus', handleFocus);
-
-    // 페이지 접속 시 항상 최신 데이터 확인을 위한 이벤트 리스너
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        // 캐시를 무효화하고 새로운 데이터를 가져옴
-        refreshData();
-      }
-    };
-
-    // 페이지 가시성 변화 이벤트 등록
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // 페이지 이동 후 돌아오면 자동으로 데이터 갱신
-    if (
-      performance?.navigation?.type === 2 ||
-      (performance?.getEntriesByType &&
-        performance.getEntriesByType('navigation')[0]?.type === 'back_forward')
-    ) {
-      refreshData();
-    }
-
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [invalidateAllEstimateCache, refreshData]);
 
   // 검색어 변경 핸들러
   const handleKeywordChange = (e) => {
