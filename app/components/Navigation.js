@@ -62,7 +62,7 @@ export default function Navigation() {
             <>
               <KingOnlySection fallback={<></>}>
                 <Link
-                  href="/manage/estimates/search"
+                  href="/manage"
                   className="relative text-gray-700 hover:text-[#87CEEB] transition-colors duration-300 font-medium overflow-hidden group"
                 >
                   <span className="relative z-10">관리자 페이지</span>

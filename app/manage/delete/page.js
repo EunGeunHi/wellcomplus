@@ -34,6 +34,7 @@ export default function DeleteNonContractorsPage() {
       const searchParams = new URLSearchParams({
         startDate: new Date(startDate).toISOString(),
         endDate: formattedEndDate.toISOString(),
+        excludeOldData: 'true',
       });
 
       const response = await fetch(`/api/estimates/non-contractors?${searchParams.toString()}`);
@@ -84,6 +85,7 @@ export default function DeleteNonContractorsPage() {
         body: JSON.stringify({
           startDate: new Date(startDate).toISOString(),
           endDate: formattedEndDate.toISOString(),
+          excludeOldData: true,
         }),
       });
 
@@ -127,7 +129,14 @@ export default function DeleteNonContractorsPage() {
         </div>
 
         <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">등록일 기간 선택</h2>
+          <h2 className="text-xl font-semibold mb-4">생성일 기간 선택</h2>
+          <div className="mb-4">
+            <span className="text-red-500">
+              "예전데이터"로 분류되어 있는 데이터는 일괄 삭제에 표함되지 않습니다.
+              <br />
+              데이터 생성일 기준으로 비계약자 데이터를 삭제할 시작일과 종료일을 선택해주세요.
+            </span>
+          </div>
           <div className="flex flex-col sm:flex-row gap-4 mb-4">
             <div className="flex-1">
               <label className="block text-gray-700 mb-2" htmlFor="startDate">
@@ -196,13 +205,16 @@ export default function DeleteNonContractorsPage() {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        등록일
+                        생성일
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         견적 유형
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         고객명
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        PC번호
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         연락처
@@ -223,6 +235,9 @@ export default function DeleteNonContractorsPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {estimate.customerInfo?.name || '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {estimate.customerInfo?.pcNumber || '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {estimate.customerInfo?.phone || '-'}

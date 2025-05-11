@@ -454,18 +454,22 @@ export default function EstimateSearchContent() {
                   <td className="px-3 py-1">
                     <span
                       className={
-                        estimate.isContractor === true
-                          ? 'text-green-600 font-medium'
-                          : estimate.isContractor === false
-                            ? 'text-gray-500'
-                            : 'text-gray-400'
+                        estimate.estimateType === '예전데이터'
+                          ? 'text-gray-400'
+                          : estimate.isContractor === true
+                            ? 'text-green-600 font-medium'
+                            : estimate.isContractor === false
+                              ? 'text-gray-500'
+                              : 'text-gray-400'
                       }
                     >
-                      {estimate.isContractor === true
-                        ? '계약자'
-                        : estimate.isContractor === false
-                          ? '비계약자'
-                          : '없음'}
+                      {estimate.estimateType === '예전데이터'
+                        ? '없음'
+                        : estimate.isContractor === true
+                          ? '계약자'
+                          : estimate.isContractor === false
+                            ? '비계약자'
+                            : '없음'}
                     </span>
                   </td>
                   <td className="px-3 py-1">

@@ -6,7 +6,7 @@ import { withKingAuthAPI } from '@/app/api/middleware';
 export const DELETE = withKingAuthAPI(async (req, { session }) => {
   try {
     const body = await req.json();
-    const { startDate, endDate } = body;
+    const { startDate, endDate, excludeOldData } = body;
 
     if (!startDate || !endDate) {
       return NextResponse.json(
@@ -25,6 +25,11 @@ export const DELETE = withKingAuthAPI(async (req, { session }) => {
         $lte: new Date(endDate),
       },
     };
+
+    // 예전데이터 제외 옵션이 활성화된 경우
+    if (excludeOldData) {
+      deleteQuery.estimateType = { $ne: '예전데이터' };
+    }
 
     // 삭제 작업 수행
     const result = await Estimate.deleteMany(deleteQuery);

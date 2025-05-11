@@ -8,6 +8,7 @@ export const GET = withKingAuthAPI(async (req, { session }) => {
     const { searchParams } = new URL(req.url);
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
+    const excludeOldData = searchParams.get('excludeOldData') === 'true';
 
     if (!startDate || !endDate) {
       return NextResponse.json(
@@ -26,6 +27,11 @@ export const GET = withKingAuthAPI(async (req, { session }) => {
         $lte: new Date(endDate),
       },
     };
+
+    // 예전데이터 제외 옵션이 활성화된 경우
+    if (excludeOldData) {
+      query.estimateType = { $ne: '예전데이터' };
+    }
 
     const estimates = await Estimate.find(query).sort({ createdAt: -1 }).lean();
 
