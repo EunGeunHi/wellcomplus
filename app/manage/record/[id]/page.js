@@ -98,6 +98,8 @@ export default function RecordDetailPage() {
       }
 
       alert('레코드가 삭제되었습니다.');
+      // 캐시 무효화 플래그 설정 - 목록 페이지에서 데이터를 새로 가져오도록 함
+      localStorage.setItem('recordsNeedRefresh', 'true');
       // 삭제 성공 후 목록 페이지로 이동
       router.push('/manage/record/search');
     } catch (error) {
@@ -145,6 +147,10 @@ export default function RecordDetailPage() {
             <Link
               href={`/manage/record/addedit?id=${recordId}`}
               className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
+              onClick={() => {
+                // 수정 페이지로 이동 시 캐시 무효화 플래그 설정
+                localStorage.setItem('recordsNeedRefresh', 'true');
+              }}
             >
               수정하기
             </Link>

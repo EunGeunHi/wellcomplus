@@ -1,41 +1,90 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { KingOnlySection } from '@/app/components/ProtectedContent';
 import KingFallback from '@/app/components/kingFallback';
+import useSWR, { mutate } from 'swr';
+import { debounce } from 'lodash';
+
+// SWR fetcher 함수 정의
+const fetcher = async (url) => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error('자료/기록 목록을 불러오는데 실패했습니다.');
+  }
+  return response.json();
+};
 
 export default function RecordSearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, status } = useSession();
 
-  // 상태 정의
-  const [records, setRecords] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [error, setError] = useState('');
-  const [search, setSearch] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('전체');
-  const [pagination, setPagination] = useState({
-    page: 1,
-    totalPages: 1,
-    total: 0,
-  });
-
   // URL에서 현재 페이지와 검색어, 카테고리 필터 가져오기
   const currentPage = parseInt(searchParams.get('page')) || 1;
   const currentSearch = searchParams.get('search') || '';
   const currentCategory = searchParams.get('category') || '전체';
 
+  // 캐시 키 생성 (페이지, 검색어, 카테고리에 따라 달라짐)
+  const cacheKey = `/api/records/list?page=${currentPage}&limit=15${
+    currentSearch ? `&search=${currentSearch}` : ''
+  }${currentCategory !== '전체' ? `&category=${currentCategory}` : ''}`;
+
+  // 상태 정의
+  const [search, setSearch] = useState(currentSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(currentSearch);
+  const [categoryFilter, setCategoryFilter] = useState(currentCategory);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState('');
+
+  // SWR을 사용한 데이터 패칭
+  const {
+    data,
+    error: swrError,
+    isLoading,
+    mutate: refreshData,
+  } = useSWR(status === 'authenticated' ? cacheKey : null, fetcher, {
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+    revalidateIfStale: true,
+    dedupingInterval: 60000, // 1분 동안 같은 요청은 중복 방지
+  });
+
+  const records = data?.records || [];
+  const pagination = data?.pagination || { page: 1, totalPages: 1, total: 0 };
+
+  // 모든 레코드 캐시 무효화 함수
+  const invalidateAllRecordCache = useCallback(() => {
+    // 일반적인 캐시 패턴을 무효화
+    mutate((key) => typeof key === 'string' && key.startsWith('/api/records/list'), undefined, {
+      revalidate: true,
+    });
+  }, []);
+
+  // Debounce 적용된 검색어 업데이트
+  const updateSearchDebounced = useCallback(
+    debounce((value) => {
+      setDebouncedSearch(value);
+    }, 300), // 300ms 디바운스
+    []
+  );
+
   // 페이지와 검색어, 카테고리 필터가 변경될 때 상태 업데이트
   useEffect(() => {
     setSearch(currentSearch);
+    setDebouncedSearch(currentSearch);
     setCategoryFilter(currentCategory);
-    setPagination((prev) => ({ ...prev, page: currentPage }));
-  }, [currentSearch, currentPage, currentCategory]);
+  }, [currentSearch, currentCategory]);
+
+  // 검색어 변경 핸들러
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearch(value);
+    updateSearchDebounced(value);
+  };
 
   // 인증 체크
   useEffect(() => {
@@ -44,48 +93,60 @@ export default function RecordSearchContent() {
     }
   }, [status, router]);
 
-  // 레코드 목록 조회
+  // SWR 에러 처리
   useEffect(() => {
-    if (status === 'authenticated') {
-      fetchRecords(currentPage, currentSearch, currentCategory);
+    if (swrError) {
+      setError(swrError.message);
+    } else {
+      setError('');
     }
-  }, [status, currentPage, currentSearch, currentCategory]);
+  }, [swrError]);
 
-  // 레코드 목록 조회 함수
-  const fetchRecords = async (page, searchTerm, category) => {
-    setIsLoading(true);
-    setError('');
-
-    try {
-      const queryParams = new URLSearchParams({
-        page,
-        limit: 15,
-      });
-
-      if (searchTerm) {
-        queryParams.append('search', searchTerm);
+  // 컴포넌트가 마운트될 때 localStorage에서 캐시 무효화 플래그 확인
+  useEffect(() => {
+    // Focus 이벤트 핸들러 - 브라우저 탭이 활성화될 때마다 실행
+    const handleFocus = () => {
+      const needsRefresh = localStorage.getItem('recordsNeedRefresh');
+      if (needsRefresh === 'true') {
+        // 캐시 무효화 및 데이터 갱신
+        invalidateAllRecordCache();
+        refreshData();
+        // 플래그 초기화
+        localStorage.removeItem('recordsNeedRefresh');
       }
+    };
 
-      if (category && category !== '전체') {
-        queryParams.append('category', category);
+    // 이전에 저장된 refresh 플래그 확인
+    handleFocus();
+
+    // 브라우저 focus 이벤트 리스너 등록
+    window.addEventListener('focus', handleFocus);
+
+    // 페이지 접속 시 항상 최신 데이터 확인을 위한 이벤트 리스너
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // 캐시를 무효화하고 새로운 데이터를 가져옴
+        refreshData();
       }
+    };
 
-      const response = await fetch(`/api/records/list?${queryParams}`);
+    // 페이지 가시성 변화 이벤트 등록
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
-      if (!response.ok) {
-        throw new Error('자료/기록 목록을 불러오는데 실패했습니다.');
-      }
-
-      const data = await response.json();
-
-      setRecords(data.records);
-      setPagination(data.pagination);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setIsLoading(false);
+    // 페이지 이동 후 돌아오면 자동으로 데이터 갱신
+    if (
+      performance?.navigation?.type === 2 ||
+      (performance?.getEntriesByType &&
+        performance.getEntriesByType('navigation')[0]?.type === 'back_forward')
+    ) {
+      refreshData();
     }
-  };
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [invalidateAllRecordCache, refreshData]);
 
   // 검색 및 필터 적용 처리
   const handleSearch = (e) => {
@@ -93,7 +154,7 @@ export default function RecordSearchContent() {
 
     // 검색어와 카테고리 필터, 페이지 1로 URL 업데이트
     const params = new URLSearchParams();
-    if (search) params.append('search', search);
+    if (debouncedSearch) params.append('search', debouncedSearch);
     if (categoryFilter !== '전체') params.append('category', categoryFilter);
     params.append('page', '1');
 
@@ -134,8 +195,9 @@ export default function RecordSearchContent() {
         throw new Error(errorData.error || '삭제 처리 중 오류가 발생했습니다.');
       }
 
-      // 삭제 성공 후 목록 다시 불러오기
-      await fetchRecords(currentPage, currentSearch, currentCategory);
+      // 삭제 성공 후 캐시 무효화 및 데이터 갱신
+      invalidateAllRecordCache();
+      refreshData();
 
       alert('레코드가 삭제되었습니다.');
     } catch (error) {
@@ -193,6 +255,7 @@ export default function RecordSearchContent() {
   // 필터 초기화 처리
   const handleResetFilters = () => {
     setSearch('');
+    setDebouncedSearch('');
     setCategoryFilter('전체');
     router.push('/manage/record/search');
   };
@@ -213,6 +276,10 @@ export default function RecordSearchContent() {
           <Link
             href="/manage/record/addedit"
             className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
+            onClick={() => {
+              // 새 페이지로 이동 시 캐시를 무효화하여 돌아올 때 최신 데이터 표시
+              localStorage.setItem('recordsNeedRefresh', 'true');
+            }}
           >
             새 자료/기록 추가
           </Link>
@@ -230,7 +297,7 @@ export default function RecordSearchContent() {
                   type="text"
                   id="search"
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={handleSearchChange}
                   placeholder="제목으로 검색..."
                   className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -388,11 +455,18 @@ export default function RecordSearchContent() {
                       <Link
                         href={`/manage/record/addedit?id=${record._id}`}
                         className="text-blue-600 hover:text-blue-900 mr-4"
+                        onClick={() => {
+                          // 수정 페이지로 이동 시 캐시를 무효화하여 돌아올 때 최신 데이터 표시
+                          localStorage.setItem('recordsNeedRefresh', 'true');
+                        }}
                       >
                         수정
                       </Link>
                       <button
-                        onClick={() => handleDelete(record._id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(record._id);
+                        }}
                         disabled={isDeleting}
                         className="text-red-600 hover:text-red-900 disabled:opacity-50"
                       >
