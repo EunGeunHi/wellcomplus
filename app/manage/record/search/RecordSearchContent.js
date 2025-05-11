@@ -59,7 +59,7 @@ export default function RecordSearchContent() {
     try {
       const queryParams = new URLSearchParams({
         page,
-        limit: 10,
+        limit: 15,
       });
 
       if (searchTerm) {
@@ -301,22 +301,22 @@ export default function RecordSearchContent() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   분류
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   제목
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   이름
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   파일
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   등록일
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   관리
                 </th>
               </tr>
@@ -343,7 +343,7 @@ export default function RecordSearchContent() {
                     className="hover:bg-gray-50 cursor-pointer"
                     onClick={(e) => handleRowClick(record._id, e)}
                   >
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-2 py-1 whitespace-nowrap">
                       <span
                         className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${getCategoryBadgeStyle(
                           record.category
@@ -352,13 +352,13 @@ export default function RecordSearchContent() {
                         {record.category || '없음'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-2 py-1 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{record.title}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-2 py-1 whitespace-nowrap">
                       <div className="text-sm text-gray-500">{record.name || '-'}</div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-2 py-1">
                       <div className="text-sm text-gray-500">
                         {record.file && record.file.length > 0 ? (
                           <ul className="list-disc pl-5">
@@ -381,10 +381,10 @@ export default function RecordSearchContent() {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-2 py-1 whitespace-nowrap">
                       <div className="text-sm text-gray-500">{formatDate(record.createdAt)}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-2 py-1 whitespace-nowrap text-sm font-medium">
                       <Link
                         href={`/manage/record/addedit?id=${record._id}`}
                         className="text-blue-600 hover:text-blue-900 mr-4"

@@ -25,6 +25,14 @@ export default function ManagePage() {
             <p className="text-gray-600">자료와 기록 데이터를 관리하고 조회합니다.</p>
           </Link>
 
+          <Link
+            href="/manage/delete"
+            className="bg-white hover:bg-red-50 border border-gray-200 p-6 rounded-lg shadow-sm transition-colors"
+          >
+            <h2 className="text-xl font-semibold mb-2 text-red-600">비계약자 일괄삭제</h2>
+            <p className="text-gray-600">특정 기간의 비계약자 데이터를 일괄 삭제합니다.</p>
+          </Link>
+
           <a
             href="/chrome-expansion-program.zip"
             download
