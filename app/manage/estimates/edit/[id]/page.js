@@ -142,7 +142,11 @@ export default function EstimateEditPage() {
     }
 
     // VAT 계산
-    const vatRate = (paymentInfo.vatRate || 10) / 100;
+    // 수정: vatRate가 명시적으로 0인 경우도 처리하도록 변경
+    const vatRate =
+      (paymentInfo.vatRate !== undefined && paymentInfo.vatRate !== null
+        ? paymentInfo.vatRate
+        : 10) / 100;
     let vatAmount = 0;
 
     // VAT 포함 여부에 따른 계산
@@ -1634,7 +1638,7 @@ export default function EstimateEditPage() {
             <div className="mt-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">견적담당</label>
               <div className="flex flex-wrap gap-2">
-                {['김선식', '소성욱'].map((option) => (
+                {['김선식', '소성옥'].map((option) => (
                   <button
                     key={option}
                     type="button"
