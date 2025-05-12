@@ -57,8 +57,9 @@ const applicationSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    default: 'registration',
-    enum: ['registration', 'in_progress', 'completed', 'cancelled'],
+    default: 'apply',
+    //신청, 진행중, 완료, 취소
+    enum: ['apply', 'in_progress', 'completed', 'cancelled'],
   },
   createdAt: {
     type: Date,
