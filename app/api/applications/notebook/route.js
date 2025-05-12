@@ -11,10 +11,28 @@ async function handler(req, { session }) {
   try {
     await connectDB();
 
-    const data = await req.json();
+    // FormData 처리
+    const formData = await req.formData();
+
+    // 폼 데이터에서 파일 및 필드 추출
+    const files = formData.getAll('files');
+    const modelName = formData.get('modelName');
+    const manufacturer = formData.get('manufacturer');
+    const brand = formData.get('brand');
+    const screenSize = formData.get('screenSize');
+    const cpuType = formData.get('cpuType');
+    const gpuType = formData.get('gpuType');
+    const ramSize = formData.get('ramSize');
+    const storageSize = formData.get('storageSize');
+    const os = formData.get('os');
+    const weight = formData.get('weight');
+    const priceRange = formData.get('priceRange');
+    const purpose = formData.get('purpose');
+    const additionalRequests = formData.get('additionalRequests');
+    const phoneNumber = formData.get('phoneNumber');
 
     // 필수 필드 검증
-    if (!data.purpose || !data.os || !data.phoneNumber) {
+    if (!purpose || !os || !phoneNumber) {
       return NextResponse.json(
         { error: '용도, 운영체제, 연락처는 필수로 입력해야 합니다.' },
         { status: 400 }
@@ -27,26 +45,40 @@ async function handler(req, { session }) {
       return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
     }
 
+    // 파일 데이터 처리
+    const fileData = [];
+    for (const file of files) {
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      fileData.push({
+        data: buffer,
+        contentType: file.type,
+        fileName: file.name,
+        fileSize: file.size,
+      });
+    }
+
     // 신청서 생성
     const application = await Application.create({
       type: 'notebook',
       userId: session.user.id,
+      files: fileData,
       notebook_information: {
-        modelName: data.modelName || '',
-        manufacturer: data.manufacturer || '',
-        brand: data.brand || '',
-        screenSize: data.screenSize || '',
-        cpuType: data.cpuType || '',
-        gpuType: data.gpuType || '',
-        ramSize: data.ramSize || '',
-        storageSize: data.storageSize || '',
-        os: data.os,
-        weight: data.weight || '',
-        priceRange: data.priceRange || '',
-        purpose: data.purpose,
-        additionalRequests: data.additionalRequests || '',
-        phoneNumber:
-          data.phoneNumber?.trim().length > 0 ? data.phoneNumber : user.phoneNumber || '',
+        modelName: modelName || '',
+        manufacturer: manufacturer || '',
+        brand: brand || '',
+        screenSize: screenSize || '',
+        cpuType: cpuType || '',
+        gpuType: gpuType || '',
+        ramSize: ramSize || '',
+        storageSize: storageSize || '',
+        os: os,
+        weight: weight || '',
+        priceRange: priceRange || '',
+        purpose: purpose,
+        additionalRequests: additionalRequests || '',
+        phoneNumber: phoneNumber?.trim().length > 0 ? phoneNumber : user.phoneNumber || '',
       },
     });
 

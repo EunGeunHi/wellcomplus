@@ -12,8 +12,14 @@ async function handler(req, { session }) {
   try {
     await connectDB();
 
-    const data = await req.json();
-    const { title, content, phoneNumber } = data;
+    // FormData 처리
+    const formData = await req.formData();
+
+    // 폼 데이터에서 파일 및 필드 추출
+    const files = formData.getAll('files');
+    const title = formData.get('title');
+    const content = formData.get('content');
+    const phoneNumber = formData.get('phoneNumber');
 
     // 필수 필드 검증
     if (!title || !content || !phoneNumber) {
@@ -32,10 +38,25 @@ async function handler(req, { session }) {
     // 전화번호 처리
     const finalPhoneNumber = phoneNumber || user.phoneNumber || '';
 
+    // 파일 데이터 처리
+    const fileData = [];
+    for (const file of files) {
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      fileData.push({
+        data: buffer,
+        contentType: file.type,
+        fileName: file.name,
+        fileSize: file.size,
+      });
+    }
+
     // 문의 생성
     const application = await Application.create({
       type: 'inquiry',
       userId: session.user.id,
+      files: fileData,
       inquiry_information: {
         title,
         content,

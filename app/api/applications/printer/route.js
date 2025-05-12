@@ -11,10 +11,21 @@ async function handler(req, { session }) {
   try {
     await connectDB();
 
-    const data = await req.json();
+    // FormData 처리
+    const formData = await req.formData();
+
+    // 폼 데이터에서 파일 및 필드 추출
+    const files = formData.getAll('files');
+    const modelName = formData.get('modelName');
+    const purpose = formData.get('purpose');
+    const requirements = formData.get('requirements');
+    const modification = formData.get('modification');
+    const additional = formData.get('additional');
+    const phoneNumber = formData.get('phoneNumber');
+    const address = formData.get('address');
 
     // 필수 필드 검증
-    if (!data.purpose || !data.requirements || !data.phoneNumber) {
+    if (!purpose || !requirements || !phoneNumber) {
       return NextResponse.json(
         { error: '사용 목적, 필요 기능, 연락처는 필수로 입력해야 합니다.' },
         { status: 400 }
@@ -27,19 +38,33 @@ async function handler(req, { session }) {
       return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
     }
 
+    // 파일 데이터 처리
+    const fileData = [];
+    for (const file of files) {
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      fileData.push({
+        data: buffer,
+        contentType: file.type,
+        fileName: file.name,
+        fileSize: file.size,
+      });
+    }
+
     // 신청서 생성
     const application = await Application.create({
       type: 'printer',
       userId: session.user.id,
+      files: fileData,
       printer_information: {
-        modelName: data.modelName || '',
-        purpose: data.purpose,
-        requirements: data.requirements,
-        modification: data.modification || '',
-        additional: data.additional || '',
-        phoneNumber:
-          data.phoneNumber?.trim().length > 0 ? data.phoneNumber : user.phoneNumber || '',
-        address: data.address || '',
+        modelName: modelName || '',
+        purpose: purpose,
+        requirements: requirements,
+        modification: modification || '',
+        additional: additional || '',
+        phoneNumber: phoneNumber?.trim().length > 0 ? phoneNumber : user.phoneNumber || '',
+        address: address || '',
       },
     });
 

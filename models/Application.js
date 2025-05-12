@@ -1,5 +1,15 @@
 import mongoose from 'mongoose';
 
+const FileSchema = new mongoose.Schema(
+  {
+    data: Buffer,
+    contentType: String,
+    fileName: String,
+    fileSize: Number,
+  },
+  { _id: false }
+);
+
 const applicationSchema = new mongoose.Schema({
   type: {
     type: String,
@@ -10,6 +20,21 @@ const applicationSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
+  },
+  files: {
+    type: [FileSchema],
+    validate: {
+      validator: function (files) {
+        if (!files || files.length === 0) return true;
+
+        // 모든 파일 크기의 합계 계산 (바이트 단위)
+        const totalSize = files.reduce((sum, file) => sum + (file.fileSize || 0), 0);
+
+        // 2MB = 2 * 1024 * 1024 = 2097152 바이트
+        return totalSize <= 2097152;
+      },
+      message: '파일 크기의 총합이 2MB를 초과할 수 없습니다.',
+    },
   },
   computer_information: {
     purpose: String,
@@ -60,6 +85,10 @@ const applicationSchema = new mongoose.Schema({
     default: 'apply',
     //신청, 진행중, 완료, 취소
     enum: ['apply', 'in_progress', 'completed', 'cancelled'],
+  },
+  comment: {
+    type: String,
+    default: '',
   },
   createdAt: {
     type: Date,

@@ -14,6 +14,8 @@ import {
   FiCheckCircle,
   FiClock,
   FiXCircle,
+  FiDownload,
+  FiPaperclip,
 } from 'react-icons/fi';
 import { formatDate } from '@/utils/dateFormat';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
@@ -56,6 +58,37 @@ const DetailPage = () => {
       setLoading(false);
     }
   }, [applicationId]);
+
+  // 파일 다운로드 함수
+  const handleFileDownload = async (fileIndex) => {
+    try {
+      const response = await fetch(`/api/applications/${applicationId}/file/${fileIndex}`);
+      if (!response.ok) throw new Error('파일 다운로드에 실패했습니다');
+
+      const blob = await response.blob();
+      const fileName = application.files[fileIndex].fileName;
+
+      // 파일 다운로드를 위한 임시 링크 생성
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('파일 다운로드 중 오류 발생:', error);
+      alert('파일 다운로드에 실패했습니다.');
+    }
+  };
+
+  // 파일 크기를 읽기 쉽게 변환하는 함수
+  const formatFileSize = (bytes) => {
+    if (bytes < 1024) return bytes + ' B';
+    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    else return (bytes / 1048576).toFixed(1) + ' MB';
+  };
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -400,6 +433,39 @@ const DetailPage = () => {
                 )}
               </div>
             </div>
+
+            {/* 파일 섹션 */}
+            {application.files && application.files.length > 0 && (
+              <div className="p-6 border-t border-gray-100">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <FiPaperclip className="mr-2" />
+                  첨부 파일
+                </h2>
+                <div className="grid gap-3">
+                  {application.files.map((file, index) => (
+                    <div
+                      key={index}
+                      className="bg-gray-50 p-3 rounded-lg flex items-center justify-between"
+                    >
+                      <div className="flex items-center">
+                        <FiFileText className="text-indigo-500 mr-3 flex-shrink-0" />
+                        <div>
+                          <p className="text-gray-900 font-medium">{file.fileName}</p>
+                          <p className="text-xs text-gray-500">{formatFileSize(file.fileSize)}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleFileDownload(index)}
+                        className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors"
+                      >
+                        <FiDownload className="mr-1" />
+                        <span className="text-sm">다운로드</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* 관리자 답변 섹션 */}
             {application.adminResponse && (

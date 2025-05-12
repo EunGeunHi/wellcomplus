@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
+import { FiX, FiPaperclip, FiAlertCircle } from 'react-icons/fi';
 
 import { useRouter } from 'next/navigation';
 import LoginFallback from '@/app/components/LoginFallback';
@@ -11,6 +12,7 @@ import { toast } from 'react-hot-toast';
 
 export default function EstimatePage() {
   const router = useRouter();
+  const fileInputRef = useRef(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     purpose: '',
@@ -21,6 +23,8 @@ export default function EstimatePage() {
     ponenumber: '',
     address: '',
   });
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [totalFileSize, setTotalFileSize] = useState(0);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,6 +32,42 @@ export default function EstimatePage() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    const newFiles = [...selectedFiles];
+    let newTotalSize = totalFileSize;
+
+    files.forEach((file) => {
+      // 파일 크기 계산 (바이트)
+      newTotalSize += file.size;
+      newFiles.push(file);
+    });
+
+    // 총 파일 크기가 2MB(2,097,152 바이트)를 초과하는지 확인
+    if (newTotalSize > 2097152) {
+      toast.error('총 파일 크기가 2MB를 초과할 수 없습니다.');
+      return;
+    }
+
+    setSelectedFiles(newFiles);
+    setTotalFileSize(newTotalSize);
+    e.target.value = null; // 입력 필드 초기화
+  };
+
+  const removeFile = (index) => {
+    const newFiles = [...selectedFiles];
+    const removedFile = newFiles[index];
+    newFiles.splice(index, 1);
+    setSelectedFiles(newFiles);
+    setTotalFileSize(totalFileSize - removedFile.size);
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes < 1024) return bytes + ' B';
+    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    else return (bytes / 1048576).toFixed(1) + ' MB';
   };
 
   const handleSubmit = async (e) => {
@@ -47,20 +87,26 @@ export default function EstimatePage() {
     try {
       setIsSubmitting(true);
 
+      // FormData 객체 생성 - 파일 업로드를 위함
+      const formDataToSubmit = new FormData();
+
+      // 폼 데이터 추가
+      formDataToSubmit.append('purpose', formData.purpose);
+      formDataToSubmit.append('budget', formData.budget);
+      formDataToSubmit.append('requirements', formData.requirements);
+      formDataToSubmit.append('additional', formData.additional);
+      formDataToSubmit.append('etc', formData.etc);
+      formDataToSubmit.append('phoneNumber', formData.ponenumber);
+      formDataToSubmit.append('address', formData.address);
+
+      // 파일 추가
+      selectedFiles.forEach((file, index) => {
+        formDataToSubmit.append(`files`, file);
+      });
+
       const response = await fetch('/api/applications/computer', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          purpose: formData.purpose,
-          budget: formData.budget,
-          requirements: formData.requirements,
-          additional: formData.additional,
-          etc: formData.etc,
-          phoneNumber: formData.ponenumber,
-          address: formData.address,
-        }),
+        body: formDataToSubmit, // FormData 사용
       });
 
       if (!response.ok) {
@@ -78,6 +124,8 @@ export default function EstimatePage() {
         ponenumber: '',
         address: '',
       });
+      setSelectedFiles([]);
+      setTotalFileSize(0);
 
       // 3초 후 메인 페이지로 이동
       setTimeout(() => {
@@ -304,6 +352,78 @@ export default function EstimatePage() {
                         value={formData.address}
                         onChange={handleChange}
                       />
+                    </div>
+
+                    {/* 파일 업로드 섹션 */}
+                    <div>
+                      <label className="block text-lg font-[BMJUA] text-gray-900 mb-2">
+                        첨부 파일
+                      </label>
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                        <div className="text-center mb-4">
+                          <FiPaperclip className="mx-auto h-12 w-12 text-gray-400" />
+                          <p className="mt-1 text-sm text-gray-500">
+                            참고할 파일이 있으면 업로드해주세요
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">최대 파일 크기: 총 2MB</p>
+                        </div>
+
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleFileChange}
+                          multiple
+                          className="hidden"
+                          accept="image/*,.pdf,.doc,.docx,.txt"
+                        />
+
+                        <div className="flex justify-center">
+                          <button
+                            type="button"
+                            onClick={() => fileInputRef.current.click()}
+                            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                          >
+                            파일 선택
+                          </button>
+                        </div>
+
+                        {selectedFiles.length > 0 && (
+                          <div className="mt-4">
+                            <div className="text-sm font-medium text-gray-700 mb-2">
+                              선택된 파일 ({formatFileSize(totalFileSize)})
+                            </div>
+                            <ul className="space-y-2">
+                              {selectedFiles.map((file, index) => (
+                                <li
+                                  key={index}
+                                  className="flex items-center justify-between text-sm bg-gray-50 p-2 rounded-md"
+                                >
+                                  <div className="flex items-center">
+                                    <span className="truncate max-w-xs">{file.name}</span>
+                                    <span className="ml-2 text-xs text-gray-500">
+                                      ({formatFileSize(file.size)})
+                                    </span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => removeFile(index)}
+                                    className="text-gray-500 hover:text-red-500"
+                                  >
+                                    <FiX />
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {totalFileSize > 1048576 && (
+                          <div className="mt-3 flex items-center text-xs text-amber-700">
+                            <FiAlertCircle className="mr-1" />
+                            <span>총 파일 크기가 {formatFileSize(totalFileSize)} / 2MB</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 

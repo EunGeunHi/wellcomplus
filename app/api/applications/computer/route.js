@@ -11,10 +11,21 @@ async function handler(req, { session }) {
   try {
     await connectDB();
 
-    const data = await req.json();
+    // FormData 처리
+    const formData = await req.formData();
+
+    // 폼 데이터에서 파일 및 필드 추출
+    const files = formData.getAll('files');
+    const purpose = formData.get('purpose');
+    const budget = formData.get('budget');
+    const requirements = formData.get('requirements');
+    const additional = formData.get('additional');
+    const etc = formData.get('etc');
+    const phoneNumber = formData.get('phoneNumber');
+    const address = formData.get('address');
 
     // 필수 필드 검증
-    if (!data.purpose || !data.budget || !data.requirements || !data.phoneNumber) {
+    if (!purpose || !budget || !requirements || !phoneNumber) {
       return NextResponse.json({ error: '필수 항목이 누락되었습니다.' }, { status: 400 });
     }
 
@@ -24,19 +35,33 @@ async function handler(req, { session }) {
       return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
     }
 
+    // 파일 데이터 처리
+    const fileData = [];
+    for (const file of files) {
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      fileData.push({
+        data: buffer,
+        contentType: file.type,
+        fileName: file.name,
+        fileSize: file.size,
+      });
+    }
+
     // 신청서 생성
     const application = await Application.create({
       type: 'computer',
       userId: session.user.id,
+      files: fileData,
       computer_information: {
-        purpose: data.purpose,
-        budget: data.budget,
-        requirements: data.requirements,
-        additional: data.additional || '',
-        etc: data.etc || '',
-        phoneNumber:
-          data.phoneNumber?.trim().length > 0 ? data.phoneNumber : user.phoneNumber || '',
-        address: data.address || '',
+        purpose: purpose,
+        budget: budget,
+        requirements: requirements,
+        additional: additional || '',
+        etc: etc || '',
+        phoneNumber: phoneNumber?.trim().length > 0 ? phoneNumber : user.phoneNumber || '',
+        address: address || '',
       },
     });
 
