@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 import LoginFallback from '@/app/components/LoginFallback';
 import { FiX, FiPaperclip, FiAlertCircle } from 'react-icons/fi';
+import { formatKoreanPhoneNumber } from '@/utils/phoneFormatter';
 
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
@@ -34,10 +35,25 @@ export default function NotebookEstimatePage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    // 전화번호 필드인 경우 포맷팅 적용
+    if (name === 'phoneNumber') {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: formatKoreanPhoneNumber(value),
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
   };
 
   const handleFileChange = (e) => {
@@ -256,6 +272,7 @@ export default function NotebookEstimatePage() {
                         placeholder="(선택) 원하시는 노트북이 있다면 모델명을 입력해주세요"
                         value={formData.modelName}
                         onChange={handleChange}
+                        onKeyDown={handleKeyDown}
                       />
                     </div>
 
@@ -274,6 +291,7 @@ export default function NotebookEstimatePage() {
                         placeholder="(선택) 원하시는 제조사가 있다면 입력해주세요"
                         value={formData.manufacturer}
                         onChange={handleChange}
+                        onKeyDown={handleKeyDown}
                       />
                     </div>
 
@@ -292,6 +310,7 @@ export default function NotebookEstimatePage() {
                         placeholder="(선택) 원하시는 브랜드가 있다면 입력해주세요"
                         value={formData.brand}
                         onChange={handleChange}
+                        onKeyDown={handleKeyDown}
                       />
                     </div>
 
@@ -310,6 +329,7 @@ export default function NotebookEstimatePage() {
                         placeholder="(선택) 원하시는 화면 크기가 있다면 입력해주세요 (예: 15.6인치)"
                         value={formData.screenSize}
                         onChange={handleChange}
+                        onKeyDown={handleKeyDown}
                       />
                     </div>
 
@@ -328,6 +348,7 @@ export default function NotebookEstimatePage() {
                         placeholder="(선택) 원하시는 CPU 종류가 있다면 입력해주세요"
                         value={formData.cpuType}
                         onChange={handleChange}
+                        onKeyDown={handleKeyDown}
                       />
                     </div>
 
@@ -346,6 +367,7 @@ export default function NotebookEstimatePage() {
                         placeholder="(선택) 원하시는 GPU 칩셋이 있다면 입력해주세요"
                         value={formData.gpuType}
                         onChange={handleChange}
+                        onKeyDown={handleKeyDown}
                       />
                     </div>
 
@@ -451,6 +473,7 @@ export default function NotebookEstimatePage() {
                         placeholder="(선택) 원하시는 무게가 있다면 입력해주세요 (예: 1.35kg)"
                         value={formData.weight}
                         onChange={handleChange}
+                        onKeyDown={handleKeyDown}
                       />
                     </div>
 
@@ -469,6 +492,7 @@ export default function NotebookEstimatePage() {
                         placeholder="(선택) 원하시는 가격대가 있다면 입력해주세요"
                         value={formData.priceRange}
                         onChange={handleChange}
+                        onKeyDown={handleKeyDown}
                       />
                     </div>
 
@@ -498,14 +522,18 @@ export default function NotebookEstimatePage() {
                         연락처*
                       </label>
                       <input
-                        type="tel"
+                        type="text"
                         id="phoneNumber"
                         name="phoneNumber"
                         className="w-full rounded-lg border border-gray-300 bg-white/50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="(필수) 해당 번호로 연락을 드리므로 정확하게 입력해주세요."
+                        placeholder="(필수) 예: 010-1234-5678"
                         value={formData.phoneNumber}
                         onChange={handleChange}
+                        onKeyDown={handleKeyDown}
                       />
+                      <p className="mt-1 text-xs text-gray-500">
+                        해당 번호로 연락을 드리므로 정확하게 입력해주세요.
+                      </p>
                     </div>
 
                     {/* 파일 업로드 섹션 */}

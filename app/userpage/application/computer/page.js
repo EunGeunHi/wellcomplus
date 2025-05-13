@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 import { FiX, FiPaperclip, FiAlertCircle } from 'react-icons/fi';
+import { formatKoreanPhoneNumber } from '@/utils/phoneFormatter';
 
 import { useRouter } from 'next/navigation';
 import LoginFallback from '@/app/components/LoginFallback';
@@ -28,10 +29,26 @@ export default function EstimatePage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    // 전화번호 필드인 경우 포맷팅 적용
+    if (name === 'ponenumber') {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: formatKoreanPhoneNumber(value),
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
+  // 엔터 키 입력 시 폼 제출 방지
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
   };
 
   const handleFileChange = (e) => {
@@ -325,15 +342,19 @@ export default function EstimatePage() {
                       >
                         연락처*
                       </label>
-                      <textarea
+                      <input
+                        type="text"
                         id="ponenumber"
                         name="ponenumber"
-                        rows={1}
                         className="w-full rounded-lg border border-gray-300 bg-white/50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="(필수) 해당 번호로 연락을 드리므로 정확하게 입력해주세요."
+                        placeholder="(필수) 예: 010-1234-5678"
                         value={formData.ponenumber}
                         onChange={handleChange}
+                        onKeyDown={handleKeyDown}
                       />
+                      <p className="mt-1 text-xs text-gray-500">
+                        해당 번호로 연락을 드리므로 정확하게 입력해주세요.
+                      </p>
                     </div>
 
                     <div>

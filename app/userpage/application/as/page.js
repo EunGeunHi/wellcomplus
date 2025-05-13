@@ -7,6 +7,7 @@ import LoginFallback from '@/app/components/LoginFallback';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { FiX, FiPaperclip, FiAlertCircle } from 'react-icons/fi';
+import { formatKoreanPhoneNumber } from '@/utils/phoneFormatter';
 
 export default function ASApplicationPage() {
   const router = useRouter();
@@ -22,10 +23,25 @@ export default function ASApplicationPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    // 전화번호 필드인 경우 포맷팅 적용
+    if (name === 'phoneNumber') {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: formatKoreanPhoneNumber(value),
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
   };
 
   const handleFileChange = (e) => {
@@ -216,14 +232,18 @@ export default function ASApplicationPage() {
                         연락처*
                       </label>
                       <input
-                        type="tel"
+                        type="text"
                         id="phoneNumber"
                         name="phoneNumber"
                         className="w-full rounded-lg border border-gray-300 bg-white/50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="(필수) 해당 번호로 연락을 드리므로 정확하게 입력해주세요."
+                        placeholder="(필수) 예: 010-1234-5678"
                         value={formData.phoneNumber}
                         onChange={handleChange}
+                        onKeyDown={handleKeyDown}
                       />
+                      <p className="mt-1 text-xs text-gray-500">
+                        해당 번호로 연락을 드리므로 정확하게 입력해주세요.
+                      </p>
                     </div>
 
                     {/* 파일 업로드 섹션 */}
