@@ -268,22 +268,22 @@ const EstimateContent = ({ userData, userId }) => {
                 className={`px-3 py-1 rounded-full text-xs font-medium mb-2
                 ${
                   application.status === 'apply'
-                    ? 'bg-green-50 text-green-700 border border-green-200'
+                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
                     : application.status === 'in_progress'
                       ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
                       : application.status === 'completed'
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                        ? 'bg-green-50 text-green-700 border border-green-200'
                         : application.status === 'cancelled'
                           ? 'bg-gray-50 text-gray-700 border border-gray-200'
                           : 'bg-gray-50 text-gray-700 border border-gray-200'
                 }`}
               >
                 {application.status === 'apply'
-                  ? '신청완료'
+                  ? '신청됨'
                   : application.status === 'in_progress'
                     ? '진행중'
                     : application.status === 'completed'
-                      ? '완료/종료'
+                      ? '완료'
                       : application.status === 'cancelled'
                         ? '취소'
                         : '처리중'}
@@ -429,22 +429,22 @@ const AsContent = ({ userData, userId }) => {
                 className={`px-3 py-1 rounded-full text-xs font-medium mb-2
                 ${
                   application.status === 'apply'
-                    ? 'bg-green-50 text-green-700 border border-green-200'
+                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
                     : application.status === 'in_progress'
                       ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
                       : application.status === 'completed'
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                        ? 'bg-green-50 text-green-700 border border-green-200'
                         : application.status === 'cancelled'
                           ? 'bg-gray-50 text-gray-700 border border-gray-200'
                           : 'bg-gray-50 text-gray-700 border border-gray-200'
                 }`}
               >
                 {application.status === 'apply'
-                  ? '신청완료'
+                  ? '신청됨'
                   : application.status === 'in_progress'
                     ? '진행중'
                     : application.status === 'completed'
-                      ? '완료/종료'
+                      ? '완료'
                       : application.status === 'cancelled'
                         ? '취소'
                         : '처리중'}

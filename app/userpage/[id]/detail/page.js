@@ -92,11 +92,13 @@ const DetailPage = () => {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'pending':
+      case 'apply':
         return <FiClock className="text-indigo-500" />;
-      case 'approved':
+      case 'in_progress':
+        return <FiMessageSquare className="text-amber-500" />;
+      case 'completed':
         return <FiCheckCircle className="text-green-500" />;
-      case 'rejected':
+      case 'cancelled':
         return <FiXCircle className="text-red-500" />;
       default:
         return <FiClock className="text-gray-500" />;
@@ -105,12 +107,14 @@ const DetailPage = () => {
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'pending':
-        return '검토중';
-      case 'approved':
-        return '승인됨';
-      case 'rejected':
-        return '거절됨';
+      case 'apply':
+        return '신청됨';
+      case 'in_progress':
+        return '진행중';
+      case 'completed':
+        return '완료됨';
+      case 'cancelled':
+        return '취소됨';
       default:
         return '처리중';
     }
@@ -118,11 +122,13 @@ const DetailPage = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pending':
+      case 'apply':
         return 'bg-indigo-50 text-indigo-700 border-indigo-200';
-      case 'approved':
+      case 'in_progress':
+        return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'completed':
         return 'bg-green-50 text-green-700 border-green-200';
-      case 'rejected':
+      case 'cancelled':
         return 'bg-red-50 text-red-700 border-red-200';
       default:
         return 'bg-gray-50 text-gray-700 border-gray-200';
@@ -189,6 +195,12 @@ const DetailPage = () => {
 
           {/* 메인 컨텐츠 */}
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            {application.comment && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-4">관리자 코멘트</h2>
+                <p className="text-gray-600 whitespace-pre-wrap">{application.comment}</p>
+              </div>
+            )}
             {/* 상세 내용 섹션 */}
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-xl font-semibold mb-4">상세 내용</h2>
@@ -466,48 +478,6 @@ const DetailPage = () => {
                 </div>
               </div>
             )}
-
-            {/* 관리자 답변 섹션 */}
-            {application.adminResponse && (
-              <div className="p-6 border-b border-gray-100">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">관리자 답변</h2>
-                <div className="bg-indigo-50 rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <FiMessageSquare className="text-indigo-600" />
-                    <span className="text-sm font-medium text-indigo-700">관리자</span>
-                  </div>
-                  <p className="text-gray-700 whitespace-pre-wrap">{application.adminResponse}</p>
-                </div>
-              </div>
-            )}
-
-            {/* 진행 상황 섹션 */}
-            <div className="p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">진행 상황</h2>
-              <div className="space-y-4">
-                {application.progressHistory?.map((progress, index) => (
-                  <div key={index} className="flex gap-4">
-                    <div className="flex flex-col items-center">
-                      <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                        <FiCheckCircle className="text-indigo-600" />
-                      </div>
-                      {index < application.progressHistory.length - 1 && (
-                        <div className="w-0.5 h-full bg-indigo-100"></div>
-                      )}
-                    </div>
-                    <div className="flex-1 pb-4">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-gray-900">{progress.status}</span>
-                        <span className="text-sm text-gray-500">
-                          {formatDate(progress.createdAt)}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-600">{progress.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       </div>
