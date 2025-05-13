@@ -2,19 +2,14 @@
 import { useState, useEffect } from 'react';
 import {
   FiUser,
-  FiHeart,
   FiSettings,
-  FiShoppingBag,
   FiMail,
   FiPhone,
   FiCalendar,
-  FiEdit,
   FiLogOut,
   FiChevronRight,
   FiFileText,
   FiHelpCircle,
-  FiClipboard,
-  FiInfo,
 } from 'react-icons/fi';
 import { FaComputer } from 'react-icons/fa6';
 import { AiFillPrinter } from 'react-icons/ai';
@@ -268,14 +263,14 @@ const EstimateContent = ({ userData, userId }) => {
                 className={`px-3 py-1 rounded-full text-xs font-medium mb-2
                 ${
                   application.status === 'apply'
-                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                    ? 'bg-indigo-100 text-indigo-700 border border-indigo-300'
                     : application.status === 'in_progress'
-                      ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+                      ? 'bg-sky-100 text-sky-700 border border-sky-300'
                       : application.status === 'completed'
-                        ? 'bg-green-50 text-green-700 border border-green-200'
+                        ? 'bg-emerald-100 text-emerald-700 border border-emerald-300'
                         : application.status === 'cancelled'
-                          ? 'bg-gray-50 text-gray-700 border border-gray-200'
-                          : 'bg-gray-50 text-gray-700 border border-gray-200'
+                          ? 'bg-rose-100 text-rose-700 border border-rose-300'
+                          : 'bg-slate-100 text-slate-700 border border-slate-300'
                 }`}
               >
                 {application.status === 'apply'
@@ -429,14 +424,14 @@ const AsContent = ({ userData, userId }) => {
                 className={`px-3 py-1 rounded-full text-xs font-medium mb-2
                 ${
                   application.status === 'apply'
-                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                    ? 'bg-indigo-100 text-indigo-700 border border-indigo-300'
                     : application.status === 'in_progress'
-                      ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+                      ? 'bg-sky-100 text-sky-700 border border-sky-300'
                       : application.status === 'completed'
-                        ? 'bg-green-50 text-green-700 border border-green-200'
+                        ? 'bg-emerald-100 text-emerald-700 border border-emerald-300'
                         : application.status === 'cancelled'
-                          ? 'bg-gray-50 text-gray-700 border border-gray-200'
-                          : 'bg-gray-50 text-gray-700 border border-gray-200'
+                          ? 'bg-rose-100 text-rose-700 border border-rose-300'
+                          : 'bg-slate-100 text-slate-700 border border-slate-300'
                 }`}
               >
                 {application.status === 'apply'

@@ -88,7 +88,8 @@ const applicationSchema = new mongoose.Schema({
   },
   comment: {
     type: String,
-    default: '',
+    default:
+      '접수 완료 후 담당자가 순차적으로 연락드립니다.\n궁금하신점이나 문의사항이 있으시면 010-8781-8871로 문의해주세요.',
   },
   createdAt: {
     type: Date,
