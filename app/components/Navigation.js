@@ -14,10 +14,54 @@ export default function Navigation() {
   // 메뉴 상태 관리
   const [isMenuOpen, setIsMenuOpen] = useState(false); // 모바일 메뉴 토글 상태
   const [scrolled, setScrolled] = useState(false); // 스크롤 상태
+  const [userName, setUserName] = useState(''); // 사용자 이름을 상태로 관리
 
   // Auth.js 세션 정보 가져오기
-  const { data: session, status } = useSession();
+  const { data: session, status, update: updateSession } = useSession();
   const isLoading = status === 'loading'; // 세션 로딩 중 상태
+
+  // 세션 정보가 변경될 때마다 사용자 이름 업데이트
+  useEffect(() => {
+    if (session?.user?.name) {
+      setUserName(session.user.name);
+    }
+  }, [session]);
+
+  // 주기적으로 세션 갱신 (30초마다)
+  useEffect(() => {
+    const refreshSessionData = async () => {
+      if (session) {
+        try {
+          await updateSession();
+        } catch (error) {
+          console.error('세션 업데이트 실패:', error);
+        }
+      }
+    };
+
+    // 초기 세션 갱신
+    refreshSessionData();
+
+    // 주기적으로 세션 갱신
+    const intervalId = setInterval(() => {
+      refreshSessionData();
+    }, 30000); // 30초마다 갱신
+
+    return () => clearInterval(intervalId);
+  }, []); // 컴포넌트 마운트 시에만 실행
+
+  // 세션 업데이트 이벤트를 감지하는 리스너
+  useEffect(() => {
+    const handleStorageChange = async (event) => {
+      // 로컬 스토리지의 세션 또는 토큰이 변경되면 세션 갱신
+      if (event.key === 'next-auth.session-token' || event.key === 'next-auth.callback-url') {
+        await updateSession();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [updateSession]);
 
   // 스크롤 이벤트 리스너
   useEffect(() => {
@@ -33,6 +77,26 @@ export default function Navigation() {
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+
+  // 수동으로 세션 갱신하는 함수
+  const refreshUserSession = async () => {
+    try {
+      await fetch('/api/auth/session/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      await updateSession();
+    } catch (error) {
+      console.error('세션 갱신 실패:', error);
+    }
+  };
+
+  // 미들웨어나 포커스, 클릭 이벤트 등에서 세션 갱신 유도
+  useEffect(() => {
+    const handleFocus = () => refreshUserSession();
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
 
   return (
     <nav
@@ -87,7 +151,9 @@ export default function Navigation() {
               <div className="flex items-center gap-1">
                 <div className="h-6 w-px bg-gray-300 -ml-1 mr-2"></div>
                 <span className="text-sm text-gray-600 font-normal italic">
-                  <span className="font-semibold text-[#5F9DF7]">{session.user.name}</span>
+                  <span className="font-semibold text-[#5F9DF7]">
+                    {userName || session.user.name}
+                  </span>
                   <span className="text-xs">님</span>
                 </span>
                 <button
@@ -157,7 +223,9 @@ export default function Navigation() {
                 <>
                   {/* 모바일 환영 메시지 */}
                   <div className="text-sm text-gray-600 font-normal italic mb-2 text-center">
-                    <span className="font-semibold text-[#5F9DF7]">{session.user.name}</span>
+                    <span className="font-semibold text-[#5F9DF7]">
+                      {userName || session.user.name}
+                    </span>
                     <span className="text-xs">님</span>
                     환영합니다!
                   </div>

@@ -20,10 +20,13 @@ import { formatDate } from '@/utils/dateFormat';
 import { formatKoreanPhoneNumber, isValidPhoneNumber } from '@/utils/phoneFormatter';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 import LoginFallback from '@/app/components/LoginFallback';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 const UserPage = () => {
   const params = useParams();
+  const router = useRouter();
+  const { data: session, update: updateSession } = useSession();
   const [activeMenu, setActiveMenu] = useState('estimate');
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -134,6 +137,8 @@ const UserPage = () => {
 };
 
 const ProfileContent = ({ userData }) => {
+  const router = useRouter();
+  const { data: session, update: updateSession } = useSession();
   const user = userData?.user || [];
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -211,7 +216,10 @@ const ProfileContent = ({ userData }) => {
 
       setSuccess('정보가 성공적으로 업데이트되었습니다.');
 
-      // 3초 후 모달 닫기 및 페이지 새로고침
+      // 세션 갱신 API 호출
+      await refreshSession();
+
+      // 1초 후 모달 닫기 및 페이지 새로고침
       setTimeout(() => {
         setIsModalOpen(false);
         window.location.reload();
@@ -220,6 +228,34 @@ const ProfileContent = ({ userData }) => {
       setError(err.message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // 세션 갱신 함수
+  const refreshSession = async () => {
+    try {
+      // 세션 갱신 API 호출
+      const response = await fetch('/api/auth/session/refresh', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        // next-auth의 세션 업데이트 기능 사용
+        await updateSession();
+
+        // 세션 변경을 다른 컴포넌트(Navigation)에 알리기 위한 이벤트 발생
+        const event = new StorageEvent('storage', {
+          key: 'next-auth.session-token',
+          newValue: 'updated',
+          url: window.location.href,
+        });
+        window.dispatchEvent(event);
+      }
+    } catch (error) {
+      console.error('세션 갱신 중 오류:', error);
     }
   };
 

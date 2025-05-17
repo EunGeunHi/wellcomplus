@@ -206,6 +206,24 @@ export const authOptions = {
         session.user = {};
       }
 
+      // 세션 갱신 로직 - DB에서 최신 사용자 정보 확인
+      if (token.id) {
+        try {
+          await connectDB();
+          const latestUser = await User.findById(token.id);
+
+          if (latestUser) {
+            // DB의 최신 정보를 토큰에 업데이트
+            token.name = latestUser.name;
+            token.email = latestUser.email;
+            token.image = latestUser.image;
+            token.authority = latestUser.authority || 'user';
+          }
+        } catch (error) {
+          console.error('Error refreshing user session from DB:', error);
+        }
+      }
+
       // 토큰의 사용자 정보를 세션에 추가
       if (token) {
         session.user.id = token.id;
