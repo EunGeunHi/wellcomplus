@@ -1157,7 +1157,10 @@ export default function EstimateEditPage() {
   const descriptionTextareaRef = useRef(null);
   const notesTextareaRef = useRef(null);
 
-  // URL에서 키워드 파라미터 추출 및 자동 검색 기능
+  // 초기 키워드 검색 실행 여부를 추적하는 ref 추가
+  const initialSearchDone = useRef(false);
+
+  // URL에서 키워드 파라미터 추출
   useEffect(() => {
     // 데이터가 로드된 후에만 키워드 검색 관련 상태 초기화
     if (!loading && estimate) {
@@ -1170,19 +1173,63 @@ export default function EstimateEditPage() {
           .map((k) => k.trim());
 
         if (keywords.length > 0) {
-          // 첫 번째 키워드 가져오기 - 이제는 자동 검색하지 않고 버튼 클릭 시 사용
+          // 첫 번째 키워드 가져오기
           setSearchKeyword(keywords[0]);
-          // 키워드가 있으면 알림 메시지로 알려주기
-          setTimeout(() => {
-            showNotification(
-              `키워드 '${keywords[0]}'를 검색하려면 '키워드 찾기' 버튼을 클릭하세요.`,
-              'info'
-            );
-          }, 1000);
         }
       }
     }
   }, [loading, searchParams]);
+
+  // 별도의 useEffect로 자동 검색 구현
+  useEffect(() => {
+    // estimate가 로드되고 첫 검색이 아직 실행되지 않았을 때만 실행
+    if (estimate && !initialSearchDone.current) {
+      const keywordParam = searchParams.get('keyword');
+      if (keywordParam) {
+        const keywords = keywordParam
+          .split(/[\s,+]+/)
+          .filter((k) => k.trim() !== '')
+          .map((k) => k.trim());
+
+        if (keywords.length > 0) {
+          console.log('자동 키워드 검색 준비 - 키워드:', keywords[0]);
+
+          // 페이지 로드 후 충분한 지연 시간을 두고 자동으로 키워드 검색 실행
+          setTimeout(() => {
+            console.log('자동 키워드 검색 실행 시작', {
+              estimateLoaded: !!estimate,
+              estimateDesc: !!estimate?.estimateDescription,
+              customerContent: !!estimate?.customerInfo?.content,
+              notes: !!estimate?.notes,
+            });
+
+            // 검색할 영역 결정 (우선순위: description > content > notes)
+            let searchArea = 'description'; // 기본 검색 영역
+
+            // 실제 데이터가 있는 영역 확인
+            if (estimate?.estimateDescription) {
+              searchArea = 'description';
+            } else if (estimate?.customerInfo?.content) {
+              searchArea = 'content';
+            } else if (estimate?.notes) {
+              searchArea = 'notes';
+            }
+
+            console.log('검색 영역 결정:', searchArea);
+
+            // 키워드 검색 자동 실행
+            handleFindKeyword(searchArea);
+
+            // 검색이 실행되었음을 표시 (실제 검색 실행 후에 설정)
+            initialSearchDone.current = true;
+
+            // 자동 검색 알림 메시지 표시
+            showNotification(`키워드 '${keywords[0]}'가 자동으로 검색되었습니다.`, 'info');
+          }, 2000); // 지연 시간을 2초로 증가
+        }
+      }
+    }
+  }, [estimate, searchParams]);
 
   // 키워드 검색 상태 관리
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -1514,7 +1561,7 @@ export default function EstimateEditPage() {
                   <div className="flex items-center">
                     <input
                       type="text"
-                      value={searchKeyword}
+                      value={searchKeyword ?? ''}
                       onChange={handleKeywordChange}
                       onKeyDown={(e) => handleKeywordKeyDown(e, 'content')}
                       placeholder="검색할 키워드 입력"
@@ -1566,7 +1613,7 @@ export default function EstimateEditPage() {
                 <input
                   type="text"
                   name="name"
-                  value={estimate.customerInfo?.name || ''}
+                  value={estimate.customerInfo?.name ?? ''}
                   onChange={handleCustomerInfoChange}
                   onKeyDown={handleKeyDown}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -1577,7 +1624,7 @@ export default function EstimateEditPage() {
                 <input
                   type="text"
                   name="phone"
-                  value={estimate.customerInfo?.phone || ''}
+                  value={estimate.customerInfo?.phone ?? ''}
                   onChange={handleCustomerInfoChange}
                   onKeyDown={handleKeyDown}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -1588,7 +1635,7 @@ export default function EstimateEditPage() {
                 <input
                   type="text"
                   name="pcNumber"
-                  value={estimate.customerInfo?.pcNumber || ''}
+                  value={estimate.customerInfo?.pcNumber ?? ''}
                   onChange={handleCustomerInfoChange}
                   onKeyDown={handleKeyDown}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -1628,7 +1675,7 @@ export default function EstimateEditPage() {
                   <input
                     type="text"
                     placeholder="직접 입력"
-                    value={estimate.customerInfo?.contractType || ''}
+                    value={estimate.customerInfo?.contractType ?? ''}
                     onChange={(e) => {
                       setEstimate({
                         ...estimate,
@@ -1681,7 +1728,7 @@ export default function EstimateEditPage() {
                   <input
                     type="text"
                     placeholder="직접 입력"
-                    value={estimate.customerInfo?.saleType || ''}
+                    value={estimate.customerInfo?.saleType ?? ''}
                     onChange={(e) => {
                       setEstimate({
                         ...estimate,
@@ -1734,7 +1781,7 @@ export default function EstimateEditPage() {
                   <input
                     type="text"
                     placeholder="직접 입력"
-                    value={estimate.customerInfo?.purchaseType || ''}
+                    value={estimate.customerInfo?.purchaseType ?? ''}
                     onChange={(e) => {
                       setEstimate({
                         ...estimate,
@@ -1758,7 +1805,7 @@ export default function EstimateEditPage() {
                 <input
                   type="text"
                   name="purchaseTypeName"
-                  value={estimate.customerInfo?.purchaseTypeName || ''}
+                  value={estimate.customerInfo?.purchaseTypeName ?? ''}
                   onChange={handleCustomerInfoChange}
                   onKeyDown={handleKeyDown}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -1802,7 +1849,7 @@ export default function EstimateEditPage() {
                   <input
                     type="text"
                     placeholder="직접 입력"
-                    value={estimate.customerInfo?.purpose || ''}
+                    value={estimate.customerInfo?.purpose ?? ''}
                     onChange={(e) => {
                       setEstimate({
                         ...estimate,
@@ -1851,7 +1898,7 @@ export default function EstimateEditPage() {
                   <input
                     type="text"
                     placeholder="직접 입력"
-                    value={estimate.customerInfo?.asCondition || ''}
+                    value={estimate.customerInfo?.asCondition ?? ''}
                     onChange={(e) => {
                       setEstimate({
                         ...estimate,
@@ -1899,7 +1946,7 @@ export default function EstimateEditPage() {
                   <input
                     type="text"
                     placeholder="직접 입력"
-                    value={estimate.customerInfo?.os || ''}
+                    value={estimate.customerInfo?.os ?? ''}
                     onChange={(e) => {
                       setEstimate({
                         ...estimate,
@@ -1954,7 +2001,7 @@ export default function EstimateEditPage() {
                 <div className="flex items-center">
                   <input
                     type="text"
-                    value={searchKeyword}
+                    value={searchKeyword ?? ''}
                     onChange={handleKeywordChange}
                     onKeyDown={(e) => handleKeywordKeyDown(e, 'description')}
                     placeholder="검색할 키워드 입력"
@@ -2105,7 +2152,7 @@ export default function EstimateEditPage() {
                       <td className="px-1 py-1">
                         <input
                           type="text"
-                          value={item.category || ''}
+                          value={item.category ?? ''}
                           onChange={(e) => handleTableDataChange(index, 'category', e.target.value)}
                           onFocus={() => handleFocus(index, 'category')}
                           onBlur={handleBlur}
@@ -2117,7 +2164,7 @@ export default function EstimateEditPage() {
                       <td className="px-1 py-1">
                         <input
                           type="text"
-                          value={item.productName || ''}
+                          value={item.productName ?? ''}
                           onChange={(e) =>
                             handleTableDataChange(index, 'productName', e.target.value)
                           }
@@ -2131,7 +2178,7 @@ export default function EstimateEditPage() {
                       <td className="px-1 py-1">
                         <input
                           type="text"
-                          value={item.quantity || ''}
+                          value={item.quantity ?? ''}
                           onChange={(e) => handleTableDataChange(index, 'quantity', e.target.value)}
                           onFocus={() => handleFocus(index, 'quantity')}
                           onBlur={handleBlur}
@@ -2143,7 +2190,7 @@ export default function EstimateEditPage() {
                       <td className="px-1 py-1">
                         <input
                           type="text"
-                          value={item.price || ''}
+                          value={item.price ?? ''}
                           onChange={(e) => handleTableDataChange(index, 'price', e.target.value)}
                           onFocus={() => handleFocus(index, 'price')}
                           onBlur={handleBlur}
@@ -2155,7 +2202,7 @@ export default function EstimateEditPage() {
                       <td className="px-1 py-1">
                         <input
                           type="text"
-                          value={item.productCode || ''}
+                          value={item.productCode ?? ''}
                           onChange={(e) =>
                             handleTableDataChange(index, 'productCode', e.target.value)
                           }
@@ -2174,7 +2221,7 @@ export default function EstimateEditPage() {
                         >
                           <input
                             type="text"
-                            value={item.distributor || ''}
+                            value={item.distributor ?? ''}
                             onChange={(e) =>
                               handleTableDataChange(index, 'distributor', e.target.value)
                             }
@@ -2242,7 +2289,7 @@ export default function EstimateEditPage() {
                         >
                           <input
                             type="text"
-                            value={item.reconfirm || ''}
+                            value={item.reconfirm ?? ''}
                             onChange={(e) =>
                               handleTableDataChange(index, 'reconfirm', e.target.value)
                             }
@@ -2304,7 +2351,7 @@ export default function EstimateEditPage() {
                       </td>
                       <td className="px-1 py-1">
                         <textarea
-                          value={item.remarks || ''}
+                          value={item.remarks ?? ''}
                           onChange={(e) => handleTableDataChange(index, 'remarks', e.target.value)}
                           onFocus={() => handleFocus(index, 'remarks')}
                           onBlur={handleBlur}
@@ -2433,7 +2480,7 @@ export default function EstimateEditPage() {
                           <td className="px-1 py-1">
                             <input
                               type="text"
-                              value={item.productName || ''}
+                              value={item.productName ?? ''}
                               onChange={(e) =>
                                 handleServiceDataChange(index, 'productName', e.target.value)
                               }
@@ -2444,7 +2491,7 @@ export default function EstimateEditPage() {
                           <td className="px-1 py-1">
                             <input
                               type="text"
-                              value={item.quantity || ''}
+                              value={item.quantity ?? ''}
                               onChange={(e) =>
                                 handleServiceDataChange(index, 'quantity', e.target.value)
                               }
@@ -2454,7 +2501,7 @@ export default function EstimateEditPage() {
                           </td>
                           <td className="px-1 py-1">
                             <textarea
-                              value={item.remarks || ''}
+                              value={item.remarks ?? ''}
                               onChange={(e) =>
                                 handleServiceDataChange(index, 'remarks', e.target.value)
                               }
@@ -2523,7 +2570,7 @@ export default function EstimateEditPage() {
                         value={
                           estimate?.paymentInfo?.laborCost === 0
                             ? ''
-                            : formatNumber(estimate?.paymentInfo?.laborCost)
+                            : formatNumber(estimate?.paymentInfo?.laborCost ?? 0)
                         }
                         onChange={handlePaymentInfoChange}
                         onKeyDown={handleKeyDown}
@@ -2575,7 +2622,7 @@ export default function EstimateEditPage() {
                         value={
                           estimate?.paymentInfo?.tuningCost === 0
                             ? ''
-                            : formatNumber(estimate?.paymentInfo?.tuningCost)
+                            : formatNumber(estimate?.paymentInfo?.tuningCost ?? 0)
                         }
                         onChange={handlePaymentInfoChange}
                         onKeyDown={handleKeyDown}
@@ -2627,7 +2674,7 @@ export default function EstimateEditPage() {
                         value={
                           estimate?.paymentInfo?.setupCost === 0
                             ? ''
-                            : formatNumber(estimate?.paymentInfo?.setupCost)
+                            : formatNumber(estimate?.paymentInfo?.setupCost ?? 0)
                         }
                         onChange={handlePaymentInfoChange}
                         onKeyDown={handleKeyDown}
@@ -2681,7 +2728,7 @@ export default function EstimateEditPage() {
                         value={
                           estimate?.paymentInfo?.warrantyFee === 0
                             ? ''
-                            : formatNumber(estimate?.paymentInfo?.warrantyFee)
+                            : formatNumber(estimate?.paymentInfo?.warrantyFee ?? 0)
                         }
                         onChange={handlePaymentInfoChange}
                         onKeyDown={handleKeyDown}
@@ -2704,7 +2751,7 @@ export default function EstimateEditPage() {
                       value={
                         estimate?.paymentInfo?.discount === 0
                           ? ''
-                          : formatNumber(estimate?.paymentInfo?.discount)
+                          : formatNumber(estimate?.paymentInfo?.discount ?? 0)
                       }
                       onChange={handlePaymentInfoChange}
                       onKeyDown={handleKeyDown}
@@ -2720,7 +2767,7 @@ export default function EstimateEditPage() {
                       value={
                         estimate?.paymentInfo?.deposit === 0
                           ? ''
-                          : formatNumber(estimate?.paymentInfo?.deposit)
+                          : formatNumber(estimate?.paymentInfo?.deposit ?? 0)
                       }
                       onChange={handlePaymentInfoChange}
                       onKeyDown={handleKeyDown}
@@ -2775,7 +2822,7 @@ export default function EstimateEditPage() {
                       <input
                         type="text"
                         name="paymentMethod"
-                        value={estimate?.paymentInfo?.paymentMethod}
+                        value={estimate?.paymentInfo?.paymentMethod ?? ''}
                         onChange={handlePaymentInfoChange}
                         onKeyDown={handleKeyDown}
                         placeholder="결제 방법 입력"
@@ -2807,7 +2854,9 @@ export default function EstimateEditPage() {
                       type="number"
                       name="vatRate"
                       value={
-                        estimate?.paymentInfo?.vatRate === 0 ? '' : estimate?.paymentInfo?.vatRate
+                        estimate?.paymentInfo?.vatRate === 0
+                          ? ''
+                          : (estimate?.paymentInfo?.vatRate ?? '')
                       }
                       onChange={handlePaymentInfoChange}
                       onKeyDown={handleKeyDown}
@@ -2826,7 +2875,7 @@ export default function EstimateEditPage() {
                       value={
                         estimate?.paymentInfo?.shippingCost === 0
                           ? ''
-                          : formatNumber(estimate?.paymentInfo?.shippingCost)
+                          : formatNumber(estimate?.paymentInfo?.shippingCost ?? 0)
                       }
                       onChange={handlePaymentInfoChange}
                       onKeyDown={handleKeyDown}
@@ -2838,7 +2887,7 @@ export default function EstimateEditPage() {
                     <input
                       type="date"
                       name="releaseDate"
-                      value={estimate?.paymentInfo?.releaseDate}
+                      value={estimate?.paymentInfo?.releaseDate ?? ''}
                       onChange={handlePaymentInfoChange}
                       onKeyDown={handleKeyDown}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -3047,7 +3096,7 @@ export default function EstimateEditPage() {
                 <div className="flex items-center">
                   <input
                     type="text"
-                    value={searchKeyword}
+                    value={searchKeyword ?? ''}
                     onChange={handleKeywordChange}
                     onKeyDown={(e) => handleKeywordKeyDown(e, 'notes')}
                     placeholder="검색할 키워드"
