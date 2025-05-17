@@ -12,6 +12,8 @@ import {
   FiHelpCircle,
   FiEdit,
   FiX,
+  FiStar,
+  FiSend,
 } from 'react-icons/fi';
 import { FaComputer } from 'react-icons/fa6';
 import { AiFillPrinter } from 'react-icons/ai';
@@ -62,7 +64,7 @@ const UserPage = () => {
     { id: 'profile', label: '프로필', icon: <FiUser /> },
     { id: 'estimate', label: '견적 신청 내역', icon: <FiFileText /> },
     { id: 'as', label: 'AS 및 문의 내역', icon: <FiHelpCircle /> },
-    { id: 'settings', label: '설정', icon: <FiSettings /> },
+    { id: 'review', label: '리뷰 작성', icon: <FiStar /> },
   ];
 
   const renderContent = () => {
@@ -78,8 +80,8 @@ const UserPage = () => {
         return <EstimateContent userData={userData} userId={params.id} />;
       case 'as':
         return <AsContent userData={userData} userId={params.id} />;
-      case 'settings':
-        return <SettingsContent />;
+      case 'review':
+        return <ReviewContent userData={userData} userId={params.id} />;
       default:
         return <ProfileContent userData={userData} />;
     }
@@ -273,7 +275,7 @@ const ProfileContent = ({ userData }) => {
             className="flex items-center gap-1.5 py-2 px-3 sm:py-2.5 sm:px-4 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors text-xs sm:text-sm font-medium"
           >
             <FiEdit size={14} className="sm:text-base" />
-            정보 수정
+            프로필 수정(이름, 전화번호 2가지만 수정가능합니다.)
           </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -752,45 +754,462 @@ const AsContent = ({ userData, userId }) => {
   );
 };
 
-const SettingsContent = () => (
-  <div>
-    <h2 className="text-xl font-semibold text-gray-900 mb-6 relative pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
-      설정
-    </h2>
-    <div className="flex flex-col gap-8">
-      <div className="bg-gray-50 rounded-xl p-6">
-        <h3 className="text-base font-semibold text-gray-900 mb-4">개인정보 설정</h3>
-        <div className="flex justify-between items-center p-4 bg-white rounded-lg shadow-sm mb-3">
-          <div>
-            <div className="text-sm font-medium text-gray-900 mb-0.5">이메일 수신 설정</div>
-            <div className="text-xs text-gray-500">
-              마케팅 및 프로모션 관련 이메일을 수신합니다.
-            </div>
-          </div>
-          <div className="relative w-10 h-5 bg-gray-200 rounded-full cursor-pointer transition-all duration-300 hover:bg-gray-300">
-            <div className="absolute w-4 h-4 bg-white rounded-full left-0.5 top-0.5 transition-all duration-300"></div>
-          </div>
-        </div>
-        <div className="flex justify-between items-center p-4 bg-white rounded-lg shadow-sm">
-          <div>
-            <div className="text-sm font-medium text-gray-900 mb-0.5">SMS 수신 설정</div>
-            <div className="text-xs text-gray-500">마케팅 및 프로모션 관련 SMS를 수신합니다.</div>
-          </div>
-          <div className="relative w-10 h-5 bg-gray-200 rounded-full cursor-pointer transition-all duration-300 hover:bg-gray-300">
-            <div className="absolute w-4 h-4 bg-white rounded-full left-0.5 top-0.5 transition-all duration-300"></div>
-          </div>
-        </div>
-      </div>
+const ReviewContent = ({ userData, userId }) => {
+  const [reviewText, setReviewText] = useState('');
+  const [rating, setRating] = useState(0);
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [serviceType, setServiceType] = useState('');
+  const [userReviews, setUserReviews] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [editingReview, setEditingReview] = useState(null);
+  const [editForm, setEditForm] = useState({
+    content: '',
+    rating: 0,
+    serviceType: '',
+  });
 
-      <div className="bg-gray-50 rounded-xl p-6">
-        <h3 className="text-base font-semibold text-gray-900 mb-4">보안 설정</h3>
-        <button className="flex items-center gap-2 w-full py-3 px-4 bg-white text-gray-900 border border-gray-200 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 shadow-sm hover:bg-gray-50 hover:border-gray-300">
-          <FiSettings size={16} />
-          비밀번호 변경하기
+  // 사용자 리뷰 목록 조회
+  useEffect(() => {
+    const fetchUserReviews = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`/api/reviews/user/${userId}`);
+
+        if (!response.ok) {
+          throw new Error('리뷰 목록을 불러오는데 실패했습니다');
+        }
+
+        const data = await response.json();
+        setUserReviews(data.reviews || []);
+      } catch (err) {
+        console.error('리뷰 데이터를 가져오는 중 오류 발생:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (userId) {
+      fetchUserReviews();
+    }
+  }, [userId, success]); // success가 변경되면(리뷰 등록 성공 시) 목록 다시 불러오기
+
+  // 수정 버튼 클릭 시 호출되는 함수
+  const handleEditClick = (review) => {
+    setEditingReview(review.id);
+    setEditForm({
+      content: review.content,
+      rating: review.rating,
+      serviceType: review.serviceType,
+    });
+  };
+
+  // 수정 취소 버튼 클릭 시 호출되는 함수
+  const handleCancelEdit = () => {
+    setEditingReview(null);
+    setEditForm({
+      content: '',
+      rating: 0,
+      serviceType: '',
+    });
+  };
+
+  // 수정 내용 변경 시 호출되는 함수
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm({
+      ...editForm,
+      [name]: value,
+    });
+  };
+
+  // 별점 변경 시 호출되는 함수
+  const handleRatingChange = (newRating) => {
+    setEditForm({
+      ...editForm,
+      rating: newRating,
+    });
+  };
+
+  // 리뷰 수정 저장 함수
+  const handleSaveEdit = async (reviewId) => {
+    if (editForm.content.trim().length < 10) {
+      setError('리뷰는 최소 10자 이상 작성해주세요.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      // 리뷰 업데이트 API 호출
+      const response = await fetch(`/api/reviews/${reviewId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: editForm.content,
+          rating: editForm.rating,
+          serviceType: editForm.serviceType,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || '리뷰 수정에 실패했습니다.');
+      }
+
+      // 성공 메시지 표시
+      setSuccess('리뷰가 성공적으로 수정되었습니다.');
+
+      // 수정 모드 종료
+      setEditingReview(null);
+
+      // 리뷰 목록 갱신 (userReviews 상태 직접 업데이트)
+      setUserReviews(
+        userReviews.map((review) =>
+          review.id === reviewId
+            ? {
+                ...review,
+                content: editForm.content,
+                rating: editForm.rating,
+                serviceType: editForm.serviceType,
+              }
+            : review
+        )
+      );
+
+      // 잠시 후 성공 메시지 숨기기
+      setTimeout(() => {
+        setSuccess('');
+      }, 1000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!serviceType) {
+      setError('서비스 유형을 선택해주세요.');
+      return;
+    }
+
+    if (rating === 0) {
+      setError('별점을 선택해주세요.');
+      return;
+    }
+
+    if (reviewText.trim().length < 10) {
+      setError('리뷰는 최소 10자 이상 작성해주세요.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      // 리뷰 API 호출
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          serviceType,
+          rating,
+          content: reviewText,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || '리뷰 등록에 실패했습니다.');
+      }
+
+      // 성공 메시지 표시
+      setSuccess('리뷰가 성공적으로 등록되었습니다.');
+      setReviewText('');
+      setRating(0);
+      setServiceType('');
+      setHoveredRating(0);
+
+      // 잠시 후 성공 메시지 숨기기
+      setTimeout(() => {
+        setSuccess('');
+      }, 1000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // 서비스 유형에 따른 텍스트 변환 함수
+  const getServiceTypeText = (type) => {
+    switch (type) {
+      case 'computer':
+        return '컴퓨터';
+      case 'printer':
+        return '프린터';
+      case 'notebook':
+        return '노트북';
+      case 'as':
+        return 'AS 서비스';
+      case 'other':
+        return '기타 서비스';
+      default:
+        return type;
+    }
+  };
+
+  // 날짜 포맷 함수
+  const formatReviewDate = (dateString) => {
+    const date = new Date(dateString);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto">
+      <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-4 sm:mb-6 relative pb-2 sm:pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-8 sm:after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
+        리뷰 작성
+      </h2>
+
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm border border-red-200">
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm border border-green-200">
+          {success}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6 mb-10">
+        <div>
+          <label htmlFor="serviceType" className="block text-sm font-medium text-gray-700 mb-1">
+            서비스 유형
+          </label>
+          <select
+            id="serviceType"
+            value={serviceType}
+            onChange={(e) => setServiceType(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            required
+          >
+            <option value="" disabled>
+              서비스 유형을 선택하세요
+            </option>
+            <option value="computer">컴퓨터</option>
+            <option value="printer">프린터</option>
+            <option value="notebook">노트북</option>
+            <option value="as">AS 서비스</option>
+            <option value="other">기타 서비스</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">별점</label>
+          <div className="flex items-center gap-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                onClick={() => setRating(star)}
+                onMouseEnter={() => setHoveredRating(star)}
+                onMouseLeave={() => setHoveredRating(0)}
+                className="text-2xl sm:text-3xl focus:outline-none"
+              >
+                <FiStar
+                  className={`${
+                    (hoveredRating ? hoveredRating >= star : rating >= star)
+                      ? 'fill-yellow-400 text-yellow-400'
+                      : 'text-gray-300'
+                  } transition-colors`}
+                />
+              </button>
+            ))}
+            <span className="ml-2 text-sm text-gray-500">
+              {rating > 0 ? `${rating}점` : '별점을 선택해주세요'}
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="reviewText" className="block text-sm font-medium text-gray-700 mb-1">
+            리뷰 내용
+          </label>
+          <textarea
+            id="reviewText"
+            value={reviewText}
+            onChange={(e) => setReviewText(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[120px]"
+            placeholder="서비스에 대한 경험을 자세히 알려주세요"
+            rows={5}
+            required
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            최소 10자 이상 작성해주세요. 현재 {reviewText.length}자
+          </p>
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className={`w-full py-3 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium flex items-center justify-center gap-2
+            ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}
+          `}
+        >
+          {isSubmitting ? '제출 중...' : '리뷰 제출하기'}
+          <FiSend className={isSubmitting ? 'opacity-0' : 'opacity-100'} />
         </button>
+      </form>
+
+      {/* 내가 작성한 리뷰 목록 */}
+      <div className="mt-12">
+        <h3 className="text-xl font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
+          내가 작성한 리뷰
+        </h3>
+
+        {isLoading ? (
+          <div className="py-6 text-center text-gray-500">리뷰 목록을 불러오는 중...</div>
+        ) : userReviews.length === 0 ? (
+          <div className="py-10 text-center">
+            <div className="text-gray-400 mb-2">
+              <FiStar size={40} className="mx-auto mb-2" />
+            </div>
+            <p className="text-gray-600">작성한 리뷰가 없습니다.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {userReviews.map((review) => (
+              <div key={review.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                {editingReview === review.id ? (
+                  // 수정 모드 UI
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <select
+                        name="serviceType"
+                        value={editForm.serviceType}
+                        onChange={handleEditFormChange}
+                        className="py-1 px-2 border border-gray-300 rounded text-sm"
+                      >
+                        <option value="computer">컴퓨터</option>
+                        <option value="printer">프린터</option>
+                        <option value="notebook">노트북</option>
+                        <option value="as">AS 서비스</option>
+                        <option value="other">기타 서비스</option>
+                      </select>
+                      <span className="text-xs text-gray-500">
+                        {formatReviewDate(review.createdAt)}
+                      </span>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-1 mb-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => handleRatingChange(star)}
+                            className="text-xl focus:outline-none"
+                          >
+                            <FiStar
+                              className={`${
+                                editForm.rating >= star
+                                  ? 'fill-yellow-400 text-yellow-400'
+                                  : 'text-gray-300'
+                              } transition-colors`}
+                            />
+                          </button>
+                        ))}
+                        <span className="ml-2 text-sm">{editForm.rating}점</span>
+                      </div>
+
+                      <textarea
+                        name="content"
+                        value={editForm.content}
+                        onChange={handleEditFormChange}
+                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[100px] text-sm"
+                        rows={6}
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        최소 10자 이상 작성해주세요. 현재 {editForm.content.length}자
+                      </p>
+                    </div>
+
+                    <div className="flex gap-2 justify-end">
+                      <button
+                        onClick={handleCancelEdit}
+                        className="py-1.5 px-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-xs"
+                      >
+                        취소
+                      </button>
+                      <button
+                        onClick={() => handleSaveEdit(review.id)}
+                        disabled={isSubmitting}
+                        className={`py-1.5 px-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-xs
+                          ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}
+                        `}
+                      >
+                        {isSubmitting ? '저장 중...' : '저장하기'}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  // 일반 보기 모드 UI
+                  <>
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center">
+                        <span className="inline-block px-2 py-1 bg-indigo-100 text-indigo-700 text-xs rounded-md mr-2">
+                          {getServiceTypeText(review.serviceType)}
+                        </span>
+                        <button
+                          onClick={() => handleEditClick(review)}
+                          className="py-1 px-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-xs flex items-center gap-1"
+                        >
+                          <FiEdit size={12} /> 수정하기
+                        </button>
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        {formatReviewDate(review.createdAt)}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center mb-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <FiStar
+                          key={star}
+                          className={`${
+                            star <= review.rating
+                              ? 'fill-yellow-400 text-yellow-400'
+                              : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                      <span className="ml-2 text-sm font-medium">{review.rating}점</span>
+                    </div>
+
+                    <p className="text-gray-700 whitespace-pre-line text-sm">{review.content}</p>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default UserPage;
