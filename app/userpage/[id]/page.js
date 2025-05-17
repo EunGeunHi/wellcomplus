@@ -10,11 +10,14 @@ import {
   FiChevronRight,
   FiFileText,
   FiHelpCircle,
+  FiEdit,
+  FiX,
 } from 'react-icons/fi';
 import { FaComputer } from 'react-icons/fa6';
 import { AiFillPrinter } from 'react-icons/ai';
 import { FaLaptop, FaTools } from 'react-icons/fa';
 import { formatDate } from '@/utils/dateFormat';
+import { formatKoreanPhoneNumber, isValidPhoneNumber } from '@/utils/phoneFormatter';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 import LoginFallback from '@/app/components/LoginFallback';
 import { useParams } from 'next/navigation';
@@ -132,14 +135,111 @@ const UserPage = () => {
 
 const ProfileContent = ({ userData }) => {
   const user = userData?.user || [];
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    phoneNumber: '',
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [isPhoneValid, setIsPhoneValid] = useState(true);
+
+  // 폼 초기화
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        phoneNumber: user.phoneNumber || '',
+      });
+    }
+  }, [user]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
+    if (name === 'phoneNumber') {
+      // 전화번호 자동 포맷팅
+      const formattedValue = formatKoreanPhoneNumber(value);
+
+      // 유효성 검사
+      setIsPhoneValid(formattedValue.length === 0 || isValidPhoneNumber(formattedValue));
+
+      setFormData((prev) => ({
+        ...prev,
+        [name]: formattedValue,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // 전화번호 유효성 검사
+    if (!isValidPhoneNumber(formData.phoneNumber)) {
+      setError('유효한 전화번호 형식이 아닙니다.');
+      setIsPhoneValid(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await fetch(`/api/users/${user._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          phoneNumber: formData.phoneNumber,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || '정보 업데이트에 실패했습니다.');
+      }
+
+      setSuccess('정보가 성공적으로 업데이트되었습니다.');
+
+      // 3초 후 모달 닫기 및 페이지 새로고침
+      setTimeout(() => {
+        setIsModalOpen(false);
+        window.location.reload();
+      }, 1000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!user) return <div>로딩중...</div>;
 
   return (
     <>
       <section className="mb-6 sm:mb-8">
-        <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-4 sm:mb-6 relative pb-2 sm:pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-8 sm:after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
-          프로필
-        </h2>
+        <div className="flex justify-between items-center mb-4 sm:mb-6">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 relative pb-2 sm:pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-8 sm:after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
+            프로필
+          </h2>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-1.5 py-2 px-3 sm:py-2.5 sm:px-4 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors text-xs sm:text-sm font-medium"
+          >
+            <FiEdit size={14} className="sm:text-base" />
+            정보 수정
+          </button>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 bg-gray-50 rounded-lg sm:rounded-xl transition-all duration-200 hover:translate-y-[-2px] hover:shadow-md">
             <div className="flex items-center justify-center text-base sm:text-lg text-indigo-600 bg-indigo-50 w-8 h-8 sm:w-10 sm:h-10 rounded-lg">
@@ -181,6 +281,105 @@ const ProfileContent = ({ userData }) => {
           </div>
         </div>
       </section>
+
+      {/* 정보 수정 모달 */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div
+            className="absolute inset-0 bg-black bg-opacity-50"
+            onClick={() => setIsModalOpen(false)}
+          ></div>
+          <div className="bg-white rounded-2xl p-6 sm:p-8 w-full max-w-md z-10 relative">
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+              aria-label="닫기"
+            >
+              <FiX size={20} />
+            </button>
+
+            <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6">
+              프로필 정보 수정
+            </h3>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm border border-red-200">
+                {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm border border-green-200">
+                {success}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                  이름
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  placeholder="이름을 입력하세요"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="phoneNumber"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  전화번호
+                </label>
+                <input
+                  type="tel"
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={handleInputChange}
+                  required
+                  className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                    !isPhoneValid ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                  }`}
+                  placeholder="전화번호를 입력하세요"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  숫자만 입력하시면 됩니다. (예시: 010-1234-5678)
+                </p>
+                {!isPhoneValid && (
+                  <p className="mt-1 text-xs text-red-500">유효한 전화번호 형식이 아닙니다.</p>
+                )}
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1 py-2.5 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading || !isPhoneValid}
+                  className={`flex-1 py-2.5 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium flex items-center justify-center
+                    ${isLoading || !isPhoneValid ? 'opacity-70 cursor-not-allowed' : ''}
+                  `}
+                >
+                  {isLoading ? '저장 중...' : '저장하기'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 };
