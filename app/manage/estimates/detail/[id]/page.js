@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { KingOnlySection } from '@/app/components/ProtectedContent';
 import KingFallback from '@/app/components/kingFallback';
@@ -11,12 +11,87 @@ import { FaFileAlt } from 'react-icons/fa';
 export default function EstimateDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { id } = params;
 
   const [estimate, setEstimate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false); // 삭제 진행 중 상태
+  const [keywords, setKeywords] = useState([]);
+
+  // 스크롤을 위한 refs
+  const contentRef = useRef(null);
+  const descriptionRef = useRef(null);
+  const notesRef = useRef(null);
+
+  // URL에서 키워드 추출
+  useEffect(() => {
+    const keywordParam = searchParams.get('keyword');
+    if (keywordParam) {
+      // '+'나 공백으로 구분된 키워드를 배열로 변환
+      const keywordArray = keywordParam.split(/[\s+]+/).filter((k) => k.trim() !== '');
+      setKeywords(keywordArray);
+    }
+  }, [searchParams]);
+
+  // 키워드 하이라이팅 적용 후 스크롤 위치 조정
+  useEffect(() => {
+    if (!loading && estimate && keywords.length > 0) {
+      // 약간의 지연 후 스크롤 (렌더링 완료 후 실행하기 위함)
+      setTimeout(() => {
+        scrollToFirstKeyword();
+      }, 300);
+    }
+  }, [loading, estimate, keywords]);
+
+  // 첫 번째 키워드가 발견된 위치로 스크롤
+  const scrollToFirstKeyword = () => {
+    if (keywords.length === 0) return;
+
+    const keywordElements = document.querySelectorAll('.highlighted-keyword');
+    if (keywordElements.length > 0) {
+      keywordElements[0].scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+  };
+
+  // 텍스트에서 키워드 하이라이팅
+  const highlightKeywords = (text) => {
+    if (!text || keywords.length === 0) return text;
+
+    // 정규식 특수문자 이스케이프 처리
+    const escapedKeywords = keywords.map((keyword) =>
+      keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    );
+
+    // 모든 키워드를 OR 연산자로 결합한 정규식 생성
+    const regex = new RegExp(`(${escapedKeywords.join('|')})`, 'gi');
+
+    // 텍스트를 분할하여 JSX 배열로 반환
+    const parts = text.split(regex);
+
+    return (
+      <>
+        {parts.map((part, i) => {
+          // 키워드에 해당하는 부분인지 확인
+          const isKeyword = keywords.some(
+            (keyword) => part.toLowerCase() === keyword.toLowerCase()
+          );
+
+          return isKeyword ? (
+            <span key={i} className="highlighted-keyword bg-yellow-200 font-bold">
+              {part}
+            </span>
+          ) : (
+            part
+          );
+        })}
+      </>
+    );
+  };
 
   useEffect(() => {
     const fetchEstimate = async () => {
@@ -106,7 +181,14 @@ export default function EstimateDetailPage() {
   const handleEdit = () => {
     // 수정 페이지로 이동 시 데이터 변경 플래그 설정
     localStorage.setItem('estimateBeingEdited', id);
-    router.push(`/manage/estimates/edit/${id}`);
+
+    // 현재 URL에서 keyword 파라미터 가져와서 수정 페이지로 전달
+    const keywordParam = searchParams.get('keyword');
+    if (keywordParam) {
+      router.push(`/manage/estimates/edit/${id}?keyword=${encodeURIComponent(keywordParam)}`);
+    } else {
+      router.push(`/manage/estimates/edit/${id}`);
+    }
   };
 
   // 견적 삭제
@@ -297,24 +379,30 @@ export default function EstimateDetailPage() {
             </div>
 
             {/* 내용 */}
-            <div className="mt-4">
+            <div className="mt-4" ref={contentRef}>
               <p className="text-gray-600">내용</p>
-              <p className="whitespace-pre-line">{estimate.customerInfo.content || '-'}</p>
+              <p className="whitespace-pre-line">
+                {estimate.customerInfo.content
+                  ? highlightKeywords(estimate.customerInfo.content)
+                  : '-'}
+              </p>
             </div>
 
             {/* 견적설명 */}
             {estimate.estimateDescription && (
-              <div className="mt-4">
+              <div className="mt-4" ref={descriptionRef}>
                 <p className="text-gray-600">견적설명(견적서에 표시되는 내용)</p>
-                <p className="whitespace-pre-line">{estimate.estimateDescription}</p>
+                <p className="whitespace-pre-line">
+                  {highlightKeywords(estimate.estimateDescription)}
+                </p>
               </div>
             )}
 
             {/* 참고사항항 */}
             {estimate.notes && (
-              <div className="mt-4">
+              <div className="mt-4" ref={notesRef}>
                 <p className="text-gray-600">참고사항(견적서에 포함되지 않는 내용)</p>
-                <p className="whitespace-pre-line">{estimate.notes}</p>
+                <p className="whitespace-pre-line">{highlightKeywords(estimate.notes)}</p>
               </div>
             )}
           </div>
