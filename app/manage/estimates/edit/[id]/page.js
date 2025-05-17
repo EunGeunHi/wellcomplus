@@ -1670,8 +1670,10 @@ export default function EstimateEditPage() {
               <textarea
                 value={estimate.estimateDescription || ''}
                 onChange={handleDescriptionChange}
-                rows={3}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                onFocus={() => setFocusedInput('estimateDescription')}
+                onBlur={handleBlur}
+                rows={focusedInput === 'estimateDescription' ? 30 : 4}
+                className={`mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all duration-200`}
               ></textarea>
             </div>
           </div>
