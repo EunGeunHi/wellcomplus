@@ -18,6 +18,8 @@ import {
 import { FaComputer } from 'react-icons/fa6';
 import { AiFillPrinter } from 'react-icons/ai';
 import { FaLaptop, FaTools } from 'react-icons/fa';
+import { MdDeleteForever } from 'react-icons/md';
+
 import { formatDate } from '@/utils/dateFormat';
 import { formatKoreanPhoneNumber, isValidPhoneNumber } from '@/utils/phoneFormatter';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
@@ -423,6 +425,7 @@ const ProfileContent = ({ userData }) => {
 };
 
 const EstimateContent = ({ userData, userId }) => {
+  const router = useRouter();
   const applications = userData?.applications || [];
   const filteredApplications = applications.filter(
     (app) => app.type === 'computer' || app.type === 'printer' || app.type === 'notebook'
@@ -433,6 +436,11 @@ const EstimateContent = ({ userData, userId }) => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentApplications = filteredApplications.slice(startIndex, endIndex);
+
+  // 페이지 이동 핸들러
+  const handleApplicationClick = (applicationId) => {
+    router.push(`/userpage/${userId}/detail?applicationId=${applicationId}`);
+  };
 
   if (filteredApplications.length === 0) {
     return (
@@ -472,9 +480,7 @@ const EstimateContent = ({ userData, userId }) => {
           <div
             key={index}
             className="group bg-white border border-gray-200 rounded-lg sm:rounded-xl p-4 sm:p-5 hover:shadow-lg transition-all duration-300 cursor-pointer hover:border-indigo-200 flex flex-col h-full"
-            onClick={() =>
-              (window.location.href = `/userpage/${userId}/detail?applicationId=${application._id}`)
-            }
+            onClick={() => handleApplicationClick(application._id)}
           >
             <div className="flex flex-col items-center text-center">
               <div className="p-3 rounded-lg bg-indigo-50 text-indigo-600 mb-3">
@@ -594,6 +600,7 @@ const EstimateContent = ({ userData, userId }) => {
 };
 
 const AsContent = ({ userData, userId }) => {
+  const router = useRouter();
   const applications = userData?.applications || [];
   const filteredApplications = applications.filter(
     (app) => app.type === 'as' || app.type === 'inquiry'
@@ -604,6 +611,11 @@ const AsContent = ({ userData, userId }) => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentApplications = filteredApplications.slice(startIndex, endIndex);
+
+  // 페이지 이동 핸들러
+  const handleApplicationClick = (applicationId) => {
+    router.push(`/userpage/${userId}/detail?applicationId=${applicationId}`);
+  };
 
   if (filteredApplications.length === 0) {
     return (
@@ -643,9 +655,7 @@ const AsContent = ({ userData, userId }) => {
           <div
             key={index}
             className="group bg-white border border-gray-200 rounded-lg sm:rounded-xl p-4 sm:p-5 hover:shadow-lg transition-all duration-300 cursor-pointer hover:border-indigo-200 flex flex-col h-full"
-            onClick={() =>
-              (window.location.href = `/userpage/${userId}/detail?applicationId=${application._id}`)
-            }
+            onClick={() => handleApplicationClick(application._id)}
           >
             <div className="flex flex-col items-center text-center">
               <div className="p-3 rounded-lg bg-indigo-50 text-indigo-600 mb-3">
@@ -755,6 +765,7 @@ const AsContent = ({ userData, userId }) => {
 };
 
 const ReviewContent = ({ userData, userId }) => {
+  const router = useRouter();
   const [reviewText, setReviewText] = useState('');
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
@@ -804,6 +815,47 @@ const ReviewContent = ({ userData, userId }) => {
       rating: review.rating,
       serviceType: review.serviceType,
     });
+  };
+
+  // 삭제 버튼 클릭 시 호출되는 함수
+  const handleDeleteReview = async (reviewId) => {
+    if (!confirm('정말로 이 리뷰를 삭제하시겠습니까?')) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      // 리뷰 삭제 API 호출 (isDeleted를 true로 설정) - App Router 방식 API 사용
+      const response = await fetch(`/api/reviews/${reviewId}/delete`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || '리뷰 삭제에 실패했습니다.');
+      }
+
+      // 성공 메시지 표시
+      setSuccess('리뷰가 성공적으로 삭제되었습니다.');
+
+      // 리뷰 목록에서 삭제된 리뷰 제거
+      setUserReviews(userReviews.filter((review) => review.id !== reviewId));
+
+      // 잠시 후 성공 메시지 숨기기
+      setTimeout(() => {
+        setSuccess('');
+      }, 1000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // 수정 취소 버튼 클릭 시 호출되는 함수
@@ -976,6 +1028,36 @@ const ReviewContent = ({ userData, userId }) => {
     const date = new Date(dateString);
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   };
+
+  if (isLoading) {
+    return <div>리뷰 목록을 불러오는 중입니다...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
+
+  if (userReviews.length === 0) {
+    return (
+      <div>
+        <h2 className="text-3xl font-semibold text-gray-900 mb-6 relative pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
+          리뷰 작성
+        </h2>
+        <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
+          <div className="flex items-center justify-center w-20 h-20 bg-indigo-50 rounded-full mb-6 text-indigo-600">
+            <FiStar size={40} />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">작성한 리뷰가 없습니다</h3>
+          <p className="text-sm text-gray-500 mb-6 max-w-xs">
+            아직 리뷰를 작성하지 않았습니다. 리뷰를 작성해보세요!
+          </p>
+          <button className="bg-indigo-600 text-white border-none rounded-md py-3 px-6 text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-indigo-700">
+            리뷰 작성하기
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -1174,12 +1256,6 @@ const ReviewContent = ({ userData, userId }) => {
                         <span className="inline-block px-2 py-1 bg-indigo-100 text-indigo-700 text-xs rounded-md mr-2">
                           {getServiceTypeText(review.serviceType)}
                         </span>
-                        <button
-                          onClick={() => handleEditClick(review)}
-                          className="py-1 px-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-xs flex items-center gap-1"
-                        >
-                          <FiEdit size={12} /> 수정하기
-                        </button>
                       </div>
                       <span className="text-xs text-gray-500">
                         {formatReviewDate(review.createdAt)}
@@ -1200,7 +1276,24 @@ const ReviewContent = ({ userData, userId }) => {
                       <span className="ml-2 text-sm font-medium">{review.rating}점</span>
                     </div>
 
-                    <p className="text-gray-700 whitespace-pre-line text-sm">{review.content}</p>
+                    <p className="text-gray-700 whitespace-pre-line text-sm mb-3">
+                      {review.content}
+                    </p>
+
+                    <div className="flex justify-end">
+                      <button
+                        onClick={() => handleEditClick(review)}
+                        className="py-1 px-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-xs flex items-center gap-1 mr-1"
+                      >
+                        <FiEdit size={12} /> 수정하기
+                      </button>
+                      <button
+                        onClick={() => handleDeleteReview(review.id)}
+                        className="py-1 px-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-xs flex items-center"
+                      >
+                        <MdDeleteForever size={12} /> 삭제
+                      </button>
+                    </div>
                   </>
                 )}
               </div>
