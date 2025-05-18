@@ -41,7 +41,7 @@ export const POST = withKingAuthAPI(async (req, { params }) => {
       // 파일 크기 제한 (2MB)
       if (file.size > 2 * 1024 * 1024) {
         return NextResponse.json(
-          { error: '개별 파일 크기는 2MB를 초과할 수 없습니다.' },
+          { error: '총 파일 크기는 2MB를 초과할 수 없습니다.' },
           { status: 400 }
         );
       }

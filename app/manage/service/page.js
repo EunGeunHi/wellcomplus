@@ -24,7 +24,7 @@ import KingFallback from '@/app/components/kingFallback';
 
 // 서비스 유형에 따른 아이콘과 텍스트
 const serviceTypeInfo = {
-  computer: { icon: '💻', text: '컴퓨터 견적' },
+  computer: { icon: '🖥️', text: '컴퓨터 견적' },
   printer: { icon: '🖨️', text: '프린터 견적' },
   notebook: { icon: '💻', text: '노트북 견적' },
   as: { icon: '🔧', text: 'AS 서비스' },
@@ -769,7 +769,7 @@ export default function ServiceManagementPage() {
                           <div className="flex flex-col items-center">
                             <FiUpload className="text-indigo-500 mb-2" size={20} />
                             <span className="text-sm text-gray-700">
-                              파일을 선택하거나 여기에 드래그하세요 (최대 2MB)
+                              여기를 클릭해 파일을 업로드하세요 (총 파일 크기 최대 2MB)
                             </span>
                             <span className="text-xs text-gray-500 mt-1">
                               {selectedFiles.length > 0
@@ -830,31 +830,33 @@ export default function ServiceManagementPage() {
                       value={selectedApp.comment || ''}
                       onChange={(e) => setSelectedApp({ ...selectedApp, comment: e.target.value })}
                     ></textarea>
+                    {/* 메모 및 상태 변경 저장 버튼 */}
+                    <div className="mt-1 flex justify-end">
+                      <button
+                        onClick={() => handleCommentUpdate(selectedApp.id, selectedApp.comment)}
+                        disabled={updateLoading}
+                        className={`px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors flex items-center ${
+                          updateLoading ? 'opacity-70 cursor-not-allowed' : ''
+                        }`}
+                      >
+                        {updateLoading ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            저장 중...
+                          </>
+                        ) : (
+                          '메모 저장하기 및 상태표시'
+                        )}
+                      </button>
+                    </div>
                   </div>
 
                   {/* 상태 변경 버튼 */}
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 items-center bg-gray-50 p-4 rounded-lg mt-4">
+                    <h3 className="text-lg font-medium text-gray-900 mr-4 flex-shrink-0">
+                      상태 변경
+                    </h3>
                     {renderStatusChangeButtons(selectedApp)}
-                  </div>
-
-                  {/* 메모 및 상태 변경 저장 버튼 */}
-                  <div className="mt-4">
-                    <button
-                      onClick={() => handleCommentUpdate(selectedApp.id, selectedApp.comment)}
-                      disabled={updateLoading}
-                      className={`px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors flex items-center justify-center ${
-                        updateLoading ? 'opacity-70 cursor-not-allowed' : ''
-                      }`}
-                    >
-                      {updateLoading ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          저장 중...
-                        </>
-                      ) : (
-                        '메모 저장하기'
-                      )}
-                    </button>
                   </div>
                 </div>
               ) : (
