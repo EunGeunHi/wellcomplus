@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import {
   FiUser,
-  FiSettings,
   FiMail,
   FiPhone,
   FiCalendar,

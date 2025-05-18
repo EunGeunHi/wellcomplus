@@ -18,6 +18,14 @@ export default function ManagePage() {
           </Link>
 
           <Link
+            href="/manage/service"
+            className="bg-white hover:bg-indigo-50 border border-gray-200 p-6 rounded-lg shadow-sm transition-colors"
+          >
+            <h2 className="text-xl font-semibold mb-2">서비스 관리</h2>
+            <p className="text-gray-600">고객의 서비스 신청 내역을 확인하고 관리합니다.</p>
+          </Link>
+
+          <Link
             href="/manage/record/search"
             className="bg-white hover:bg-blue-50 border border-gray-200 p-6 rounded-lg shadow-sm transition-colors"
           >
