@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Review from '@/models/review';
-import { withAuthAPI } from '@/app/api/middleware';
+import { withAuthAPI, withKingAuthAPI } from '@/app/api/middleware';
 
 /**
  * 리뷰 등록 API (POST)
@@ -70,3 +70,41 @@ export const POST = withAuthAPI(async (req, { session }) => {
     );
   }
 });
+
+async function handler(req) {
+  try {
+    await connectDB();
+    const { searchParams } = new URL(req.url);
+
+    // Get query parameters
+    const status = searchParams.get('status') || 'register';
+    const search = searchParams.get('search') || '';
+    const serviceType = searchParams.get('type') || '';
+
+    // Build the query
+    const query = { status };
+
+    // Add service type filter if provided
+    if (serviceType) {
+      query.serviceType = serviceType;
+    }
+
+    // Add search functionality if provided
+    if (search) {
+      query['$or'] = [{ content: { $regex: search, $options: 'i' } }];
+    }
+
+    // Fetch reviews with populated user data
+    const reviews = await Review.find(query)
+      .populate('userId', 'name email') // Populate user data
+      .sort({ createdAt: -1 }) // Sort by creation date, newest first
+      .lean();
+
+    return NextResponse.json({ reviews });
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export const GET = withKingAuthAPI(handler);
