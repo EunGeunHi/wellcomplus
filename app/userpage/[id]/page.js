@@ -769,8 +769,6 @@ const ReviewContent = ({ userData, userId }) => {
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [serviceType, setServiceType] = useState('');
   const [userReviews, setUserReviews] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -780,6 +778,46 @@ const ReviewContent = ({ userData, userId }) => {
     rating: 0,
     serviceType: '',
   });
+
+  // 토스트 상태를 하나의 객체로 관리
+  const [toast, setToast] = useState({
+    visible: false,
+    message: '',
+    type: '', // 'success' 또는 'error'
+  });
+
+  // 토스트 메시지 표시 함수
+  const showToast = (message, type = 'success') => {
+    // 이전 타이머가 있다면 제거
+    if (toast.timerId) {
+      clearTimeout(toast.timerId);
+    }
+
+    // 토스트 표시
+    setToast({
+      visible: true,
+      message,
+      type,
+      // 타이머 ID 저장
+      timerId: setTimeout(() => {
+        // 토스트 숨김
+        setToast((prev) => ({
+          ...prev,
+          visible: false,
+          // 타이머 ID만 유지
+          timerId: setTimeout(() => {
+            // 토스트 상태 완전 초기화
+            setToast({
+              visible: false,
+              message: '',
+              type: '',
+              timerId: null,
+            });
+          }, 300),
+        }));
+      }, 2000),
+    });
+  };
 
   // 사용자 리뷰 목록 조회
   useEffect(() => {
@@ -796,6 +834,7 @@ const ReviewContent = ({ userData, userId }) => {
         setUserReviews(data.reviews || []);
       } catch (err) {
         console.error('리뷰 데이터를 가져오는 중 오류 발생:', err);
+        showToast(err.message, 'error');
       } finally {
         setIsLoading(false);
       }
@@ -804,7 +843,16 @@ const ReviewContent = ({ userData, userId }) => {
     if (userId) {
       fetchUserReviews();
     }
-  }, [userId, success]); // success가 변경되면(리뷰 등록 성공 시) 목록 다시 불러오기
+  }, [userId, toast.visible]); // 의존성 배열 수정
+
+  // 컴포넌트가 언마운트될 때 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (toast.timerId) {
+        clearTimeout(toast.timerId);
+      }
+    };
+  }, [toast.timerId]);
 
   // 수정 버튼 클릭 시 호출되는 함수
   const handleEditClick = (review) => {
@@ -823,7 +871,6 @@ const ReviewContent = ({ userData, userId }) => {
     }
 
     setIsSubmitting(true);
-    setError('');
 
     try {
       // 리뷰 삭제 API 호출 (isDeleted를 true로 설정) - App Router 방식 API 사용
@@ -841,17 +888,12 @@ const ReviewContent = ({ userData, userId }) => {
       }
 
       // 성공 메시지 표시
-      setSuccess('리뷰가 성공적으로 삭제되었습니다.');
+      showToast('리뷰가 성공적으로 삭제되었습니다.', 'success');
 
       // 리뷰 목록에서 삭제된 리뷰 제거
       setUserReviews(userReviews.filter((review) => review.id !== reviewId));
-
-      // 잠시 후 성공 메시지 숨기기
-      setTimeout(() => {
-        setSuccess('');
-      }, 1000);
     } catch (err) {
-      setError(err.message);
+      showToast(err.message, 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -887,12 +929,11 @@ const ReviewContent = ({ userData, userId }) => {
   // 리뷰 수정 저장 함수
   const handleSaveEdit = async (reviewId) => {
     if (editForm.content.trim().length < 10) {
-      setError('리뷰는 최소 10자 이상 작성해주세요.');
+      showToast('리뷰는 최소 10자 이상 작성해주세요.', 'error');
       return;
     }
 
     setIsSubmitting(true);
-    setError('');
 
     try {
       // 리뷰 업데이트 API 호출
@@ -915,7 +956,7 @@ const ReviewContent = ({ userData, userId }) => {
       }
 
       // 성공 메시지 표시
-      setSuccess('리뷰가 성공적으로 수정되었습니다.');
+      showToast('리뷰가 성공적으로 수정되었습니다.', 'success');
 
       // 수정 모드 종료
       setEditingReview(null);
@@ -933,13 +974,8 @@ const ReviewContent = ({ userData, userId }) => {
             : review
         )
       );
-
-      // 잠시 후 성공 메시지 숨기기
-      setTimeout(() => {
-        setSuccess('');
-      }, 1000);
     } catch (err) {
-      setError(err.message);
+      showToast(err.message, 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -949,22 +985,21 @@ const ReviewContent = ({ userData, userId }) => {
     e.preventDefault();
 
     if (!serviceType) {
-      setError('서비스 유형을 선택해주세요.');
+      showToast('서비스 유형을 선택해주세요.', 'error');
       return;
     }
 
     if (rating === 0) {
-      setError('별점을 선택해주세요.');
+      showToast('별점을 선택해주세요.', 'error');
       return;
     }
 
     if (reviewText.trim().length < 10) {
-      setError('리뷰는 최소 10자 이상 작성해주세요.');
+      showToast('리뷰는 최소 10자 이상 작성해주세요.', 'error');
       return;
     }
 
     setIsSubmitting(true);
-    setError('');
 
     try {
       // 리뷰 API 호출
@@ -987,18 +1022,13 @@ const ReviewContent = ({ userData, userId }) => {
       }
 
       // 성공 메시지 표시
-      setSuccess('리뷰가 성공적으로 등록되었습니다.');
+      showToast('리뷰가 성공적으로 등록되었습니다.', 'success');
       setReviewText('');
       setRating(0);
       setServiceType('');
       setHoveredRating(0);
-
-      // 잠시 후 성공 메시지 숨기기
-      setTimeout(() => {
-        setSuccess('');
-      }, 1000);
     } catch (err) {
-      setError(err.message);
+      showToast(err.message, 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -1028,53 +1058,66 @@ const ReviewContent = ({ userData, userId }) => {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   };
 
+  // 토스트 메시지 컴포넌트
+  const Toast = () => {
+    if (!toast.visible || !toast.message) return null;
+
+    const isError = toast.type === 'error';
+
+    return (
+      <div
+        className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 
+        ${toast.visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}
+      >
+        <div
+          className={`py-2 px-4 rounded-lg shadow-lg flex items-center gap-2 text-sm font-medium
+          ${isError ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}
+        >
+          {isError ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                clipRule="evenodd"
+              />
+            </svg>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clipRule="evenodd"
+              />
+            </svg>
+          )}
+          {toast.message}
+        </div>
+      </div>
+    );
+  };
+
   if (isLoading) {
     return <div>리뷰 목록을 불러오는 중입니다...</div>;
   }
 
-  if (error) {
-    return <div className="text-red-500">{error}</div>;
-  }
-
-  if (userReviews.length === 0) {
-    return (
-      <div>
-        <h2 className="text-3xl font-semibold text-gray-900 mb-6 relative pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
-          리뷰 작성
-        </h2>
-        <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
-          <div className="flex items-center justify-center w-20 h-20 bg-indigo-50 rounded-full mb-6 text-indigo-600">
-            <FiStar size={40} />
-          </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">작성한 리뷰가 없습니다</h3>
-          <p className="text-sm text-gray-500 mb-6 max-w-xs">
-            아직 리뷰를 작성하지 않았습니다. 리뷰를 작성해보세요!
-          </p>
-          <button className="bg-indigo-600 text-white border-none rounded-md py-3 px-6 text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-indigo-700">
-            리뷰 작성하기
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-2xl mx-auto">
+      {/* 토스트 메시지 */}
+      <Toast />
+
       <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-4 sm:mb-6 relative pb-2 sm:pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-8 sm:after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
         리뷰 작성
       </h2>
-
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm border border-red-200">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm border border-green-200">
-          {success}
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className="space-y-6 mb-10">
         <div>
