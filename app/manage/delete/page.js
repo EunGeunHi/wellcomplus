@@ -13,15 +13,18 @@ export default function DeleteNonContractorsPage() {
     return today.toISOString().split('T')[0];
   };
 
-  // 페이지 로드 시 저장된 날짜 복원 또는 기본값 설정
   const [startDate, setStartDate] = useState(() => {
-    const savedStartDate = sessionStorage.getItem('nonContractorStartDate');
-    return savedStartDate || '2000-01-01';
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('nonContractorStartDate') || '2000-01-01';
+    }
+    return '2000-01-01';
   });
 
   const [endDate, setEndDate] = useState(() => {
-    const savedEndDate = sessionStorage.getItem('nonContractorEndDate');
-    return savedEndDate || getTodayDate();
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('nonContractorEndDate') || getTodayDate();
+    }
+    return getTodayDate();
   });
 
   const [searchResults, setSearchResults] = useState([]);
@@ -33,11 +36,15 @@ export default function DeleteNonContractorsPage() {
 
   // 날짜가 변경될 때마다 sessionStorage에 저장
   useEffect(() => {
-    sessionStorage.setItem('nonContractorStartDate', startDate);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('nonContractorStartDate', startDate);
+    }
   }, [startDate]);
 
   useEffect(() => {
-    sessionStorage.setItem('nonContractorEndDate', endDate);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('nonContractorEndDate', endDate);
+    }
   }, [endDate]);
 
   // 비계약자 검색 함수
