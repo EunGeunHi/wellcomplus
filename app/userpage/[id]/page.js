@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   FiUser,
   FiMail,
@@ -152,6 +152,13 @@ const ProfileContent = ({ userData }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isPhoneValid, setIsPhoneValid] = useState(true);
+  const [isNameValid, setIsNameValid] = useState(true);
+  const [isCheckingName, setIsCheckingName] = useState(false);
+  const [nameCheckMessage, setNameCheckMessage] = useState('');
+  const [isNameAvailable, setIsNameAvailable] = useState(true);
+  const [isNameChecked, setIsNameChecked] = useState(false);
+  const [isNameChanged, setIsNameChanged] = useState(false);
+  const nameCheckTimeout = useRef(null);
 
   // 폼 초기화
   useEffect(() => {
@@ -160,8 +167,52 @@ const ProfileContent = ({ userData }) => {
         name: user.name || '',
         phoneNumber: user.phoneNumber || '',
       });
+      setIsNameChanged(false);
+      setIsNameChecked(true);
+      setIsNameAvailable(true);
     }
   }, [user]);
+
+  // 이름 중복 체크 함수
+  const checkNameAvailability = async () => {
+    if (!formData.name || formData.name.length === 0) {
+      setIsNameAvailable(false);
+      setNameCheckMessage('이름을 입력해주세요.');
+      setIsNameChecked(false);
+      return;
+    }
+
+    try {
+      setIsCheckingName(true);
+      const response = await fetch('/api/users/check-name', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          userId: user._id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setIsNameAvailable(data.isAvailable);
+        setNameCheckMessage(data.message);
+        setIsNameChecked(true);
+      } else {
+        throw new Error(data.error || '이름 중복 체크 중 오류가 발생했습니다.');
+      }
+    } catch (error) {
+      console.error('이름 중복 체크 중 오류:', error);
+      setIsNameAvailable(false);
+      setNameCheckMessage('이름 중복 체크 중 오류가 발생했습니다.');
+      setIsNameChecked(false);
+    } finally {
+      setIsCheckingName(false);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -177,6 +228,31 @@ const ProfileContent = ({ userData }) => {
         ...prev,
         [name]: formattedValue,
       }));
+    } else if (name === 'name') {
+      // 이름 길이 제한 (12자)
+      if (value.length <= 12) {
+        setFormData((prev) => ({
+          ...prev,
+          [name]: value,
+        }));
+        setIsNameValid(true);
+
+        // 이름이 원래 이름과 다른지 확인
+        const isChanged = value !== user.name;
+        setIsNameChanged(isChanged);
+
+        // 이름이 변경되지 않았다면 중복확인 상태 초기화
+        if (!isChanged) {
+          setIsNameChecked(true);
+          setIsNameAvailable(true);
+          setNameCheckMessage('');
+        } else {
+          setIsNameChecked(false);
+          setNameCheckMessage('');
+        }
+      } else {
+        setIsNameValid(false);
+      }
     } else {
       setFormData((prev) => ({
         ...prev,
@@ -187,6 +263,25 @@ const ProfileContent = ({ userData }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // 이름 길이 검사
+    if (formData.name.length > 12) {
+      setError('이름은 12자 이하여야 합니다.');
+      setIsNameValid(false);
+      return;
+    }
+
+    // 이름이 변경된 경우에만 중복 검사 확인
+    if (isNameChanged && !isNameChecked) {
+      setError('이름 중복 확인이 필요합니다.');
+      return;
+    }
+
+    // 이름이 변경된 경우에만 중복 검사
+    if (isNameChanged && !isNameAvailable) {
+      setError('이미 사용 중인 이름입니다.');
+      return;
+    }
 
     // 전화번호 유효성 검사
     if (!isValidPhoneNumber(formData.phoneNumber)) {
@@ -358,16 +453,48 @@ const ProfileContent = ({ userData }) => {
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                   이름
                 </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                  placeholder="이름을 입력하세요"
-                />
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                      maxLength={12}
+                      className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                        !isNameValid || (!isNameAvailable && isNameChecked)
+                          ? 'border-red-300 bg-red-50'
+                          : 'border-gray-300'
+                      }`}
+                      placeholder="이름을 입력하세요"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={checkNameAvailability}
+                    disabled={isCheckingName || !formData.name || formData.name.length === 0}
+                    className={`px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium whitespace-nowrap
+                      ${isCheckingName || !formData.name || formData.name.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+                    `}
+                  >
+                    {isCheckingName ? '확인 중...' : '중복확인'}
+                  </button>
+                </div>
+                <div className="mt-1">
+                  <p className="text-xs text-gray-500">
+                    최대 12자까지 입력 가능합니다. 현재 {formData.name.length}자
+                  </p>
+                  {nameCheckMessage && (
+                    <p className={`text-xs ${isNameAvailable ? 'text-green-500' : 'text-red-500'}`}>
+                      {nameCheckMessage}
+                    </p>
+                  )}
+                  {!isNameValid && (
+                    <p className="text-xs text-red-500">이름은 12자 이하여야 합니다.</p>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -407,9 +534,21 @@ const ProfileContent = ({ userData }) => {
                 </button>
                 <button
                   type="submit"
-                  disabled={isLoading || !isPhoneValid}
+                  disabled={
+                    isLoading ||
+                    !isPhoneValid ||
+                    !isNameValid ||
+                    (isNameChanged && (!isNameAvailable || !isNameChecked))
+                  }
                   className={`flex-1 py-2.5 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium flex items-center justify-center
-                    ${isLoading || !isPhoneValid ? 'opacity-70 cursor-not-allowed' : ''}
+                    ${
+                      isLoading ||
+                      !isPhoneValid ||
+                      !isNameValid ||
+                      (isNameChanged && (!isNameAvailable || !isNameChecked))
+                        ? 'opacity-70 cursor-not-allowed'
+                        : ''
+                    }
                   `}
                 >
                   {isLoading ? '저장 중...' : '저장하기'}
