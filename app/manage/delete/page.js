@@ -1,20 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { KingOnlySection } from '@/app/components/ProtectedContent';
 import KingFallback from '@/app/components/kingFallback';
 import { format } from 'date-fns';
 
 export default function DeleteNonContractorsPage() {
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  // 오늘 날짜를 YYYY-MM-DD 형식으로 가져오는 함수
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
+
+  // 페이지 로드 시 저장된 날짜 복원 또는 기본값 설정
+  const [startDate, setStartDate] = useState(() => {
+    const savedStartDate = sessionStorage.getItem('nonContractorStartDate');
+    return savedStartDate || '2000-01-01';
+  });
+
+  const [endDate, setEndDate] = useState(() => {
+    const savedEndDate = sessionStorage.getItem('nonContractorEndDate');
+    return savedEndDate || getTodayDate();
+  });
+
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchDone, setSearchDone] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [message, setMessage] = useState('');
   const router = useRouter();
+
+  // 날짜가 변경될 때마다 sessionStorage에 저장
+  useEffect(() => {
+    sessionStorage.setItem('nonContractorStartDate', startDate);
+  }, [startDate]);
+
+  useEffect(() => {
+    sessionStorage.setItem('nonContractorEndDate', endDate);
+  }, [endDate]);
 
   // 비계약자 검색 함수
   const searchNonContractors = async () => {
@@ -226,7 +250,11 @@ export default function DeleteNonContractorsPage() {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {searchResults.map((estimate) => (
-                      <tr key={estimate._id} className="hover:bg-gray-50">
+                      <tr
+                        key={estimate._id}
+                        className="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+                        onClick={() => router.push(`/manage/estimates/detail/${estimate._id}`)}
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
                           {formatDate(estimate.createdAt)}
                         </td>
