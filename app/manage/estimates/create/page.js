@@ -417,6 +417,13 @@ export default function EstimateCreatePage() {
         ...updatedTableData[index],
         [field]: numericValue ? formatNumber(numericValue) : '',
       };
+    } else if (field === 'quantity') {
+      // 수량 필드인 경우 숫자만 입력 가능하도록 처리
+      const numericValue = value.replace(/[^\d]/g, '');
+      updatedTableData[index] = {
+        ...updatedTableData[index],
+        [field]: numericValue,
+      };
     } else {
       updatedTableData[index] = {
         ...updatedTableData[index],
@@ -505,10 +512,20 @@ export default function EstimateCreatePage() {
   // 서비스 상품 정보 변경 핸들러
   const handleServiceDataChange = (index, field, value) => {
     const updatedServiceData = [...estimate.serviceData];
-    updatedServiceData[index] = {
-      ...updatedServiceData[index],
-      [field]: value,
-    };
+
+    if (field === 'quantity') {
+      // 수량 필드인 경우 숫자만 입력 가능하도록 처리
+      const numericValue = value.replace(/[^\d]/g, '');
+      updatedServiceData[index] = {
+        ...updatedServiceData[index],
+        [field]: numericValue,
+      };
+    } else {
+      updatedServiceData[index] = {
+        ...updatedServiceData[index],
+        [field]: value,
+      };
+    }
 
     setEstimate({
       ...estimate,
