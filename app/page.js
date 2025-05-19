@@ -3,6 +3,7 @@ import HeroSlider from './components/HeroSlider';
 import HeroButton from './components/HeroButton';
 import Link from 'next/link';
 import TestAlert from './components/TestAlert';
+import ReviewCarousel from './components/ReviewCarousel';
 
 export default function Home() {
   return (
@@ -39,6 +40,10 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* 리뷰 컴포넌트 부분  */}
+
+      <ReviewCarousel />
 
       {/* Features Section */}
       <section id="features" className="py-20 bg-gradient-to-b from-gray-50 to-white">
