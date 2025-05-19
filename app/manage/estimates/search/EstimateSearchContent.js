@@ -481,7 +481,7 @@ export default function EstimateSearchContent() {
         <table className="min-w-full table-auto">
           <thead className="bg-gray-100">
             <tr>
-              <th className="px-4 py-2 text-left w-[100px]">견적 타입</th>
+              <th className="px-4 py-2 text-left w-[110px]">견적 타입</th>
               <th className="px-4 py-2 text-left">이름</th>
               <th className="px-4 py-2 text-left">PC번호</th>
               <th className="px-4 py-2 text-left">연락처</th>
