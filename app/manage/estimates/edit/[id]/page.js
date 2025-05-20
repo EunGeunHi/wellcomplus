@@ -1162,24 +1162,14 @@ export default function EstimateEditPage() {
     };
   }, []);
 
-  // 상세 페이지에서 이동 버튼 핸들러 수정
-  const handleEdit = () => {
-    // 수정 페이지로 이동 시 데이터 변경 플래그 설정
-    localStorage.setItem('estimateBeingEdited', id);
-    router.push(`/manage/estimates/edit/${id}`);
-  };
-
   // 텍스트에리어 참조 추가
   const contentTextareaRef = useRef(null);
   const descriptionTextareaRef = useRef(null);
   const notesTextareaRef = useRef(null);
 
-  // 초기 키워드 검색 실행 여부를 추적하는 ref 추가
-  const initialSearchDone = useRef(false);
-
-  // URL에서 키워드 파라미터 추출
+  // URL에서 키워드 파라미터 추출하여 클립보드에 복사
   useEffect(() => {
-    // 데이터가 로드된 후에만 키워드 검색 관련 상태 초기화
+    // 데이터가 로드된 후에만 키워드 관련 처리
     if (!loading && estimate) {
       const keywordParam = searchParams.get('keyword');
       if (keywordParam) {
@@ -1190,260 +1180,20 @@ export default function EstimateEditPage() {
           .map((k) => k.trim());
 
         if (keywords.length > 0) {
-          // 첫 번째 키워드 가져오기
-          setSearchKeyword(keywords[0]);
+          // 클립보드에 첫번째 키워드 복사
+          navigator.clipboard
+            .writeText(keywords[0])
+            .then(() => {
+              showNotification(`키워드 '${keywords[0]}'가 복사되었습니다.`, 'info');
+            })
+            .catch((err) => {
+              console.error('클립보드 복사 실패:', err);
+              showNotification(`키워드 복사에 실패했습니다.`, 'error');
+            });
         }
       }
     }
   }, [loading, searchParams]);
-
-  // 별도의 useEffect로 자동 검색 구현
-  useEffect(() => {
-    // estimate가 로드되고 첫 검색이 아직 실행되지 않았을 때만 실행
-    if (estimate && !initialSearchDone.current) {
-      const keywordParam = searchParams.get('keyword');
-      if (keywordParam) {
-        const keywords = keywordParam
-          .split(/[\s,+]+/)
-          .filter((k) => k.trim() !== '')
-          .map((k) => k.trim());
-
-        if (keywords.length > 0) {
-          console.log('자동 키워드 검색 준비 - 키워드:', keywords[0]);
-
-          // 페이지 로드 후 충분한 지연 시간을 두고 자동으로 키워드 검색 실행
-          setTimeout(() => {
-            console.log('자동 키워드 검색 실행 시작', {
-              estimateLoaded: !!estimate,
-              estimateDesc: !!estimate?.estimateDescription,
-              customerContent: !!estimate?.customerInfo?.content,
-              notes: !!estimate?.notes,
-            });
-
-            // 검색할 영역 결정 (우선순위: description > content > notes)
-            let searchArea = 'description'; // 기본 검색 영역
-
-            // 실제 데이터가 있는 영역 확인
-            if (estimate?.estimateDescription) {
-              searchArea = 'description';
-            } else if (estimate?.customerInfo?.content) {
-              searchArea = 'content';
-            } else if (estimate?.notes) {
-              searchArea = 'notes';
-            }
-
-            console.log('검색 영역 결정:', searchArea);
-
-            // 키워드 검색 자동 실행
-            handleFindKeyword(searchArea);
-
-            // 검색이 실행되었음을 표시 (실제 검색 실행 후에 설정)
-            initialSearchDone.current = true;
-
-            // 자동 검색 알림 메시지 표시
-            showNotification(`키워드 '${keywords[0]}'가 자동으로 검색되었습니다.`, 'info');
-          }, 2000); // 지연 시간을 2초로 증가
-        }
-      }
-    }
-  }, [estimate, searchParams]);
-
-  // 키워드 검색 상태 관리
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [lastSearchArea, setLastSearchArea] = useState(null);
-
-  // 키워드 찾기 버튼 핸들러
-  const handleFindKeyword = (areaName) => {
-    if (!searchKeyword) {
-      showNotification('검색할 키워드가 없습니다.', 'info');
-      return;
-    }
-
-    let targetElement = null;
-    let text = '';
-
-    // 검색 영역에 따라 타겟 요소와 텍스트 설정
-    if (areaName === 'content') {
-      targetElement = contentTextareaRef.current;
-      text = estimate?.customerInfo?.content || '';
-    } else if (areaName === 'description') {
-      targetElement = descriptionTextareaRef.current;
-      text = estimate?.estimateDescription || '';
-    } else if (areaName === 'notes') {
-      targetElement = notesTextareaRef.current;
-      text = estimate?.notes || '';
-    }
-
-    if (!targetElement || !text) {
-      showNotification(`${areaName} 영역에서 검색할 내용이 없습니다.`, 'warning');
-      return;
-    }
-
-    // 마지막 검색 영역 저장
-    setLastSearchArea(areaName);
-
-    // 키워드 검색 및 하이라이트
-    const lowerText = text.toLowerCase();
-    const lowerKeyword = searchKeyword.toLowerCase();
-    const index = lowerText.indexOf(lowerKeyword);
-
-    if (index === -1) {
-      showNotification(`'${searchKeyword}' 키워드를 찾을 수 없습니다.`, 'warning');
-      return;
-    }
-
-    console.log(`'${searchKeyword}' 키워드를 ${areaName}에서 찾았습니다. 인덱스: ${index}`);
-
-    // 새로운 개선된 스크롤 및 하이라이트 방식 구현
-    // 1. 포커스 설정
-    targetElement.focus();
-
-    // 텍스트에리어 정보 수집
-    const totalChars = text.length;
-    const scrollHeight = targetElement.scrollHeight;
-    const clientHeight = targetElement.clientHeight;
-    const lineHeight = parseInt(window.getComputedStyle(targetElement).lineHeight) || 20;
-
-    // 키워드 위치 정보 계산
-    const textBeforeKeyword = text.substring(0, index);
-    const linesBeforeKeyword = textBeforeKeyword.split('\n').length;
-
-    // 텍스트 위치 비율 (0~1 사이 값)
-    const positionRatio = index / totalChars;
-
-    // 개선된 스크롤 계산 함수
-    const calculateScrollPosition = () => {
-      // 1. 기본 비율 기반 스크롤 계산
-      let scrollPos = scrollHeight * positionRatio;
-
-      // 2. 동적 보정값 계산 - 텍스트 길이와 위치에 따라 조정
-      // 텍스트 위치에 따라 보정 계수를 동적으로 조정 (뒤쪽일수록 더 많이 스크롤)
-      const adjustmentRatio = 0.5 + positionRatio * 0.3; // 0.5~0.8 사이의 값
-
-      // 3. 키워드가 화면 중앙에 오도록 조정
-      // - 텍스트가 뒤쪽에 있을수록 더 많은 여백 확보
-      const viewportOffset = clientHeight * adjustmentRatio;
-      scrollPos = Math.max(0, scrollPos - viewportOffset / 2);
-
-      // 4. 추가 보정 - 텍스트 길이에 따른 비선형 보정
-      // 텍스트가 길수록 스크롤을 더 많이 내림
-      if (totalChars > 5000) {
-        const lengthFactor = Math.min(1.5, totalChars / 10000 + 1); // 1~1.5 사이의 값
-        scrollPos *= lengthFactor;
-      }
-
-      // 5. 라인 기반 추가 보정 (긴 텍스트에서 더 효과적)
-      const lineBasedPos = linesBeforeKeyword * lineHeight - clientHeight / 3;
-
-      // 6. 두 계산 방식의 가중 평균 (텍스트 길이에 따라 가중치 조정)
-      // 텍스트가 길수록 라인 기반 계산에 더 많은 가중치 부여
-      const lineWeight = Math.min(0.8, totalChars / 10000 + 0.2); // 0.2~0.8 사이의 값
-      const ratioWeight = 1 - lineWeight;
-
-      const finalScrollPos = lineBasedPos * lineWeight + scrollPos * ratioWeight;
-
-      return Math.max(0, finalScrollPos);
-    };
-
-    // 키워드 선택 및 스크롤 적용 함수
-    const selectAndScroll = (extraScroll = 0) => {
-      try {
-        // 키워드 선택
-        targetElement.setSelectionRange(index, index + searchKeyword.length);
-
-        // 기본 스크롤 위치 계산
-        let scrollPosition = calculateScrollPosition();
-
-        // 추가 스크롤 적용 (필요시)
-        scrollPosition += extraScroll;
-
-        // 스크롤 적용
-        targetElement.scrollTop = scrollPosition;
-
-        console.log('스크롤 정보:', {
-          키워드: searchKeyword,
-          찾은위치: index,
-          텍스트길이: totalChars,
-          위치비율: positionRatio.toFixed(2),
-          계산된스크롤: scrollPosition,
-          현재스크롤: targetElement.scrollTop,
-          텍스트에리어높이: scrollHeight,
-          화면높이: clientHeight,
-          추가스크롤: extraScroll,
-        });
-
-        return scrollPosition;
-      } catch (err) {
-        console.error('스크롤 처리 중 오류:', err);
-        return 0;
-      }
-    };
-
-    // 초기 스크롤 및 선택 적용
-    const initialScrollPos = selectAndScroll();
-
-    // 키워드 위치에 따른 점진적 스크롤 조정 시퀀스
-    // 텍스트 뒤쪽일수록 더 많은 스크롤 시도
-    const adjustmentCount = Math.ceil(positionRatio * 4); // 0~4회 추가 조정
-
-    // 점진적 스크롤 조정 시퀀스 시작
-    let currentAdjustment = 1;
-    const runScrollAdjustment = () => {
-      if (currentAdjustment > adjustmentCount) return;
-
-      // 텍스트 위치에 따라 추가 스크롤 양 계산
-      // 뒤쪽일수록 더 많은 추가 스크롤 적용
-      const progressiveFactor = positionRatio * 2; // 0~2 사이 값
-      const extraScrollAmount = currentAdjustment * lineHeight * progressiveFactor;
-
-      setTimeout(() => {
-        // 추가 스크롤 적용
-        selectAndScroll(extraScrollAmount);
-
-        // 다음 조정 단계로
-        currentAdjustment++;
-        runScrollAdjustment();
-      }, 50 * currentAdjustment); // 점점 더 긴 간격으로 시도
-    };
-
-    // 조정 시퀀스 실행 (약간의 딜레이 후)
-    setTimeout(runScrollAdjustment, 100);
-
-    // 최종 스크롤 확인 및 조정 (모든 조정 후)
-    setTimeout(
-      () => {
-        // 선택 영역 유지
-        targetElement.focus();
-        targetElement.setSelectionRange(index, index + searchKeyword.length);
-
-        // 키워드가 화면에 보이는지 확인 (어려움)
-        // 최종 보정 - 키워드 위치에 따라 다르게 처리
-        if (positionRatio > 0.7) {
-          // 뒤쪽 70% 영역에 있는 경우
-          // 더 많은 추가 스크롤 적용
-          const finalExtraScroll = clientHeight * positionRatio * 0.5;
-          targetElement.scrollTop = initialScrollPos + finalExtraScroll;
-        }
-      },
-      300 + adjustmentCount * 50
-    ); // 모든 조정 후 마지막 확인
-
-    // 성공 메시지 표시
-    showNotification(`'${searchKeyword}' 키워드를 찾았습니다.`, 'success');
-  };
-
-  // 키워드 입력 핸들러
-  const handleKeywordChange = (e) => {
-    setSearchKeyword(e.target.value);
-  };
-
-  // 키워드 입력 필드에서 엔터 키 처리
-  const handleKeywordKeyDown = (e, areaName) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleFindKeyword(areaName);
-    }
-  };
 
   if (loading) {
     return (
@@ -1575,37 +1325,6 @@ export default function EstimateEditPage() {
                   <label className="block text-sm font-medium text-gray-700">
                     내용 (예전 데이터)
                   </label>
-                  <div className="flex items-center">
-                    <input
-                      type="text"
-                      value={searchKeyword ?? ''}
-                      onChange={handleKeywordChange}
-                      onKeyDown={(e) => handleKeywordKeyDown(e, 'content')}
-                      placeholder="검색할 키워드 입력"
-                      className="mr-2 px-2 py-1 border border-gray-300 rounded text-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleFindKeyword('content')}
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-sm flex items-center"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 mr-1"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                        />
-                      </svg>
-                      키워드 찾기
-                    </button>
-                  </div>
                 </div>
                 <textarea
                   name="content"
@@ -2015,37 +1734,6 @@ export default function EstimateEditPage() {
                 <label className="block text-sm font-medium text-gray-700">
                   견적 설명 및 참고사항(견적서에 내용추가 가능)
                 </label>
-                <div className="flex items-center">
-                  <input
-                    type="text"
-                    value={searchKeyword ?? ''}
-                    onChange={handleKeywordChange}
-                    onKeyDown={(e) => handleKeywordKeyDown(e, 'description')}
-                    placeholder="검색할 키워드 입력"
-                    className="mr-2 px-2 py-1 border border-gray-300 rounded text-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleFindKeyword('description')}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-sm flex items-center"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 mr-1"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
-                    키워드 찾기
-                  </button>
-                </div>
               </div>
               <textarea
                 ref={descriptionTextareaRef}
@@ -3107,40 +2795,6 @@ export default function EstimateEditPage() {
                     />
                   </svg>
                 </button>
-              </div>
-              <div className="flex justify-between items-center mb-1">
-                <div className="flex-1"></div>
-                <div className="flex items-center">
-                  <input
-                    type="text"
-                    value={searchKeyword ?? ''}
-                    onChange={handleKeywordChange}
-                    onKeyDown={(e) => handleKeywordKeyDown(e, 'notes')}
-                    placeholder="검색할 키워드"
-                    className="mr-2 px-2 py-1 border border-gray-300 rounded text-xs w-24"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleFindKeyword('notes')}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs flex items-center"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-3 w-3 mr-1"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
-                    찾기
-                  </button>
-                </div>
               </div>
               <textarea
                 ref={notesTextareaRef}
