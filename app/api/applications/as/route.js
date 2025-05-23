@@ -17,12 +17,18 @@ async function handler(req, { session }) {
 
     // 폼 데이터에서 파일 및 필드 추출
     const files = formData.getAll('files');
-    const itemType = formData.get('itemType');
+    const asCategory = formData.get('asCategory');
+    const userName = formData.get('userName');
+    const pcNumber = formData.get('pcNumber');
+    const printerType = formData.get('printerType');
+    const infiniteInk = formData.get('infiniteInk');
     const description = formData.get('description');
     const phoneNumber = formData.get('phoneNumber');
+    const deliveryMethod = formData.get('deliveryMethod');
+    const address = formData.get('address');
 
     // 필수 필드 검증
-    if (!itemType || !description || !phoneNumber) {
+    if (!asCategory || !description || !phoneNumber) {
       return NextResponse.json(
         { error: '제품 종류, 문제 설명, 연락처는 필수로 입력해야 합니다.' },
         { status: 400 }
@@ -58,9 +64,15 @@ async function handler(req, { session }) {
       userId: session.user.id,
       files: fileData,
       as_information: {
-        itemType,
+        asCategory,
+        userName: userName || '',
+        pcNumber: pcNumber || '',
+        printerType: printerType || '',
+        infiniteInk: infiniteInk || '',
         description,
         phoneNumber: finalPhoneNumber,
+        deliveryMethod: deliveryMethod || '',
+        address: address || '',
       },
     });
 

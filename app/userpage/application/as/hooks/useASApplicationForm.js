@@ -111,11 +111,9 @@ export const useASApplicationForm = () => {
       logFormData(formData, selectedFiles, formatFileSize);
       console.log('총 파일 크기:', formatFileSize(totalFileSize));
 
-      // API 호출 부분 (주석처리)
-      // TODO: API 연동 시 주석 해제
-      /*
+      // API 호출 부분
       const formDataToSubmit = new FormData();
-      Object.keys(formData).forEach(key => {
+      Object.keys(formData).forEach((key) => {
         formDataToSubmit.append(key, formData[key]);
       });
       selectedFiles.forEach((file) => {
@@ -130,7 +128,6 @@ export const useASApplicationForm = () => {
       if (!response.ok) {
         throw new Error('A/S 신청 중 오류가 발생했습니다.');
       }
-      */
 
       toast.success('A/S 신청이 완료되었습니다!');
 

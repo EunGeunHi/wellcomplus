@@ -1,25 +1,30 @@
 import mongoose from 'mongoose';
 
+// 첨부파일 스키마
 const FileSchema = new mongoose.Schema(
   {
-    data: Buffer,
-    contentType: String,
-    fileName: String,
-    fileSize: Number,
+    data: Buffer, // 파일의 실제 데이터 (바이너리)
+    contentType: String, // 파일의 MIME 타입 (예: image/jpeg, application/pdf)
+    fileName: String, // 원본 파일명
+    fileSize: Number, // 파일 크기 (바이트 단위)
   },
   { _id: false }
 );
 
+// 신청서 메인 스키마
 const applicationSchema = new mongoose.Schema({
+  // === 기본 정보 ===
   type: {
     type: String,
     required: true,
     enum: ['computer', 'printer', 'notebook', 'as', 'inquiry'],
+    // 신청서 타입: 컴퓨터, 프린터, 노트북, A/S, 기타문의
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
+    // 신청자의 사용자 ID (User 컬렉션 참조)
   },
   files: {
     type: [FileSchema],
@@ -30,74 +35,101 @@ const applicationSchema = new mongoose.Schema({
         // 모든 파일 크기의 합계 계산 (바이트 단위)
         const totalSize = files.reduce((sum, file) => sum + (file.fileSize || 0), 0);
 
-        // 2MB = 2 * 1024 * 1024 = 2097152 바이트
-        return totalSize <= 2097152;
+        // 4MB = 4 * 1024 * 1024 = 4194304 바이트
+        return totalSize <= 4194304;
       },
-      message: '파일 크기의 총합이 2MB를 초과할 수 없습니다.',
+      message: '파일 크기의 총합이 4MB를 초과할 수 없습니다.',
     },
+    // 첨부파일 배열 (최대 4MB 제한)
   },
+
+  // === 컴퓨터 견적 신청 정보 ===
   computer_information: {
-    purpose: String,
-    budget: String,
-    requirements: String,
-    additional: String,
-    etc: String,
-    phoneNumber: String,
-    address: String,
+    purpose: String, // 사용목적/용도 (예: 게임, 업무용, 영상편집)
+    budget: String, // 예산 (예: 1,000,000원)
+    cpu: String, // CPU 선호도 (인텔/AMD)
+    gpu: String, // 그래픽카드 선호도 (NVIDIA/AMD)
+    memory: String, // 메모리 용량 (4GB이하~64GB이상)
+    storage: String, // 저장장치 용량 (500GB이하~3TB이상)
+    cooling: String, // 쿨러 종류 (공냉/수냉/커스텀수냉)
+    os: String, // 운영체제 (Windows 10/11)
+    additionalRequests: String, // 추가 요청사항
+    phoneNumber: String, // 연락처
+    deliveryMethod: String, // 수령방법 (직접방문/택배)
+    address: String, // 배송주소 (택배 선택시)
   },
+
+  // === 프린터 견적 신청 정보 ===
   printer_information: {
-    modelName: String,
-    purpose: String,
-    requirements: String,
-    modification: String,
-    additional: String,
-    phoneNumber: String,
-    address: String,
+    purpose: String, // 사용목적/용도 (예: 사무실 문서출력, 가정용 사진출력)
+    budget: String, // 예산
+    printerType: String, // 프린터 종류 (잉크젯/레이저)
+    infiniteInk: String, // 무한잉크젯 (정품무한/개조무한)
+    outputColor: String, // 출력색상 (흑백(모노)출력/컬러출력)
+    additionalRequests: String, // 추가 요청사항
+    phoneNumber: String, // 연락처
+    deliveryMethod: String, // 수령방법 (직접방문/택배)
+    address: String, // 배송주소 (택배 선택시)
   },
+
+  // === 노트북 견적 신청 정보 ===
   notebook_information: {
-    modelName: String,
-    manufacturer: String,
-    brand: String,
-    screenSize: String,
-    cpuType: String,
-    gpuType: String,
-    ramSize: String,
-    storageSize: String,
-    os: String,
-    weight: String,
-    priceRange: String,
-    purpose: String,
-    additionalRequests: String,
-    phoneNumber: String,
+    purpose: String, // 사용목적/용도 (예: 업무용, 게임, 학습용)
+    budget: String, // 예산
+    cpu: String, // CPU 선호도 (인텔/AMD)
+    gpu: String, // 그래픽카드 선호도 (NVIDIA/AMD)
+    weight: String, // 무게 선호도 (1kg이하~3kg이상)
+    os: String, // 운영체제 (미포함, Windows, macOS)
+    ram: String, // 메모리 용량 (2GB이하~64GB이상)
+    storage: String, // 저장장치 용량 (64GB이하~3TB이상)
+    additionalRequests: String, // 추가 요청사항
+    phoneNumber: String, // 연락처
+    deliveryMethod: String, // 수령방법 (직접방문/택배)
+    address: String, // 배송주소 (택배 선택시)
   },
+
+  // === A/S 신청 정보 ===
   as_information: {
-    itemType: String,
-    description: String,
-    phoneNumber: String,
+    asCategory: String, // A/S 제품 분류 (컴퓨터/노트북/프린터)
+    userName: String, // 구매 당시 사용자 이름
+    pcNumber: String, // PC 번호 (있는 경우)
+    printerType: String, // 프린터 종류 (프린터 A/S시)
+    infiniteInk: String, // 무한잉크젯 여부 (프린터 A/S시)
+    description: String, // 문제 상황 설명
+    phoneNumber: String, // 연락처
+    deliveryMethod: String, // 수령방법 (직접방문/택배)
+    address: String, // 배송주소 (택배 선택시)
   },
+
+  // === 기타 문의 정보 ===
   inquiry_information: {
-    title: String,
-    content: String,
-    phoneNumber: String,
+    title: String, // 문의 제목
+    content: String, // 문의 내용
+    phoneNumber: String, // 연락처
   },
+
+  // === 공통 관리 정보 ===
   status: {
     type: String,
     default: 'apply',
-    //신청, 진행중, 완료, 취소
     enum: ['apply', 'in_progress', 'completed', 'cancelled'],
+    // 처리 상태: 신청완료, 진행중, 완료, 취소
   },
   comment: {
     type: String,
     default:
       '접수 완료 후 담당자가 순차적으로 연락드립니다.\n궁금하신점이나 문의사항이 있으시면 010-8781-8871로 문의해주세요.',
+    // 관리자 코멘트/안내 메시지
   },
   createdAt: {
     type: Date,
     default: Date.now,
+    // 신청서 생성 일시
   },
   updatedAt: {
     type: Date,
     default: Date.now,
+    // 신청서 최종 수정 일시
   },
 });
 

@@ -16,18 +16,20 @@ async function handler(req, { session }) {
 
     // 폼 데이터에서 파일 및 필드 추출
     const files = formData.getAll('files');
-    const modelName = formData.get('modelName');
     const purpose = formData.get('purpose');
-    const requirements = formData.get('requirements');
-    const modification = formData.get('modification');
-    const additional = formData.get('additional');
+    const budget = formData.get('budget');
+    const printType = formData.get('printType');
+    const infiniteInk = formData.get('infiniteInk');
+    const outputColor = formData.get('outputColor');
+    const additionalRequests = formData.get('additionalRequests');
     const phoneNumber = formData.get('phoneNumber');
+    const deliveryMethod = formData.get('deliveryMethod');
     const address = formData.get('address');
 
     // 필수 필드 검증
-    if (!purpose || !requirements || !phoneNumber) {
+    if (!purpose || !budget || !phoneNumber) {
       return NextResponse.json(
-        { error: '사용 목적, 필요 기능, 연락처는 필수로 입력해야 합니다.' },
+        { error: '사용 목적, 예산, 연락처는 필수로 입력해야 합니다.' },
         { status: 400 }
       );
     }
@@ -58,12 +60,14 @@ async function handler(req, { session }) {
       userId: session.user.id,
       files: fileData,
       printer_information: {
-        modelName: modelName || '',
         purpose: purpose,
-        requirements: requirements,
-        modification: modification || '',
-        additional: additional || '',
+        budget: budget,
+        printerType: printType || '',
+        infiniteInk: infiniteInk || '',
+        outputColor: outputColor || '',
+        additionalRequests: additionalRequests || '',
         phoneNumber: phoneNumber?.trim().length > 0 ? phoneNumber : user.phoneNumber || '',
+        deliveryMethod: deliveryMethod || '',
         address: address || '',
       },
     });

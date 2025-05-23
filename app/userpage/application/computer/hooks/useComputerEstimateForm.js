@@ -114,11 +114,9 @@ export const useComputerEstimateForm = () => {
       logFormData(formData, selectedFiles, formatFileSize);
       console.log('총 파일 크기:', formatFileSize(totalFileSize));
 
-      // API 호출 부분 (주석처리)
-      // TODO: API 연동 시 주석 해제
-      /*
+      // API 호출 부분
       const formDataToSubmit = new FormData();
-      Object.keys(formData).forEach(key => {
+      Object.keys(formData).forEach((key) => {
         formDataToSubmit.append(key, formData[key]);
       });
       selectedFiles.forEach((file) => {
@@ -133,7 +131,6 @@ export const useComputerEstimateForm = () => {
       if (!response.ok) {
         throw new Error('견적 신청 중 오류가 발생했습니다.');
       }
-      */
 
       toast.success('컴퓨터 견적 신청이 완료되었습니다!');
 

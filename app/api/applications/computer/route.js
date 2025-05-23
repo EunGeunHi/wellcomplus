@@ -18,14 +18,19 @@ async function handler(req, { session }) {
     const files = formData.getAll('files');
     const purpose = formData.get('purpose');
     const budget = formData.get('budget');
-    const requirements = formData.get('requirements');
-    const additional = formData.get('additional');
-    const etc = formData.get('etc');
+    const cpu = formData.get('cpu');
+    const gpu = formData.get('gpu');
+    const memory = formData.get('memory');
+    const storage = formData.get('storage');
+    const cooling = formData.get('cooling');
+    const os = formData.get('os');
+    const additionalRequests = formData.get('additionalRequests');
     const phoneNumber = formData.get('phoneNumber');
+    const deliveryMethod = formData.get('deliveryMethod');
     const address = formData.get('address');
 
     // 필수 필드 검증
-    if (!purpose || !budget || !requirements || !phoneNumber) {
+    if (!purpose || !budget || !os || !phoneNumber) {
       return NextResponse.json({ error: '필수 항목이 누락되었습니다.' }, { status: 400 });
     }
 
@@ -57,10 +62,15 @@ async function handler(req, { session }) {
       computer_information: {
         purpose: purpose,
         budget: budget,
-        requirements: requirements,
-        additional: additional || '',
-        etc: etc || '',
+        cpu: cpu || '',
+        gpu: gpu || '',
+        memory: memory || '',
+        storage: storage || '',
+        cooling: cooling || '',
+        os: os,
+        additionalRequests: additionalRequests || '',
         phoneNumber: phoneNumber?.trim().length > 0 ? phoneNumber : user.phoneNumber || '',
+        deliveryMethod: deliveryMethod || '',
         address: address || '',
       },
     });

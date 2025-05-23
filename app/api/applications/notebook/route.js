@@ -16,25 +16,23 @@ async function handler(req, { session }) {
 
     // 폼 데이터에서 파일 및 필드 추출
     const files = formData.getAll('files');
-    const modelName = formData.get('modelName');
-    const manufacturer = formData.get('manufacturer');
-    const brand = formData.get('brand');
-    const screenSize = formData.get('screenSize');
-    const cpuType = formData.get('cpuType');
-    const gpuType = formData.get('gpuType');
-    const ramSize = formData.get('ramSize');
-    const storageSize = formData.get('storageSize');
-    const os = formData.get('os');
-    const weight = formData.get('weight');
-    const priceRange = formData.get('priceRange');
     const purpose = formData.get('purpose');
+    const budget = formData.get('budget');
+    const cpu = formData.get('cpu');
+    const gpu = formData.get('gpu');
+    const weight = formData.get('weight');
+    const os = formData.get('os');
+    const ram = formData.get('ram');
+    const storage = formData.get('storage');
     const additionalRequests = formData.get('additionalRequests');
     const phoneNumber = formData.get('phoneNumber');
+    const deliveryMethod = formData.get('deliveryMethod');
+    const address = formData.get('address');
 
     // 필수 필드 검증
-    if (!purpose || !os || !phoneNumber) {
+    if (!purpose || !budget || !phoneNumber) {
       return NextResponse.json(
-        { error: '용도, 운영체제, 연락처는 필수로 입력해야 합니다.' },
+        { error: '용도, 예산, 연락처는 필수로 입력해야 합니다.' },
         { status: 400 }
       );
     }
@@ -65,20 +63,18 @@ async function handler(req, { session }) {
       userId: session.user.id,
       files: fileData,
       notebook_information: {
-        modelName: modelName || '',
-        manufacturer: manufacturer || '',
-        brand: brand || '',
-        screenSize: screenSize || '',
-        cpuType: cpuType || '',
-        gpuType: gpuType || '',
-        ramSize: ramSize || '',
-        storageSize: storageSize || '',
-        os: os,
-        weight: weight || '',
-        priceRange: priceRange || '',
         purpose: purpose,
+        budget: budget,
+        cpu: cpu || '',
+        gpu: gpu || '',
+        weight: weight || '',
+        os: os || '',
+        ram: ram || '',
+        storage: storage || '',
         additionalRequests: additionalRequests || '',
         phoneNumber: phoneNumber?.trim().length > 0 ? phoneNumber : user.phoneNumber || '',
+        deliveryMethod: deliveryMethod || '',
+        address: address || '',
       },
     });
 

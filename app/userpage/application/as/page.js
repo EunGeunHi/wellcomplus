@@ -77,7 +77,7 @@ export default function ASApplicationPage() {
                         id="userName"
                         name="userName"
                         label="구매 당시 사용자 이름"
-                        placeholder="제품 구매 당시 등록된 사용자 이름을 입력해주세요"
+                        placeholder="제품 구매 당시 등록한 사용자 이름을 입력해주세요"
                         value={formData.userName}
                         onChange={handleChange}
                         onKeyDown={handleKeyDown}
@@ -85,8 +85,8 @@ export default function ASApplicationPage() {
                       <InputField
                         id="pcNumber"
                         name="pcNumber"
-                        label="PC 번호 (선택사항)"
-                        placeholder="PC 번호가 있다면 입력해주세요"
+                        label="구매한 PC 번호"
+                        placeholder="구매한 PC 번호를 입력해주세요"
                         value={formData.pcNumber}
                         onChange={handleChange}
                         onKeyDown={handleKeyDown}
