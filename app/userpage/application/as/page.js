@@ -11,9 +11,12 @@ import {
   InputField,
   SelectField,
   RadioGroup,
+  OptionalSection,
   AddressInput,
   FileUpload,
   SubmitButton,
+  ConfirmModal,
+  SuccessModal,
 } from './components/FormComponents';
 
 export default function ASApplicationPage() {
@@ -22,20 +25,27 @@ export default function ASApplicationPage() {
     formData,
     selectedFiles,
     totalFileSize,
+    openSections,
     isSubmitting,
     fileInputRef,
+    showConfirmModal,
+    showSuccessModal,
 
     // Handlers
     handleChange,
-    handleSubmit,
+    handleSubmitClick,
     handleKeyDown,
+    toggleSection,
     handleFileChange,
     removeFile,
     openFileDialog,
+    handleConfirmSubmit,
+    handleCancelSubmit,
+    handleSuccessConfirm,
   } = useASApplicationForm();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-sky-100/30 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 via-blue-100/30 to-white">
       <LoggedInOnlySection fallback={<LoginFallback />}>
         <div className="max-w-4xl mx-auto px-4 py-6 sm:py-12 sm:px-6 lg:px-8 font-[NanumGothic]">
           {/* 페이지 헤더 */}
@@ -44,8 +54,8 @@ export default function ASApplicationPage() {
               A/S 신청
             </h1>
             <p className="text-sm sm:text-lg text-gray-600">
-              <span className="text-blue-600 font-semibold">상세한 작성</span>을 통해 더 빠른 A/S
-              처리가 가능합니다
+              고장 증상을 <span className="text-blue-600 font-semibold">상세히 작성</span>해주시면
+              더 빠른 해결이 가능합니다
             </p>
           </div>
 
@@ -55,7 +65,7 @@ export default function ASApplicationPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-4 sm:space-y-6">
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-8">
                 <div className="space-y-4 sm:space-y-8">
                   {/* 필수 입력 사항들 */}
@@ -67,75 +77,74 @@ export default function ASApplicationPage() {
                     value={formData.asCategory}
                     onChange={handleChange}
                     required
-                    placeholder="제품 종류를 선택해주세요"
+                    placeholder="A/S를 받을 제품을 선택해주세요"
                   />
+                  {/* 분류별 추가 정보 */}
+                  {formData.asCategory && formData.asCategory !== '기타' && (
+                    <OptionalSection
+                      title="추가 정보 (A/S 받을 제품 관련정보)"
+                      isOpen={openSections.additionalInfo}
+                      onToggle={() => toggleSection('additionalInfo')}
+                    >
+                      <div className="mt-2 sm:mt-3 space-y-3 sm:space-y-4">
+                        {(formData.asCategory === '컴퓨터' || formData.asCategory === '노트북') && (
+                          <>
+                            <InputField
+                              id="userName"
+                              name="userName"
+                              label="구매 당시 사용자 이름"
+                              placeholder="구매 시 등록된 이름을 입력해주세요"
+                              value={formData.userName}
+                              onChange={handleChange}
+                              onKeyDown={handleKeyDown}
+                            />
 
-                  {/* 컴퓨터/노트북 선택시 조건부 필드 */}
-                  {(formData.asCategory === '컴퓨터' || formData.asCategory === '노트북') && (
-                    <div className="space-y-4">
-                      <InputField
-                        id="userName"
-                        name="userName"
-                        label="구매 당시 사용자 이름"
-                        placeholder="제품 구매 당시 등록한 사용자 이름을 입력해주세요"
-                        value={formData.userName}
-                        onChange={handleChange}
-                        onKeyDown={handleKeyDown}
-                      />
-                      <InputField
-                        id="pcNumber"
-                        name="pcNumber"
-                        label="구매한 PC 번호"
-                        placeholder="구매한 PC 번호를 입력해주세요"
-                        value={formData.pcNumber}
-                        onChange={handleChange}
-                        onKeyDown={handleKeyDown}
-                      />
-                    </div>
-                  )}
+                            <InputField
+                              id="pcNumber"
+                              name="pcNumber"
+                              label="PC 번호"
+                              placeholder="PC에 부착된 번호를 입력해주세요 (예: PC-001)"
+                              value={formData.pcNumber}
+                              onChange={handleChange}
+                              onKeyDown={handleKeyDown}
+                            />
+                          </>
+                        )}
 
-                  {/* 프린터 선택시 조건부 필드 */}
-                  {formData.asCategory === '프린터' && (
-                    <div className="space-y-4 sm:space-y-6">
-                      <InputField
-                        id="userName"
-                        name="userName"
-                        label="구매 당시 사용자 이름"
-                        placeholder="프린터 구매 당시 등록된 사용자 이름을 입력해주세요"
-                        value={formData.userName}
-                        onChange={handleChange}
-                        onKeyDown={handleKeyDown}
-                      />
+                        {formData.asCategory === '프린터' && (
+                          <>
+                            <RadioGroup
+                              name="printerType"
+                              label="프린터 종류"
+                              options={FORM_OPTIONS.printerType}
+                              value={formData.printerType}
+                              onChange={handleChange}
+                              columns={2}
+                            />
 
-                      <RadioGroup
-                        name="printerType"
-                        label="프린터 종류"
-                        options={FORM_OPTIONS.printerType}
-                        value={formData.printerType}
-                        onChange={handleChange}
-                        columns={2}
-                      />
-
-                      <RadioGroup
-                        name="infiniteInk"
-                        label="무한 잉크젯"
-                        options={FORM_OPTIONS.infiniteInk}
-                        value={formData.infiniteInk}
-                        onChange={handleChange}
-                        columns={2}
-                      />
-                    </div>
+                            <RadioGroup
+                              name="infiniteInk"
+                              label="무한잉크젯 여부"
+                              options={FORM_OPTIONS.infiniteInk}
+                              value={formData.infiniteInk}
+                              onChange={handleChange}
+                              columns={2}
+                            />
+                          </>
+                        )}
+                      </div>
+                    </OptionalSection>
                   )}
 
                   <TextArea
                     id="description"
                     name="description"
-                    label="문제 설명"
-                    placeholder="제품에 발생한 문제를 자세히 설명해주세요. (예: 컴퓨터가 켜지지 않습니다, 프린터에서 용지가 걸립니다, 노트북 배터리가 빨리 닳습니다)"
+                    label="상세 설명"
+                    placeholder="문제 상황을 자세히 설명해주세요. (예: 전원이 안 켜짐, 화면이 깜빡임 등)"
                     value={formData.description}
                     onChange={handleChange}
                     required
-                    rows={5}
+                    rows={4}
                   />
 
                   <InputField
@@ -147,10 +156,10 @@ export default function ASApplicationPage() {
                     onChange={handleChange}
                     onKeyDown={handleKeyDown}
                     required
-                    helpText="A/S 처리 상황을 연락드리므로 정확하게 입력해주세요."
+                    helpText="A/S 진행 상황 안내를 위해 연락드리므로 정확하게 입력해주세요."
                   />
 
-                  {/* 수령방법 - 바로 표시 */}
+                  {/* 수령방법 */}
                   <div className="space-y-3 sm:space-y-4">
                     <RadioGroup
                       name="deliveryMethod"
@@ -180,10 +189,20 @@ export default function ASApplicationPage() {
                 </div>
 
                 {/* 제출 버튼 */}
-                <SubmitButton isSubmitting={isSubmitting} />
+                <SubmitButton isSubmitting={isSubmitting} onSubmit={handleSubmitClick} />
               </div>
             </form>
           </motion.div>
+
+          {/* 확인 모달 */}
+          <ConfirmModal
+            isOpen={showConfirmModal}
+            onConfirm={handleConfirmSubmit}
+            onCancel={handleCancelSubmit}
+          />
+
+          {/* 성공 모달 */}
+          <SuccessModal isOpen={showSuccessModal} onConfirm={handleSuccessConfirm} />
         </div>
       </LoggedInOnlySection>
     </div>

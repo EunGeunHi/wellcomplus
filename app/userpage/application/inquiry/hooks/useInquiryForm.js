@@ -14,6 +14,8 @@ export const useInquiryForm = () => {
   const [formData, setFormData] = useState(INITIAL_FORM_DATA);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [totalFileSize, setTotalFileSize] = useState(0);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Form handlers
   const handleChange = (e) => {
@@ -66,8 +68,8 @@ export const useInquiryForm = () => {
     fileInputRef.current?.click();
   };
 
-  // Form submission
-  const handleSubmit = async (e) => {
+  // Modal handlers
+  const handleSubmitClick = (e) => {
     e.preventDefault();
 
     const errors = validateForm(formData);
@@ -76,6 +78,25 @@ export const useInquiryForm = () => {
       return;
     }
 
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmSubmit = () => {
+    setShowConfirmModal(false);
+    submitForm();
+  };
+
+  const handleCancelSubmit = () => {
+    setShowConfirmModal(false);
+  };
+
+  const handleSuccessConfirm = () => {
+    setShowSuccessModal(false);
+    router.push('/');
+  };
+
+  // Form submission
+  const submitForm = async () => {
     try {
       setIsSubmitting(true);
 
@@ -101,15 +122,11 @@ export const useInquiryForm = () => {
         throw new Error('문의 등록 중 오류가 발생했습니다.');
       }
 
-      toast.success('문의가 등록되었습니다!');
-
       // 폼 초기화
       resetForm();
 
-      // 메인 페이지로 이동
-      setTimeout(() => {
-        router.push('/');
-      }, 1000);
+      // 성공 모달 표시
+      setShowSuccessModal(true);
     } catch (error) {
       console.error('Error submitting inquiry:', error);
       toast.error(error.message || '문의 등록 중 오류가 발생했습니다.');
@@ -139,14 +156,19 @@ export const useInquiryForm = () => {
     totalFileSize,
     isSubmitting,
     fileInputRef,
+    showConfirmModal,
+    showSuccessModal,
 
     // Handlers
     handleChange,
-    handleSubmit,
+    handleSubmitClick,
     handleKeyDown,
     handleFileChange,
     removeFile,
     openFileDialog,
     resetForm,
+    handleConfirmSubmit,
+    handleCancelSubmit,
+    handleSuccessConfirm,
   };
 };

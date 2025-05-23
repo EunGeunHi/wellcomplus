@@ -15,6 +15,8 @@ import {
   AddressInput,
   FileUpload,
   SubmitButton,
+  ConfirmModal,
+  SuccessModal,
 } from './components/FormComponents';
 
 export default function PrinterEstimatePage() {
@@ -26,10 +28,12 @@ export default function PrinterEstimatePage() {
     openSections,
     isSubmitting,
     fileInputRef,
+    showConfirmModal,
+    showSuccessModal,
 
     // Handlers
     handleChange,
-    handleSubmit,
+    handleSubmitClick,
     handleKeyDown,
     toggleSection,
     addBudget,
@@ -37,6 +41,9 @@ export default function PrinterEstimatePage() {
     handleFileChange,
     removeFile,
     openFileDialog,
+    handleConfirmSubmit,
+    handleCancelSubmit,
+    handleSuccessConfirm,
   } = usePrinterEstimateForm();
 
   return (
@@ -60,7 +67,7 @@ export default function PrinterEstimatePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-4 sm:space-y-6">
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-8">
                 <div className="space-y-4 sm:space-y-8">
                   {/* 필수 입력 사항들 */}
@@ -68,7 +75,7 @@ export default function PrinterEstimatePage() {
                     id="purpose"
                     name="purpose"
                     label="사용목적(용도)"
-                    placeholder="프린터를 어떤 용도로 사용하실 예정인지 자세히 작성해주세요. (예: 사무실 문서 출력, 가정용 사진 출력, 대량 인쇄 등)"
+                    placeholder="프린터를 어떤 용도로 사용하실 예정인지 자세히 작성해주세요. (예: 사무용 문서 출력, 사진 인쇄, 라벨 출력 등)"
                     value={formData.purpose}
                     onChange={handleChange}
                     required
@@ -97,16 +104,16 @@ export default function PrinterEstimatePage() {
 
                   {/* 선택 사항들 */}
                   <OptionalSection
-                    title="인쇄방식 (선택사항)"
-                    isOpen={openSections.printType}
-                    onToggle={() => toggleSection('printType')}
+                    title="프린터 종류 (선택사항)"
+                    isOpen={openSections.printerType}
+                    onToggle={() => toggleSection('printerType')}
                   >
                     <div className="mt-2 sm:mt-3">
                       <RadioGroup
-                        name="printType"
+                        name="printerType"
                         label=""
-                        options={FORM_OPTIONS.printType}
-                        value={formData.printType}
+                        options={FORM_OPTIONS.printerType}
+                        value={formData.printerType}
                         onChange={handleChange}
                         columns={2}
                       />
@@ -114,7 +121,7 @@ export default function PrinterEstimatePage() {
                   </OptionalSection>
 
                   <OptionalSection
-                    title="무한 잉크젯 (선택사항)"
+                    title="무한잉크젯 (선택사항)"
                     isOpen={openSections.infiniteInk}
                     onToggle={() => toggleSection('infiniteInk')}
                   >
@@ -131,7 +138,7 @@ export default function PrinterEstimatePage() {
                   </OptionalSection>
 
                   <OptionalSection
-                    title="출력색상 (선택사항)"
+                    title="출력 색상 (선택사항)"
                     isOpen={openSections.outputColor}
                     onToggle={() => toggleSection('outputColor')}
                   >
@@ -199,10 +206,20 @@ export default function PrinterEstimatePage() {
                 </div>
 
                 {/* 제출 버튼 */}
-                <SubmitButton isSubmitting={isSubmitting} />
+                <SubmitButton isSubmitting={isSubmitting} onSubmit={handleSubmitClick} />
               </div>
             </form>
           </motion.div>
+
+          {/* 확인 모달 */}
+          <ConfirmModal
+            isOpen={showConfirmModal}
+            onConfirm={handleConfirmSubmit}
+            onCancel={handleCancelSubmit}
+          />
+
+          {/* 성공 모달 */}
+          <SuccessModal isOpen={showSuccessModal} onConfirm={handleSuccessConfirm} />
         </div>
       </LoggedInOnlySection>
     </div>

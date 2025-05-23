@@ -5,7 +5,14 @@ import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 import LoginFallback from '@/app/components/LoginFallback';
 
 import { useInquiryForm } from './hooks/useInquiryForm';
-import { TextArea, InputField, FileUpload, SubmitButton } from './components/FormComponents';
+import {
+  TextArea,
+  InputField,
+  FileUpload,
+  SubmitButton,
+  ConfirmModal,
+  SuccessModal,
+} from './components/FormComponents';
 
 export default function InquiryPage() {
   const {
@@ -15,14 +22,19 @@ export default function InquiryPage() {
     totalFileSize,
     isSubmitting,
     fileInputRef,
+    showConfirmModal,
+    showSuccessModal,
 
     // Handlers
     handleChange,
-    handleSubmit,
+    handleSubmitClick,
     handleKeyDown,
     handleFileChange,
     removeFile,
     openFileDialog,
+    handleConfirmSubmit,
+    handleCancelSubmit,
+    handleSuccessConfirm,
   } = useInquiryForm();
 
   return (
@@ -35,8 +47,8 @@ export default function InquiryPage() {
               기타 문의
             </h1>
             <p className="text-sm sm:text-lg text-gray-600">
-              <span className="text-blue-600 font-semibold">상세한 작성</span>을 통해 더 정확한
-              답변을 받으실 수 있습니다
+              견적 이외의 궁금한 사항이 있으시면{' '}
+              <span className="text-blue-600 font-semibold">언제든지 문의</span>해주세요
             </p>
           </div>
 
@@ -46,7 +58,7 @@ export default function InquiryPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-4 sm:space-y-6">
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-8">
                 <div className="space-y-4 sm:space-y-8">
                   {/* 필수 입력 사항들 */}
@@ -54,7 +66,7 @@ export default function InquiryPage() {
                     id="title"
                     name="title"
                     label="문의 제목"
-                    placeholder="문의하실 내용의 제목을 입력해주세요"
+                    placeholder="문의하실 내용을 간단히 요약해주세요"
                     value={formData.title}
                     onChange={handleChange}
                     onKeyDown={handleKeyDown}
@@ -65,11 +77,11 @@ export default function InquiryPage() {
                     id="content"
                     name="content"
                     label="문의 내용"
-                    placeholder="문의하실 내용을 자세히 작성해주세요. (예: 견적 신청한 제품의 진행 상황이 궁금합니다, 특정 제품의 재고나 입고 일정을 알고 싶습니다)"
+                    placeholder="궁금한 사항을 자세히 작성해주세요"
                     value={formData.content}
                     onChange={handleChange}
                     required
-                    rows={8}
+                    rows={6}
                   />
 
                   <InputField
@@ -81,7 +93,7 @@ export default function InquiryPage() {
                     onChange={handleChange}
                     onKeyDown={handleKeyDown}
                     required
-                    helpText="답변을 위해 연락드리므로 정확하게 입력해주세요."
+                    helpText="답변 안내를 위해 연락드리므로 정확하게 입력해주세요."
                   />
 
                   {/* 첨부파일 */}
@@ -96,10 +108,20 @@ export default function InquiryPage() {
                 </div>
 
                 {/* 제출 버튼 */}
-                <SubmitButton isSubmitting={isSubmitting} />
+                <SubmitButton isSubmitting={isSubmitting} onSubmit={handleSubmitClick} />
               </div>
             </form>
           </motion.div>
+
+          {/* 확인 모달 */}
+          <ConfirmModal
+            isOpen={showConfirmModal}
+            onConfirm={handleConfirmSubmit}
+            onCancel={handleCancelSubmit}
+          />
+
+          {/* 성공 모달 */}
+          <SuccessModal isOpen={showSuccessModal} onConfirm={handleSuccessConfirm} />
         </div>
       </LoggedInOnlySection>
     </div>

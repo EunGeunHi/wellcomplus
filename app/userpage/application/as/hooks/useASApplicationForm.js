@@ -15,6 +15,8 @@ export const useASApplicationForm = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [totalFileSize, setTotalFileSize] = useState(0);
   const [openSections, setOpenSections] = useState(INITIAL_SECTIONS_STATE);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Form handlers
   const handleChange = (e) => {
@@ -94,8 +96,8 @@ export const useASApplicationForm = () => {
     fileInputRef.current?.click();
   };
 
-  // Form submission
-  const handleSubmit = async (e) => {
+  // Modal handlers
+  const handleSubmitClick = (e) => {
     e.preventDefault();
 
     const errors = validateForm(formData);
@@ -104,6 +106,25 @@ export const useASApplicationForm = () => {
       return;
     }
 
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmSubmit = () => {
+    setShowConfirmModal(false);
+    submitForm();
+  };
+
+  const handleCancelSubmit = () => {
+    setShowConfirmModal(false);
+  };
+
+  const handleSuccessConfirm = () => {
+    setShowSuccessModal(false);
+    router.push('/');
+  };
+
+  // Form submission
+  const submitForm = async () => {
     try {
       setIsSubmitting(true);
 
@@ -129,15 +150,11 @@ export const useASApplicationForm = () => {
         throw new Error('A/S 신청 중 오류가 발생했습니다.');
       }
 
-      toast.success('A/S 신청이 완료되었습니다!');
-
       // 폼 초기화
       resetForm();
 
-      // 메인 페이지로 이동
-      setTimeout(() => {
-        router.push('/');
-      }, 1000);
+      // 성공 모달 표시
+      setShowSuccessModal(true);
     } catch (error) {
       console.error('Error submitting application:', error);
       toast.error(error.message || 'A/S 신청 중 오류가 발생했습니다.');
@@ -169,15 +186,20 @@ export const useASApplicationForm = () => {
     openSections,
     isSubmitting,
     fileInputRef,
+    showConfirmModal,
+    showSuccessModal,
 
     // Handlers
     handleChange,
-    handleSubmit,
+    handleSubmitClick,
     handleKeyDown,
     toggleSection,
     handleFileChange,
     removeFile,
     openFileDialog,
     resetForm,
+    handleConfirmSubmit,
+    handleCancelSubmit,
+    handleSuccessConfirm,
   };
 };

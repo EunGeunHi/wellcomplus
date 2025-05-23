@@ -15,6 +15,8 @@ import {
   AddressInput,
   FileUpload,
   SubmitButton,
+  ConfirmModal,
+  SuccessModal,
 } from './components/FormComponents';
 
 export default function NotebookEstimatePage() {
@@ -26,10 +28,12 @@ export default function NotebookEstimatePage() {
     openSections,
     isSubmitting,
     fileInputRef,
+    showConfirmModal,
+    showSuccessModal,
 
     // Handlers
     handleChange,
-    handleSubmit,
+    handleSubmitClick,
     handleKeyDown,
     toggleSection,
     addBudget,
@@ -37,6 +41,9 @@ export default function NotebookEstimatePage() {
     handleFileChange,
     removeFile,
     openFileDialog,
+    handleConfirmSubmit,
+    handleCancelSubmit,
+    handleSuccessConfirm,
   } = useNotebookEstimateForm();
 
   return (
@@ -60,7 +67,7 @@ export default function NotebookEstimatePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-4 sm:space-y-6">
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-8">
                 <div className="space-y-4 sm:space-y-8">
                   {/* 필수 입력 사항들 */}
@@ -68,7 +75,7 @@ export default function NotebookEstimatePage() {
                     id="purpose"
                     name="purpose"
                     label="사용목적(용도)"
-                    placeholder="노트북을 어떤 용도로 사용하실 예정인지 자세히 작성해주세요. (예: 사무용 문서 작업, 영상 편집, 게임, 프로그래밍 등)"
+                    placeholder="노트북을 어떤 용도로 사용하실 예정인지 자세히 작성해주세요. (예: 업무용, 게임, 그래픽 작업, 대학교 과제 등)"
                     value={formData.purpose}
                     onChange={handleChange}
                     required
@@ -81,6 +88,16 @@ export default function NotebookEstimatePage() {
                     onKeyDown={handleKeyDown}
                     onAddBudget={addBudget}
                     onClearBudget={clearBudget}
+                  />
+
+                  <RadioGroup
+                    name="os"
+                    label="운영체제"
+                    options={FORM_OPTIONS.os}
+                    value={formData.os}
+                    onChange={handleChange}
+                    required
+                    columns={2}
                   />
 
                   <InputField
@@ -142,30 +159,13 @@ export default function NotebookEstimatePage() {
                         options={FORM_OPTIONS.weight}
                         value={formData.weight}
                         onChange={handleChange}
-                        columns={3}
-                      />
-                    </div>
-                  </OptionalSection>
-
-                  <OptionalSection
-                    title="운영체제(OS) (선택사항)"
-                    isOpen={openSections.os}
-                    onToggle={() => toggleSection('os')}
-                  >
-                    <div className="mt-2 sm:mt-3">
-                      <RadioGroup
-                        name="os"
-                        label=""
-                        options={FORM_OPTIONS.os}
-                        value={formData.os}
-                        onChange={handleChange}
                         columns={2}
                       />
                     </div>
                   </OptionalSection>
 
                   <OptionalSection
-                    title="RAM (선택사항)"
+                    title="메모리 (선택사항)"
                     isOpen={openSections.ram}
                     onToggle={() => toggleSection('ram')}
                   >
@@ -193,7 +193,7 @@ export default function NotebookEstimatePage() {
                         options={FORM_OPTIONS.storage}
                         value={formData.storage}
                         onChange={handleChange}
-                        columns={3}
+                        columns={2}
                       />
                     </div>
                   </OptionalSection>
@@ -250,10 +250,20 @@ export default function NotebookEstimatePage() {
                 </div>
 
                 {/* 제출 버튼 */}
-                <SubmitButton isSubmitting={isSubmitting} />
+                <SubmitButton isSubmitting={isSubmitting} onSubmit={handleSubmitClick} />
               </div>
             </form>
           </motion.div>
+
+          {/* 확인 모달 */}
+          <ConfirmModal
+            isOpen={showConfirmModal}
+            onConfirm={handleConfirmSubmit}
+            onCancel={handleCancelSubmit}
+          />
+
+          {/* 성공 모달 */}
+          <SuccessModal isOpen={showSuccessModal} onConfirm={handleSuccessConfirm} />
         </div>
       </LoggedInOnlySection>
     </div>
