@@ -421,90 +421,14 @@ const DetailPage = () => {
                       transition={{ duration: 0.2 }}
                     >
                       <div className="flex items-center gap-1.5 mb-1">
-                        <FiPhone className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">연락처</h3>
+                        <FiCpu className="text-slate-500" size={14} />
+                        <h3 className="font-semibold text-gray-800 text-sm">CPU</h3>
                       </div>
                       <p className="text-gray-700 text-sm">
-                        {application.computer_information.phoneNumber || '-'}
+                        {application.computer_information.cpu || '-'}
                       </p>
                     </motion.div>
 
-                    <motion.div
-                      className="col-span-2 md:col-span-3 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
-                      whileHover={{
-                        scale: 1.01,
-                        boxShadow:
-                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-                      }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <FiClipboard className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">요구사항</h3>
-                      </div>
-                      <p className="text-gray-700 text-sm whitespace-pre-wrap">
-                        {application.computer_information.requirements || '-'}
-                      </p>
-                    </motion.div>
-
-                    <motion.div
-                      className="col-span-1 md:col-span-2 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
-                      whileHover={{
-                        scale: 1.01,
-                        boxShadow:
-                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-                      }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <LuClipboardPlus className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">추가 요청사항</h3>
-                      </div>
-                      <p className="text-gray-700 text-sm whitespace-pre-wrap">
-                        {application.computer_information.additional || '-'}
-                      </p>
-                    </motion.div>
-
-                    <motion.div
-                      className="col-span-1 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
-                      whileHover={{
-                        scale: 1.01,
-                        boxShadow:
-                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-                      }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <FiMessageSquare className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">기타</h3>
-                      </div>
-                      <p className="text-gray-700 text-sm">
-                        {application.computer_information.etc || '-'}
-                      </p>
-                    </motion.div>
-
-                    <motion.div
-                      className="col-span-2 md:col-span-3 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
-                      whileHover={{
-                        scale: 1.01,
-                        boxShadow:
-                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-                      }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <FiHome className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">주소</h3>
-                      </div>
-                      <p className="text-gray-700 text-sm">
-                        {application.computer_information.address || '-'}
-                      </p>
-                    </motion.div>
-                  </div>
-                )}
-
-                {application.type === 'printer' && application.printer_information && (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                     <motion.div
                       className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
                       whileHover={{
@@ -515,14 +439,166 @@ const DetailPage = () => {
                       transition={{ duration: 0.2 }}
                     >
                       <div className="flex items-center gap-1.5 mb-1">
-                        <FiFileText className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">모델명</h3>
+                        <FiMonitor className="text-slate-500" size={14} />
+                        <h3 className="font-semibold text-gray-800 text-sm">GPU</h3>
                       </div>
                       <p className="text-gray-700 text-sm">
-                        {application.printer_information.modelName || '-'}
+                        {application.computer_information.gpu || '-'}
                       </p>
                     </motion.div>
 
+                    <motion.div
+                      className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                      whileHover={{
+                        scale: 1.02,
+                        boxShadow:
+                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                      }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <FiLayers className="text-slate-500" size={14} />
+                        <h3 className="font-semibold text-gray-800 text-sm">메모리</h3>
+                      </div>
+                      <p className="text-gray-700 text-sm">
+                        {application.computer_information.memory || '-'}
+                      </p>
+                    </motion.div>
+
+                    <motion.div
+                      className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                      whileHover={{
+                        scale: 1.02,
+                        boxShadow:
+                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                      }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <GoDatabase className="text-slate-500" size={14} />
+                        <h3 className="font-semibold text-gray-800 text-sm">저장장치</h3>
+                      </div>
+                      <p className="text-gray-700 text-sm">
+                        {application.computer_information.storage || '-'}
+                      </p>
+                    </motion.div>
+
+                    <motion.div
+                      className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                      whileHover={{
+                        scale: 1.02,
+                        boxShadow:
+                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                      }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <FiActivity className="text-slate-500" size={14} />
+                        <h3 className="font-semibold text-gray-800 text-sm">쿨러</h3>
+                      </div>
+                      <p className="text-gray-700 text-sm">
+                        {application.computer_information.cooling || '-'}
+                      </p>
+                    </motion.div>
+
+                    <motion.div
+                      className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                      whileHover={{
+                        scale: 1.02,
+                        boxShadow:
+                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                      }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <GrSystem className="text-slate-500" size={14} />
+                        <h3 className="font-semibold text-gray-800 text-sm">운영체제</h3>
+                      </div>
+                      <p className="text-gray-700 text-sm">
+                        {application.computer_information.os || '-'}
+                      </p>
+                    </motion.div>
+
+                    <motion.div
+                      className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                      whileHover={{
+                        scale: 1.02,
+                        boxShadow:
+                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                      }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <FiPhone className="text-slate-500" size={14} />
+                        <h3 className="font-semibold text-gray-800 text-sm">연락처</h3>
+                      </div>
+                      <p className="text-gray-700 text-sm">
+                        {application.computer_information.phoneNumber || '-'}
+                      </p>
+                    </motion.div>
+
+                    <motion.div
+                      className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                      whileHover={{
+                        scale: 1.02,
+                        boxShadow:
+                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                      }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <FiShoppingBag className="text-slate-500" size={14} />
+                        <h3 className="font-semibold text-gray-800 text-sm">수령방법</h3>
+                      </div>
+                      <p className="text-gray-700 text-sm">
+                        {application.computer_information.deliveryMethod || '-'}
+                      </p>
+                    </motion.div>
+
+                    {application.computer_information.address && (
+                      <motion.div
+                        className="col-span-2 md:col-span-3 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                        whileHover={{
+                          scale: 1.01,
+                          boxShadow:
+                            '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                        }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <FiHome className="text-slate-500" size={14} />
+                          <h3 className="font-semibold text-gray-800 text-sm">주소</h3>
+                        </div>
+                        <p className="text-gray-700 text-sm">
+                          {application.computer_information.address || '-'}
+                        </p>
+                      </motion.div>
+                    )}
+
+                    {application.computer_information.additionalRequests && (
+                      <motion.div
+                        className="col-span-2 md:col-span-3 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                        whileHover={{
+                          scale: 1.01,
+                          boxShadow:
+                            '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                        }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <LuClipboardPlus className="text-slate-500" size={14} />
+                          <h3 className="font-semibold text-gray-800 text-sm">추가 요청사항</h3>
+                        </div>
+                        <p className="text-gray-700 text-sm whitespace-pre-wrap">
+                          {application.computer_information.additionalRequests || '-'}
+                        </p>
+                      </motion.div>
+                    )}
+                  </div>
+                )}
+
+                {application.type === 'printer' && application.printer_information && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                     <motion.div
                       className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
                       whileHover={{
@@ -551,90 +627,14 @@ const DetailPage = () => {
                       transition={{ duration: 0.2 }}
                     >
                       <div className="flex items-center gap-1.5 mb-1">
-                        <FiPhone className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">연락처</h3>
+                        <FiDollarSign className="text-slate-500" size={14} />
+                        <h3 className="font-semibold text-gray-800 text-sm">예산</h3>
                       </div>
                       <p className="text-gray-700 text-sm">
-                        {application.printer_information.phoneNumber || '-'}
+                        {application.printer_information.budget || '-'}
                       </p>
                     </motion.div>
 
-                    <motion.div
-                      className="col-span-2 md:col-span-3 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
-                      whileHover={{
-                        scale: 1.01,
-                        boxShadow:
-                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-                      }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <FiClipboard className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">요구사항</h3>
-                      </div>
-                      <p className="text-gray-700 text-sm whitespace-pre-wrap">
-                        {application.printer_information.requirements || '-'}
-                      </p>
-                    </motion.div>
-
-                    <motion.div
-                      className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
-                      whileHover={{
-                        scale: 1.01,
-                        boxShadow:
-                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-                      }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <MdPrecisionManufacturing className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">개조여부</h3>
-                      </div>
-                      <p className="text-gray-700 text-sm whitespace-pre-wrap">
-                        {application.printer_information.modification || '-'}
-                      </p>
-                    </motion.div>
-
-                    <motion.div
-                      className="col-span-1 md:col-span-2 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
-                      whileHover={{
-                        scale: 1.01,
-                        boxShadow:
-                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-                      }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <LuClipboardPlus className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">추가 요청사항</h3>
-                      </div>
-                      <p className="text-gray-700 text-sm whitespace-pre-wrap">
-                        {application.printer_information.additional || '-'}
-                      </p>
-                    </motion.div>
-
-                    <motion.div
-                      className="col-span-2 md:col-span-3 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
-                      whileHover={{
-                        scale: 1.01,
-                        boxShadow:
-                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-                      }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <FiHome className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">주소</h3>
-                      </div>
-                      <p className="text-gray-700 text-sm">
-                        {application.printer_information.address || '-'}
-                      </p>
-                    </motion.div>
-                  </div>
-                )}
-
-                {application.type === 'notebook' && application.notebook_information && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                     <motion.div
                       className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
                       whileHover={{
@@ -645,11 +645,65 @@ const DetailPage = () => {
                       transition={{ duration: 0.2 }}
                     >
                       <div className="flex items-center gap-1.5 mb-1">
-                        <FiFileText className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">모델명</h3>
+                        <AiFillPrinter className="text-slate-500" size={14} />
+                        <h3 className="font-semibold text-gray-800 text-sm">프린터 종류</h3>
                       </div>
                       <p className="text-gray-700 text-sm">
-                        {application.notebook_information.modelName || '-'}
+                        {application.printer_information.printerType || '-'}
+                      </p>
+                    </motion.div>
+
+                    <motion.div
+                      className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                      whileHover={{
+                        scale: 1.02,
+                        boxShadow:
+                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                      }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <FiActivity className="text-slate-500" size={14} />
+                        <h3 className="font-semibold text-gray-800 text-sm">무한잉크젯</h3>
+                      </div>
+                      <p className="text-gray-700 text-sm">
+                        {application.printer_information.infiniteInk || '-'}
+                      </p>
+                    </motion.div>
+
+                    <motion.div
+                      className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                      whileHover={{
+                        scale: 1.02,
+                        boxShadow:
+                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                      }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <FiMonitor className="text-slate-500" size={14} />
+                        <h3 className="font-semibold text-gray-800 text-sm">출력색상</h3>
+                      </div>
+                      <p className="text-gray-700 text-sm">
+                        {application.printer_information.outputColor || '-'}
+                      </p>
+                    </motion.div>
+
+                    <motion.div
+                      className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                      whileHover={{
+                        scale: 1.02,
+                        boxShadow:
+                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                      }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <FiPhone className="text-slate-500" size={14} />
+                        <h3 className="font-semibold text-gray-800 text-sm">연락처</h3>
+                      </div>
+                      <p className="text-gray-700 text-sm">
+                        {application.printer_information.phoneNumber || '-'}
                       </p>
                     </motion.div>
 
@@ -664,10 +718,72 @@ const DetailPage = () => {
                     >
                       <div className="flex items-center gap-1.5 mb-1">
                         <FiShoppingBag className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">제조사</h3>
+                        <h3 className="font-semibold text-gray-800 text-sm">수령방법</h3>
                       </div>
                       <p className="text-gray-700 text-sm">
-                        {application.notebook_information.manufacturer || '-'}
+                        {application.printer_information.deliveryMethod || '-'}
+                      </p>
+                    </motion.div>
+
+                    {application.printer_information.address && (
+                      <motion.div
+                        className="col-span-2 md:col-span-3 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                        whileHover={{
+                          scale: 1.01,
+                          boxShadow:
+                            '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                        }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <FiHome className="text-slate-500" size={14} />
+                          <h3 className="font-semibold text-gray-800 text-sm">주소</h3>
+                        </div>
+                        <p className="text-gray-700 text-sm">
+                          {application.printer_information.address || '-'}
+                        </p>
+                      </motion.div>
+                    )}
+
+                    {application.printer_information.additionalRequests && (
+                      <motion.div
+                        className="col-span-2 md:col-span-3 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                        whileHover={{
+                          scale: 1.01,
+                          boxShadow:
+                            '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                        }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <LuClipboardPlus className="text-slate-500" size={14} />
+                          <h3 className="font-semibold text-gray-800 text-sm">추가 요청사항</h3>
+                        </div>
+                        <p className="text-gray-700 text-sm whitespace-pre-wrap">
+                          {application.printer_information.additionalRequests || '-'}
+                        </p>
+                      </motion.div>
+                    )}
+                  </div>
+                )}
+
+                {application.type === 'notebook' && application.notebook_information && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    <motion.div
+                      className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                      whileHover={{
+                        scale: 1.02,
+                        boxShadow:
+                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                      }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <FaUserPen className="text-slate-500" size={14} />
+                        <h3 className="font-semibold text-gray-800 text-sm">용도</h3>
+                      </div>
+                      <p className="text-gray-700 text-sm whitespace-pre-wrap">
+                        {application.notebook_information.purpose || '-'}
                       </p>
                     </motion.div>
 
@@ -681,47 +797,11 @@ const DetailPage = () => {
                       transition={{ duration: 0.2 }}
                     >
                       <div className="flex items-center gap-1.5 mb-1">
-                        <FiStar className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">브랜드</h3>
+                        <FiDollarSign className="text-slate-500" size={14} />
+                        <h3 className="font-semibold text-gray-800 text-sm">예산</h3>
                       </div>
                       <p className="text-gray-700 text-sm">
-                        {application.notebook_information.brand || '-'}
-                      </p>
-                    </motion.div>
-
-                    <motion.div
-                      className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
-                      whileHover={{
-                        scale: 1.02,
-                        boxShadow:
-                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-                      }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <FiPhone className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">연락처</h3>
-                      </div>
-                      <p className="text-gray-700 text-sm">
-                        {application.notebook_information.phoneNumber || '-'}
-                      </p>
-                    </motion.div>
-
-                    <motion.div
-                      className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
-                      whileHover={{
-                        scale: 1.02,
-                        boxShadow:
-                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-                      }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <FiMaximize2 className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">화면 크기</h3>
-                      </div>
-                      <p className="text-gray-700 text-sm">
-                        {application.notebook_information.screenSize || '-'}
+                        {application.notebook_information.budget || '-'}
                       </p>
                     </motion.div>
 
@@ -739,7 +819,7 @@ const DetailPage = () => {
                         <h3 className="font-semibold text-gray-800 text-sm">CPU</h3>
                       </div>
                       <p className="text-gray-700 text-sm">
-                        {application.notebook_information.cpuType || '-'}
+                        {application.notebook_information.cpu || '-'}
                       </p>
                     </motion.div>
 
@@ -757,61 +837,7 @@ const DetailPage = () => {
                         <h3 className="font-semibold text-gray-800 text-sm">GPU</h3>
                       </div>
                       <p className="text-gray-700 text-sm">
-                        {application.notebook_information.gpuType || '-'}
-                      </p>
-                    </motion.div>
-
-                    <motion.div
-                      className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
-                      whileHover={{
-                        scale: 1.02,
-                        boxShadow:
-                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-                      }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <FiLayers className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">RAM</h3>
-                      </div>
-                      <p className="text-gray-700 text-sm">
-                        {application.notebook_information.ramSize || '-'}
-                      </p>
-                    </motion.div>
-
-                    <motion.div
-                      className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
-                      whileHover={{
-                        scale: 1.02,
-                        boxShadow:
-                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-                      }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <GoDatabase className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">저장장치</h3>
-                      </div>
-                      <p className="text-gray-700 text-sm">
-                        {application.notebook_information.storageSize || '-'}
-                      </p>
-                    </motion.div>
-
-                    <motion.div
-                      className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
-                      whileHover={{
-                        scale: 1.02,
-                        boxShadow:
-                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-                      }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <GrSystem className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">운영체제</h3>
-                      </div>
-                      <p className="text-gray-700 text-sm">
-                        {application.notebook_information.os || '-'}
+                        {application.notebook_information.gpu || '-'}
                       </p>
                     </motion.div>
 
@@ -843,49 +869,125 @@ const DetailPage = () => {
                       transition={{ duration: 0.2 }}
                     >
                       <div className="flex items-center gap-1.5 mb-1">
-                        <FiDollarSign className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">가격대</h3>
+                        <GrSystem className="text-slate-500" size={14} />
+                        <h3 className="font-semibold text-gray-800 text-sm">운영체제</h3>
                       </div>
                       <p className="text-gray-700 text-sm">
-                        {application.notebook_information.priceRange || '-'}
+                        {application.notebook_information.os || '-'}
                       </p>
                     </motion.div>
 
                     <motion.div
-                      className="col-span-2 md:col-span-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                      className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
                       whileHover={{
-                        scale: 1.01,
+                        scale: 1.02,
                         boxShadow:
                           '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
                       }}
                       transition={{ duration: 0.2 }}
                     >
                       <div className="flex items-center gap-1.5 mb-1">
-                        <FaUserPen className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">용도</h3>
+                        <FiLayers className="text-slate-500" size={14} />
+                        <h3 className="font-semibold text-gray-800 text-sm">RAM</h3>
                       </div>
-                      <p className="text-gray-700 text-sm whitespace-pre-wrap">
-                        {application.notebook_information.purpose || '-'}
+                      <p className="text-gray-700 text-sm">
+                        {application.notebook_information.ram || '-'}
                       </p>
                     </motion.div>
 
                     <motion.div
-                      className="col-span-2 md:col-span-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                      className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
                       whileHover={{
-                        scale: 1.01,
+                        scale: 1.02,
                         boxShadow:
                           '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
                       }}
                       transition={{ duration: 0.2 }}
                     >
                       <div className="flex items-center gap-1.5 mb-1">
-                        <LuClipboardPlus className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">추가 요청사항</h3>
+                        <GoDatabase className="text-slate-500" size={14} />
+                        <h3 className="font-semibold text-gray-800 text-sm">저장장치</h3>
                       </div>
-                      <p className="text-gray-700 text-sm whitespace-pre-wrap">
-                        {application.notebook_information.additionalRequests || '-'}
+                      <p className="text-gray-700 text-sm">
+                        {application.notebook_information.storage || '-'}
                       </p>
                     </motion.div>
+
+                    <motion.div
+                      className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                      whileHover={{
+                        scale: 1.02,
+                        boxShadow:
+                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                      }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <FiPhone className="text-slate-500" size={14} />
+                        <h3 className="font-semibold text-gray-800 text-sm">연락처</h3>
+                      </div>
+                      <p className="text-gray-700 text-sm">
+                        {application.notebook_information.phoneNumber || '-'}
+                      </p>
+                    </motion.div>
+
+                    <motion.div
+                      className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                      whileHover={{
+                        scale: 1.02,
+                        boxShadow:
+                          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                      }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <FiShoppingBag className="text-slate-500" size={14} />
+                        <h3 className="font-semibold text-gray-800 text-sm">수령방법</h3>
+                      </div>
+                      <p className="text-gray-700 text-sm">
+                        {application.notebook_information.deliveryMethod || '-'}
+                      </p>
+                    </motion.div>
+
+                    {application.notebook_information.address && (
+                      <motion.div
+                        className="col-span-2 md:col-span-3 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                        whileHover={{
+                          scale: 1.01,
+                          boxShadow:
+                            '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                        }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <FiHome className="text-slate-500" size={14} />
+                          <h3 className="font-semibold text-gray-800 text-sm">주소</h3>
+                        </div>
+                        <p className="text-gray-700 text-sm">
+                          {application.notebook_information.address || '-'}
+                        </p>
+                      </motion.div>
+                    )}
+
+                    {application.notebook_information.additionalRequests && (
+                      <motion.div
+                        className="col-span-2 md:col-span-3 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                        whileHover={{
+                          scale: 1.01,
+                          boxShadow:
+                            '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                        }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <LuClipboardPlus className="text-slate-500" size={14} />
+                          <h3 className="font-semibold text-gray-800 text-sm">추가 요청사항</h3>
+                        </div>
+                        <p className="text-gray-700 text-sm whitespace-pre-wrap">
+                          {application.notebook_information.additionalRequests || '-'}
+                        </p>
+                      </motion.div>
+                    )}
                   </div>
                 )}
 
@@ -902,12 +1004,92 @@ const DetailPage = () => {
                     >
                       <div className="flex items-center gap-1.5 mb-1">
                         <MdClass className="text-slate-500" size={14} />
-                        <h3 className="font-semibold text-gray-800 text-sm">분류</h3>
+                        <h3 className="font-semibold text-gray-800 text-sm">A/S 분류</h3>
                       </div>
                       <p className="text-gray-700 text-sm">
-                        {application.as_information.itemType || '-'}
+                        {application.as_information.asCategory || '-'}
                       </p>
                     </motion.div>
+
+                    {application.as_information.userName && (
+                      <motion.div
+                        className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                        whileHover={{
+                          scale: 1.02,
+                          boxShadow:
+                            '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                        }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <FaUserPen className="text-slate-500" size={14} />
+                          <h3 className="font-semibold text-gray-800 text-sm">사용자 이름</h3>
+                        </div>
+                        <p className="text-gray-700 text-sm">
+                          {application.as_information.userName || '-'}
+                        </p>
+                      </motion.div>
+                    )}
+
+                    {application.as_information.pcNumber && (
+                      <motion.div
+                        className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                        whileHover={{
+                          scale: 1.02,
+                          boxShadow:
+                            '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                        }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <FiFileText className="text-slate-500" size={14} />
+                          <h3 className="font-semibold text-gray-800 text-sm">PC 번호</h3>
+                        </div>
+                        <p className="text-gray-700 text-sm">
+                          {application.as_information.pcNumber || '-'}
+                        </p>
+                      </motion.div>
+                    )}
+
+                    {application.as_information.printerType && (
+                      <motion.div
+                        className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                        whileHover={{
+                          scale: 1.02,
+                          boxShadow:
+                            '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                        }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <AiFillPrinter className="text-slate-500" size={14} />
+                          <h3 className="font-semibold text-gray-800 text-sm">프린터 종류</h3>
+                        </div>
+                        <p className="text-gray-700 text-sm">
+                          {application.as_information.printerType || '-'}
+                        </p>
+                      </motion.div>
+                    )}
+
+                    {application.as_information.infiniteInk && (
+                      <motion.div
+                        className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                        whileHover={{
+                          scale: 1.02,
+                          boxShadow:
+                            '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                        }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <FiActivity className="text-slate-500" size={14} />
+                          <h3 className="font-semibold text-gray-800 text-sm">무한잉크젯</h3>
+                        </div>
+                        <p className="text-gray-700 text-sm">
+                          {application.as_information.infiniteInk || '-'}
+                        </p>
+                      </motion.div>
+                    )}
 
                     <motion.div
                       className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
@@ -926,6 +1108,46 @@ const DetailPage = () => {
                         {application.as_information.phoneNumber || '-'}
                       </p>
                     </motion.div>
+
+                    {application.as_information.deliveryMethod && (
+                      <motion.div
+                        className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                        whileHover={{
+                          scale: 1.02,
+                          boxShadow:
+                            '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                        }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <FiShoppingBag className="text-slate-500" size={14} />
+                          <h3 className="font-semibold text-gray-800 text-sm">수령방법</h3>
+                        </div>
+                        <p className="text-gray-700 text-sm">
+                          {application.as_information.deliveryMethod || '-'}
+                        </p>
+                      </motion.div>
+                    )}
+
+                    {application.as_information.address && (
+                      <motion.div
+                        className="col-span-1 md:col-span-2 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
+                        whileHover={{
+                          scale: 1.01,
+                          boxShadow:
+                            '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                        }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <FiHome className="text-slate-500" size={14} />
+                          <h3 className="font-semibold text-gray-800 text-sm">주소</h3>
+                        </div>
+                        <p className="text-gray-700 text-sm">
+                          {application.as_information.address || '-'}
+                        </p>
+                      </motion.div>
+                    )}
 
                     <motion.div
                       className="col-span-1 md:col-span-2 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm"
