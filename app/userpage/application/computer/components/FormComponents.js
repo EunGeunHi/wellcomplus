@@ -1,4 +1,12 @@
-import { FiChevronDown, FiChevronUp, FiX, FiPaperclip, FiAlertCircle } from 'react-icons/fi';
+import {
+  FiChevronDown,
+  FiChevronUp,
+  FiX,
+  FiPaperclip,
+  FiAlertCircle,
+  FiCheckCircle,
+  FiAlertTriangle,
+} from 'react-icons/fi';
 import { BUDGET_AMOUNTS, FILE_CONSTRAINTS } from '../constants';
 import { formatFileSize } from '../utils';
 
@@ -305,13 +313,18 @@ export const FileUpload = ({
 );
 
 // 제출 버튼 컴포넌트
-export const SubmitButton = ({ isSubmitting }) => (
+export const SubmitButton = ({ isSubmitting, onSubmit }) => (
   <div className="mt-6 sm:mt-10">
     <p className="text-gray-500 text-xs sm:text-sm text-center mb-4 sm:mb-6 bg-yellow-50/50 py-2 sm:py-3 px-3 sm:px-4 rounded-lg border border-yellow-100">
       ⚠️ 부품 수급상황에 따라 요구사항이 모두 수용되지 않을 수 있습니다.
+      <br />
+      💰 예산 가이드 입력하신 예산 범위 내에서 최적의 성능을 구성해드립니다.
+      <br />더 높은 성능이 필요하시다면 예산 조정이나 단계별 업그레이드 방안도 함께 제안해드릴 수
+      있어요!
     </p>
     <button
-      type="submit"
+      type="button"
+      onClick={onSubmit}
       disabled={isSubmitting}
       className={`w-full font-[NanumGothic] text-lg sm:text-xl font-bold text-white py-3 sm:py-4 px-4 sm:px-6 rounded-lg transition-all duration-200 ${
         isSubmitting
@@ -323,3 +336,72 @@ export const SubmitButton = ({ isSubmitting }) => (
     </button>
   </div>
 );
+
+// 확인 대화상자 모달 컴포넌트
+export const ConfirmModal = ({ isOpen, onConfirm, onCancel }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+        <div className="flex items-center mb-4">
+          <div className="bg-yellow-100 rounded-full p-2 mr-3">
+            <FiAlertTriangle className="w-6 h-6 text-yellow-600" />
+          </div>
+          <h3 className="text-lg font-[BMJUA] text-gray-900">견적 신청 확인</h3>
+        </div>
+
+        <p className="text-gray-700 mb-6 text-sm sm:text-base">
+          해당 견적을 제출하시면 수정 할 수 없습니다.
+        </p>
+
+        <div className="flex gap-3 justify-end">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+          >
+            취소
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors font-medium"
+          >
+            확인
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// 성공 메시지 모달 컴포넌트
+export const SuccessModal = ({ isOpen, onConfirm }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+        <div className="text-center">
+          <div className="bg-green-100 rounded-full p-3 inline-block mb-4">
+            <FiCheckCircle className="w-8 h-8 text-green-600" />
+          </div>
+
+          <h3 className="text-xl font-[BMJUA] text-gray-900 mb-2">
+            컴퓨터 견적 신청이 완료되었습니다!
+          </h3>
+
+          <p className="text-gray-700 mb-6 text-sm sm:text-base">
+            확인 후 개별 연락 드리겠습니다. 감사합니다.
+          </p>
+
+          <button
+            onClick={onConfirm}
+            className="w-full px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors font-medium"
+          >
+            확인
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};

@@ -15,6 +15,8 @@ import {
   AddressInput,
   FileUpload,
   SubmitButton,
+  ConfirmModal,
+  SuccessModal,
 } from './components/FormComponents';
 
 export default function ComputerEstimatePage() {
@@ -26,10 +28,12 @@ export default function ComputerEstimatePage() {
     openSections,
     isSubmitting,
     fileInputRef,
+    showConfirmModal,
+    showSuccessModal,
 
     // Handlers
     handleChange,
-    handleSubmit,
+    handleSubmitClick,
     handleKeyDown,
     toggleSection,
     addBudget,
@@ -37,6 +41,9 @@ export default function ComputerEstimatePage() {
     handleFileChange,
     removeFile,
     openFileDialog,
+    handleConfirmSubmit,
+    handleCancelSubmit,
+    handleSuccessConfirm,
   } = useComputerEstimateForm();
 
   return (
@@ -60,7 +67,7 @@ export default function ComputerEstimatePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-4 sm:space-y-6">
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-8">
                 <div className="space-y-4 sm:space-y-8">
                   {/* 필수 입력 사항들 */}
@@ -243,10 +250,20 @@ export default function ComputerEstimatePage() {
                 </div>
 
                 {/* 제출 버튼 */}
-                <SubmitButton isSubmitting={isSubmitting} />
+                <SubmitButton isSubmitting={isSubmitting} onSubmit={handleSubmitClick} />
               </div>
             </form>
           </motion.div>
+
+          {/* 확인 모달 */}
+          <ConfirmModal
+            isOpen={showConfirmModal}
+            onConfirm={handleConfirmSubmit}
+            onCancel={handleCancelSubmit}
+          />
+
+          {/* 성공 모달 */}
+          <SuccessModal isOpen={showSuccessModal} onConfirm={handleSuccessConfirm} />
         </div>
       </LoggedInOnlySection>
     </div>
