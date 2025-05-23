@@ -20,7 +20,6 @@ import {
   FiHome,
   FiMonitor,
   FiCpu,
-  FiMaximize2,
   FiLayers,
   FiDollarSign,
   FiAlertCircle,
@@ -35,7 +34,7 @@ import { FaUserPen } from 'react-icons/fa6';
 import { RiWeightFill } from 'react-icons/ri';
 import { LuClipboardPlus } from 'react-icons/lu';
 import { AiFillPrinter } from 'react-icons/ai';
-import { MdPrecisionManufacturing, MdClass, MdOutlineSubtitles } from 'react-icons/md';
+import { MdClass, MdOutlineSubtitles } from 'react-icons/md';
 
 import { formatDate } from '@/utils/dateFormat';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';

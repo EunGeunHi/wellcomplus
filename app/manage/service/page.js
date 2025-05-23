@@ -699,8 +699,8 @@ export default function ServiceManagementPage() {
                         <div>
                           <p className="text-xs text-gray-500">연락처</p>
                           <p className="font-medium">
-                            {selectedApp.user.phoneNumber ||
-                              (selectedApp.information && selectedApp.information.phoneNumber) ||
+                            {selectedApp.information?.phoneNumber ||
+                              selectedApp.user.phoneNumber ||
                               '정보 없음'}
                           </p>
                         </div>
@@ -875,6 +875,7 @@ export default function ServiceManagementPage() {
 
 // 서비스 유형별 상세 정보 렌더링
 function renderApplicationDetails(app) {
+  // API에서 전달받은 information 객체 사용
   const info = app.information || {};
 
   switch (app.type) {
@@ -884,25 +885,34 @@ function renderApplicationDetails(app) {
           <div className="grid grid-cols-2 gap-2">
             <InfoItem label="용도" value={info.purpose} />
             <InfoItem label="예산" value={info.budget} />
+            <InfoItem label="CPU" value={info.cpu} />
+            <InfoItem label="GPU" value={info.gpu} />
+            <InfoItem label="메모리" value={info.memory} />
+            <InfoItem label="저장장치" value={info.storage} />
+            <InfoItem label="쿨러" value={info.cooling} />
+            <InfoItem label="운영체제" value={info.os} />
+            <InfoItem label="수령방법" value={info.deliveryMethod} />
           </div>
-          <InfoItem label="요구사항" value={info.requirements} />
-          <InfoItem label="추가 요청" value={info.additional} />
-          <InfoItem label="기타" value={info.etc} />
+          <InfoItem label="추가 요청사항" value={info.additionalRequests} />
           <InfoItem label="연락처" value={info.phoneNumber} />
-          <InfoItem label="주소" value={info.address} />
+          <InfoItem label="배송주소" value={info.address} />
         </>
       );
 
     case 'printer':
       return (
         <>
-          <InfoItem label="모델명" value={info.modelName} />
-          <InfoItem label="용도" value={info.purpose} />
-          <InfoItem label="요구사항" value={info.requirements} />
-          <InfoItem label="수정 요청" value={info.modification} />
-          <InfoItem label="추가 요청" value={info.additional} />
+          <div className="grid grid-cols-2 gap-2">
+            <InfoItem label="용도" value={info.purpose} />
+            <InfoItem label="예산" value={info.budget} />
+            <InfoItem label="프린터 종류" value={info.printerType} />
+            <InfoItem label="무한잉크젯" value={info.infiniteInk} />
+            <InfoItem label="출력색상" value={info.outputColor} />
+            <InfoItem label="수령방법" value={info.deliveryMethod} />
+          </div>
+          <InfoItem label="추가 요청사항" value={info.additionalRequests} />
           <InfoItem label="연락처" value={info.phoneNumber} />
-          <InfoItem label="주소" value={info.address} />
+          <InfoItem label="배송주소" value={info.address} />
         </>
       );
 
@@ -910,30 +920,36 @@ function renderApplicationDetails(app) {
       return (
         <>
           <div className="grid grid-cols-2 gap-2">
-            <InfoItem label="모델명" value={info.modelName} />
-            <InfoItem label="제조사" value={info.manufacturer} />
-            <InfoItem label="브랜드" value={info.brand} />
-            <InfoItem label="화면 크기" value={info.screenSize} />
-            <InfoItem label="CPU" value={info.cpuType} />
-            <InfoItem label="GPU" value={info.gpuType} />
-            <InfoItem label="RAM" value={info.ramSize} />
-            <InfoItem label="저장소" value={info.storageSize} />
-            <InfoItem label="OS" value={info.os} />
+            <InfoItem label="용도" value={info.purpose} />
+            <InfoItem label="예산" value={info.budget} />
+            <InfoItem label="CPU" value={info.cpu} />
+            <InfoItem label="GPU" value={info.gpu} />
             <InfoItem label="무게" value={info.weight} />
-            <InfoItem label="가격대" value={info.priceRange} />
+            <InfoItem label="운영체제" value={info.os} />
+            <InfoItem label="RAM" value={info.ram} />
+            <InfoItem label="저장장치" value={info.storage} />
+            <InfoItem label="수령방법" value={info.deliveryMethod} />
           </div>
-          <InfoItem label="용도" value={info.purpose} />
-          <InfoItem label="추가 요청" value={info.additionalRequests} />
+          <InfoItem label="추가 요청사항" value={info.additionalRequests} />
           <InfoItem label="연락처" value={info.phoneNumber} />
+          <InfoItem label="배송주소" value={info.address} />
         </>
       );
 
     case 'as':
       return (
         <>
-          <InfoItem label="제품 유형" value={info.itemType} />
-          <InfoItem label="설명" value={info.description} />
+          <div className="grid grid-cols-2 gap-2">
+            <InfoItem label="A/S 분류" value={info.asCategory} />
+            <InfoItem label="사용자 이름" value={info.userName} />
+            <InfoItem label="PC 번호" value={info.pcNumber} />
+            <InfoItem label="프린터 종류" value={info.printerType} />
+            <InfoItem label="무한잉크젯" value={info.infiniteInk} />
+            <InfoItem label="수령방법" value={info.deliveryMethod} />
+          </div>
+          <InfoItem label="문제 설명" value={info.description} />
           <InfoItem label="연락처" value={info.phoneNumber} />
+          <InfoItem label="배송주소" value={info.address} />
         </>
       );
 
