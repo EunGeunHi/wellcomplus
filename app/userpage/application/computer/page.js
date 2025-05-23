@@ -42,11 +42,13 @@ export default function ComputerEstimatePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 via-sky-100/30 to-white">
       <LoggedInOnlySection fallback={<LoginFallback />}>
-        <div className="max-w-4xl mx-auto px-4 py-12 sm:px-6 lg:px-8 font-[NanumGothic]">
+        <div className="max-w-4xl mx-auto px-4 py-6 sm:py-12 sm:px-6 lg:px-8 font-[NanumGothic]">
           {/* 페이지 헤더 */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-[BMJUA] text-gray-900 mb-4">컴퓨터 견적 신청</h1>
-            <p className="text-lg text-gray-600">
+          <div className="text-center mb-6 sm:mb-12">
+            <h1 className="text-2xl sm:text-4xl font-[BMJUA] text-gray-900 mb-2 sm:mb-4">
+              컴퓨터 견적 신청
+            </h1>
+            <p className="text-sm sm:text-lg text-gray-600">
               <span className="text-blue-600 font-semibold">상세한 작성</span>을 통해 더 정확한
               견적을 받으실 수 있습니다
             </p>
@@ -58,9 +60,9 @@ export default function ComputerEstimatePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-8">
-                <div className="space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-8">
+                <div className="space-y-4 sm:space-y-8">
                   {/* 필수 입력 사항들 */}
                   <TextArea
                     id="purpose"
@@ -70,6 +72,7 @@ export default function ComputerEstimatePage() {
                     value={formData.purpose}
                     onChange={handleChange}
                     required
+                    rows={3}
                   />
 
                   <BudgetInput
@@ -108,7 +111,7 @@ export default function ComputerEstimatePage() {
                     isOpen={openSections.cpu}
                     onToggle={() => toggleSection('cpu')}
                   >
-                    <div className="mt-3">
+                    <div className="mt-2 sm:mt-3">
                       <RadioGroup
                         name="cpu"
                         label=""
@@ -125,7 +128,7 @@ export default function ComputerEstimatePage() {
                     isOpen={openSections.gpu}
                     onToggle={() => toggleSection('gpu')}
                   >
-                    <div className="mt-3">
+                    <div className="mt-2 sm:mt-3">
                       <RadioGroup
                         name="gpu"
                         label=""
@@ -142,14 +145,14 @@ export default function ComputerEstimatePage() {
                     isOpen={openSections.memory}
                     onToggle={() => toggleSection('memory')}
                   >
-                    <div className="mt-3">
+                    <div className="mt-2 sm:mt-3">
                       <RadioGroup
                         name="memory"
                         label=""
                         options={FORM_OPTIONS.memory}
                         value={formData.memory}
                         onChange={handleChange}
-                        columns={3}
+                        columns={2}
                       />
                     </div>
                   </OptionalSection>
@@ -159,14 +162,14 @@ export default function ComputerEstimatePage() {
                     isOpen={openSections.storage}
                     onToggle={() => toggleSection('storage')}
                   >
-                    <div className="mt-3">
+                    <div className="mt-2 sm:mt-3">
                       <RadioGroup
                         name="storage"
                         label=""
                         options={FORM_OPTIONS.storage}
                         value={formData.storage}
                         onChange={handleChange}
-                        columns={4}
+                        columns={2}
                       />
                     </div>
                   </OptionalSection>
@@ -176,14 +179,14 @@ export default function ComputerEstimatePage() {
                     isOpen={openSections.cooling}
                     onToggle={() => toggleSection('cooling')}
                   >
-                    <div className="mt-3">
+                    <div className="mt-2 sm:mt-3">
                       <RadioGroup
                         name="cooling"
                         label=""
                         options={FORM_OPTIONS.cooling}
                         value={formData.cooling}
                         onChange={handleChange}
-                        columns={3}
+                        columns={2}
                       />
                     </div>
                   </OptionalSection>
@@ -193,7 +196,7 @@ export default function ComputerEstimatePage() {
                     isOpen={openSections.deliveryMethod}
                     onToggle={() => toggleSection('deliveryMethod')}
                   >
-                    <div className="mt-3 space-y-4">
+                    <div className="mt-2 sm:mt-3 space-y-3 sm:space-y-4">
                       <RadioGroup
                         name="deliveryMethod"
                         label=""
@@ -215,7 +218,7 @@ export default function ComputerEstimatePage() {
                     isOpen={openSections.additionalRequests}
                     onToggle={() => toggleSection('additionalRequests')}
                   >
-                    <div className="mt-3">
+                    <div className="mt-2 sm:mt-3">
                       <TextArea
                         id="additionalRequests"
                         name="additionalRequests"
@@ -223,7 +226,7 @@ export default function ComputerEstimatePage() {
                         placeholder="추가적인 요청사항이나 특별히 고려해야 할 사항이 있으시면 작성해주세요"
                         value={formData.additionalRequests}
                         onChange={handleChange}
-                        rows={4}
+                        rows={3}
                       />
                     </div>
                   </OptionalSection>
