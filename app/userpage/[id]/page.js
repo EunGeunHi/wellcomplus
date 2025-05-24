@@ -1761,15 +1761,6 @@ const ReviewContent = ({ userData, userId }) => {
 
         <button
           type="submit"
-          disabled={isSubmitting || !serviceType || rating === 0 || reviewText.trim().length < 10}
-          className={`w-full py-3 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium flex items-center justify-center gap-2
-            ${isSubmitting || !serviceType || rating === 0 || reviewText.trim().length < 10 ? 'opacity-70 cursor-not-allowed' : ''}
-          `}
-        >
-          {isSubmitting ? '제출 중...' : '리뷰 제출하기'}
-          <FiSend className={isSubmitting ? 'opacity-0' : 'opacity-100'} />
-        </button>
-      </form>
       {/* 내가 작성한 리뷰 목록 */}
       <div className="mt-12">
         <h3 className="text-xl font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
@@ -1810,9 +1801,9 @@ const ReviewContent = ({ userData, userId }) => {
                       </span>
                     </div>
                     <div>
-                      {' '}
+                        <option value="notebook">노트북</option>
                       <div className="flex items-center gap-1 mb-2">
-                        {' '}
+                        <option value="other">기타 서비스</option>
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
                             key={star}
@@ -1820,13 +1811,22 @@ const ReviewContent = ({ userData, userId }) => {
                             onClick={() => handleRatingChange(star)}
                             className="text-xl focus:outline-none"
                           >
-                            {' '}
+                      <div className="flex items-center gap-1 mb-2">
                             <FiStar
-                              className={`${editForm.rating >= star ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'} transition-colors`}
-                            />{' '}
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
                           </button>
+                            type="button"
+                            onClick={() => handleRatingChange(star)}
+                            className="text-xl focus:outline-none"
+                      <textarea
+                        name="content"
+                        value={editForm.content}
+                        onChange={handleEditFormChange}
+                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[100px] text-sm"
+                        rows={6}
                         ))}{' '}
-                        <span className="ml-2 text-sm">{editForm.rating}점</span>{' '}
+                      <p className="mt-1 text-xs text-gray-500">
                       </div>{' '}
                       <textarea
                         name="content"
@@ -1964,15 +1964,6 @@ const ReviewContent = ({ userData, userId }) => {
                                   {image.name}{' '}
                                 </div>{' '}
                                 <div className="text-xs text-gray-400">
-                                  {' '}
-                                  {formatFileSize(image.size)}{' '}
-                                </div>{' '}
-                              </div>
-                            ))}{' '}
-                          </div>{' '}
-                        </div>
-                      )}{' '}
-                    </div>
                     <div className="flex gap-2 justify-end">
                       <button
                         onClick={handleCancelEdit}
@@ -2022,6 +2013,15 @@ const ReviewContent = ({ userData, userId }) => {
                     <p className="text-gray-700 whitespace-pre-line text-sm mb-3">
                       {review.content}
                     </p>
+                          }`}
+                        />
+                      ))}
+                      <span className="ml-2 text-sm font-medium">{review.rating}점</span>
+                    </div>
+
+                    <p className="text-gray-700 whitespace-pre-line text-sm mb-3">
+                      {review.content}
+                    </p>
 
                     {/* 이미지 표시 */}
                     {review.images && review.images.length > 0 && (
@@ -2040,15 +2040,6 @@ const ReviewContent = ({ userData, userId }) => {
                               </div>
                               <div className="mt-1 text-xs text-gray-500 truncate">
                                 {image.originalName}
-                              </div>
-                              <div className="text-xs text-gray-400">
-                                {formatFileSize(image.size)}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
 
                     <div className="flex justify-end">
                       <button

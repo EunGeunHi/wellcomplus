@@ -15,7 +15,22 @@ export async function GET(request) {
       })
       .sort({ createdAt: -1 }); // 최신순으로 정렬 (선택 사항)
 
-    return NextResponse.json(activeReviews, { status: 200 });
+    // Base64 이미지 URL 포함한 응답 생성
+    const reviewsWithImages = activeReviews.map((review) => {
+      const reviewObj = review.toObject();
+
+      if (reviewObj.images && reviewObj.images.length > 0) {
+        reviewObj.images = reviewObj.images.map((image) => ({
+          id: image._id,
+          originalName: image.originalName,
+          url: `data:${image.mimeType};base64,${image.data.toString('base64')}`,
+        }));
+      }
+
+      return reviewObj;
+    });
+
+    return NextResponse.json(reviewsWithImages);
   } catch (error) {
     console.error('Error fetching active reviews:', error);
     return NextResponse.json(
