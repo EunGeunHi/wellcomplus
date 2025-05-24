@@ -25,17 +25,21 @@ export const GET = withAuthAPI(async (req, { params, session }) => {
       isDeleted: false,
     }).sort({ createdAt: -1 }); // 최신순 정렬
 
+    // 이미지 포함한 리뷰 데이터 변환
+    const reviewsWithImages = reviews.map((review) => ({
+      id: review._id,
+      serviceType: review.serviceType,
+      rating: review.rating,
+      content: review.content,
+      createdAt: review.createdAt,
+      updatedAt: review.updatedAt,
+      images: review.getImageUrls(), // 이미지 URL 포함
+    }));
+
     // 성공 응답
     return NextResponse.json({
       success: true,
-      reviews: reviews.map((review) => ({
-        id: review._id,
-        serviceType: review.serviceType,
-        rating: review.rating,
-        content: review.content,
-        createdAt: review.createdAt,
-        updatedAt: review.updatedAt,
-      })),
+      reviews: reviewsWithImages,
     });
   } catch (error) {
     console.error('리뷰 목록 조회 중 오류 발생:', error);

@@ -916,7 +916,21 @@ const ReviewContent = ({ userData, userId }) => {
     content: '',
     rating: 0,
     serviceType: '',
+    existingImages: [], // 기존 이미지들
+    newImages: [], // 새로 추가할 이미지들
+    newImagePreviewUrls: [], // 새 이미지 미리보기 URLs
+    imagesToDelete: [], // 삭제할 기존 이미지들의 ID
   });
+
+  // 이미지 업로드 관련 상태
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState([]);
+  const [imageError, setImageError] = useState(''); // 이미지 갤러리 모달 상태  const [isImageModalOpen, setIsImageModalOpen] = useState(false);  const [currentImageIndex, setCurrentImageIndex] = useState(0);  const [currentImages, setCurrentImages] = useState([]);
+
+  // 이미지 갤러리 모달 상태
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentImages, setCurrentImages] = useState([]);
 
   // 토스트 상태를 하나의 객체로 관리
   const [toast, setToast] = useState({
@@ -924,6 +938,147 @@ const ReviewContent = ({ userData, userId }) => {
     message: '',
     type: '', // 'success' 또는 'error'
   });
+
+  // 이미지 파일 검증 함수
+  const validateImageFile = (file) => {
+    const allowedTypes = ['image/jpeg', 'image/png'];
+    const maxSize = 10 * 1024 * 1024; // 10MB
+
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error('JPG, PNG 파일만 업로드 가능합니다.');
+    }
+
+    if (file.size > maxSize) {
+      throw new Error('개별 파일 크기는 10MB를 초과할 수 없습니다.');
+    }
+
+    return true;
+  };
+
+  // 이미지 파일 선택 핸들러
+  const handleImageSelect = (e) => {
+    const files = Array.from(e.target.files);
+    setImageError('');
+
+    if (files.length === 0) return;
+
+    // 최대 5장 체크
+    if (selectedImages.length + files.length > 5) {
+      setImageError('이미지는 최대 5장까지만 업로드 가능합니다.');
+      return;
+    }
+
+    try {
+      // 각 파일 검증
+      files.forEach(validateImageFile);
+
+      // 총 용량 체크
+      const currentSize = selectedImages.reduce((sum, img) => sum + img.size, 0);
+      const newSize = files.reduce((sum, file) => sum + file.size, 0);
+
+      if (currentSize + newSize > 10 * 1024 * 1024) {
+        setImageError('이미지 총 크기는 10MB를 초과할 수 없습니다.');
+        return;
+      }
+
+      // 새로운 이미지들 추가
+      const newImages = [...selectedImages, ...files];
+      setSelectedImages(newImages);
+
+      // 미리보기 URL 생성
+      const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
+      setImagePreviewUrls([...imagePreviewUrls, ...newPreviewUrls]);
+    } catch (error) {
+      setImageError(error.message);
+    }
+  };
+
+  // 수정 모드용 새 이미지 선택 핸들러
+  const handleEditImageSelect = (e) => {
+    const files = Array.from(e.target.files);
+
+    if (files.length === 0) return;
+
+    // 현재 총 이미지 수 계산 (기존 - 삭제할 것들 + 새로 추가할 것들 + 지금 선택한 것들)
+    const currentExistingCount = editForm.existingImages.length - editForm.imagesToDelete.length;
+    const currentNewCount = editForm.newImages.length;
+    const totalAfterAdd = currentExistingCount + currentNewCount + files.length;
+
+    if (totalAfterAdd > 5) {
+      showToast('이미지는 최대 5장까지만 업로드 가능합니다.', 'error');
+      return;
+    }
+
+    try {
+      // 각 파일 검증
+      files.forEach(validateImageFile);
+
+      // 새로운 이미지들과 미리보기 URL 추가
+      const newImages = [...editForm.newImages, ...files];
+      const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
+      const allNewPreviewUrls = [...editForm.newImagePreviewUrls, ...newPreviewUrls];
+
+      setEditForm({
+        ...editForm,
+        newImages: newImages,
+        newImagePreviewUrls: allNewPreviewUrls,
+      });
+    } catch (error) {
+      showToast(error.message, 'error');
+    }
+  };
+
+  // 이미지 제거 핸들러
+  const handleImageRemove = (index) => {
+    const newImages = selectedImages.filter((_, i) => i !== index);
+    const newPreviewUrls = imagePreviewUrls.filter((_, i) => i !== index);
+
+    // 기존 URL 해제
+    URL.revokeObjectURL(imagePreviewUrls[index]);
+
+    setSelectedImages(newImages);
+    setImagePreviewUrls(newPreviewUrls);
+    setImageError('');
+  };
+
+  // 수정 모드용 기존 이미지 삭제 핸들러
+  const handleExistingImageRemove = (imageId) => {
+    setEditForm({
+      ...editForm,
+      imagesToDelete: [...editForm.imagesToDelete, imageId],
+    });
+  };
+
+  // 수정 모드용 기존 이미지 삭제 취소 핸들러
+  const handleExistingImageRestore = (imageId) => {
+    setEditForm({
+      ...editForm,
+      imagesToDelete: editForm.imagesToDelete.filter((id) => id !== imageId),
+    });
+  };
+
+  // 수정 모드용 새 이미지 제거 핸들러
+  const handleNewImageRemove = (index) => {
+    const newImages = editForm.newImages.filter((_, i) => i !== index);
+    const newPreviewUrls = editForm.newImagePreviewUrls.filter((_, i) => i !== index);
+
+    // 기존 URL 해제
+    URL.revokeObjectURL(editForm.newImagePreviewUrls[index]);
+
+    setEditForm({
+      ...editForm,
+      newImages: newImages,
+      newImagePreviewUrls: newPreviewUrls,
+    });
+  };
+
+  // 컴포넌트 언마운트 시 미리보기 URL 정리
+  useEffect(() => {
+    return () => {
+      imagePreviewUrls.forEach((url) => URL.revokeObjectURL(url));
+      editForm.newImagePreviewUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, []);
 
   // 토스트 메시지 표시 함수
   const showToast = (message, type = 'success') => {
@@ -1000,6 +1155,10 @@ const ReviewContent = ({ userData, userId }) => {
       content: review.content,
       rating: review.rating,
       serviceType: review.serviceType,
+      existingImages: review.images || [],
+      newImages: [],
+      newImagePreviewUrls: [],
+      imagesToDelete: [],
     });
   };
 
@@ -1040,11 +1199,18 @@ const ReviewContent = ({ userData, userId }) => {
 
   // 수정 취소 버튼 클릭 시 호출되는 함수
   const handleCancelEdit = () => {
+    // 새 이미지 미리보기 URL들 정리
+    editForm.newImagePreviewUrls.forEach((url) => URL.revokeObjectURL(url));
+
     setEditingReview(null);
     setEditForm({
       content: '',
       rating: 0,
       serviceType: '',
+      existingImages: [],
+      newImages: [],
+      newImagePreviewUrls: [],
+      imagesToDelete: [],
     });
   };
 
@@ -1075,44 +1241,73 @@ const ReviewContent = ({ userData, userId }) => {
     setIsSubmitting(true);
 
     try {
-      // 리뷰 업데이트 API 호출
-      const response = await fetch(`/api/reviews/${reviewId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content: editForm.content,
-          rating: editForm.rating,
-          serviceType: editForm.serviceType,
-        }),
-      });
+      // 이미지 변경사항이 있는지 확인
+      const hasImageChanges = editForm.newImages.length > 0 || editForm.imagesToDelete.length > 0;
 
-      const data = await response.json();
+      if (hasImageChanges) {
+        // FormData로 이미지와 함께 전송
+        const formData = new FormData();
+        formData.append('content', editForm.content);
+        formData.append('rating', editForm.rating.toString());
+        formData.append('serviceType', editForm.serviceType);
+        formData.append('keepExistingImages', 'true');
 
-      if (!response.ok) {
-        throw new Error(data.error || '리뷰 수정에 실패했습니다.');
+        // 삭제할 이미지 ID들 추가
+        editForm.imagesToDelete.forEach((imageId) => {
+          formData.append('imagesToDelete', imageId);
+        });
+
+        // 새로운 이미지들 추가
+        editForm.newImages.forEach((image) => {
+          formData.append('images', image);
+        });
+
+        const response = await fetch(`/api/reviews/${reviewId}`, {
+          method: 'PATCH',
+          body: formData,
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || '리뷰 수정에 실패했습니다.');
+        }
+      } else {
+        // 텍스트만 변경된 경우 JSON으로 전송
+        const response = await fetch(`/api/reviews/${reviewId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            content: editForm.content,
+            rating: editForm.rating,
+            serviceType: editForm.serviceType,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || '리뷰 수정에 실패했습니다.');
+        }
       }
 
       // 성공 메시지 표시
       showToast('리뷰가 성공적으로 수정되었습니다.', 'success');
 
+      // 새 이미지 미리보기 URL들 정리
+      editForm.newImagePreviewUrls.forEach((url) => URL.revokeObjectURL(url));
+
       // 수정 모드 종료
       setEditingReview(null);
 
-      // 리뷰 목록 갱신 (userReviews 상태 직접 업데이트)
-      setUserReviews(
-        userReviews.map((review) =>
-          review.id === reviewId
-            ? {
-                ...review,
-                content: editForm.content,
-                rating: editForm.rating,
-                serviceType: editForm.serviceType,
-              }
-            : review
-        )
-      );
+      // 리뷰 목록을 다시 조회하여 최신 데이터로 업데이트
+      const response = await fetch(`/api/reviews/user/${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setUserReviews(data.reviews || []);
+      }
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
@@ -1141,17 +1336,21 @@ const ReviewContent = ({ userData, userId }) => {
     setIsSubmitting(true);
 
     try {
+      // FormData 생성
+      const formData = new FormData();
+      formData.append('serviceType', serviceType);
+      formData.append('rating', rating.toString());
+      formData.append('content', reviewText);
+
+      // 이미지 파일들 추가
+      selectedImages.forEach((image, index) => {
+        formData.append('images', image);
+      });
+
       // 리뷰 API 호출
       const response = await fetch('/api/reviews', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          serviceType,
-          rating,
-          content: reviewText,
-        }),
+        body: formData, // FormData 사용
       });
 
       const data = await response.json();
@@ -1162,10 +1361,21 @@ const ReviewContent = ({ userData, userId }) => {
 
       // 성공 메시지 표시
       showToast('리뷰가 성공적으로 등록되었습니다.', 'success');
+
+      // 폼 초기화
       setReviewText('');
       setRating(0);
       setServiceType('');
       setHoveredRating(0);
+      setSelectedImages([]);
+      setImagePreviewUrls([]);
+      setImageError('');
+
+      // 파일 입력 필드 초기화
+      const fileInput = document.getElementById('imageInput');
+      if (fileInput) {
+        fileInput.value = '';
+      }
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
@@ -1197,53 +1407,188 @@ const ReviewContent = ({ userData, userId }) => {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   };
 
-  // 토스트 메시지 컴포넌트
-  const Toast = () => {
-    if (!toast.visible || !toast.message) return null;
+  // 파일 크기 포맷 함수
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
 
-    const isError = toast.type === 'error';
+  // 토스트 메시지 컴포넌트  const Toast = () => {    if (!toast.visible || !toast.message) return null;    const isError = toast.type === 'error';    return (      <div        className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300         ${toast.visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}      >        <div          className={`py-2 px-4 rounded-lg shadow-lg flex items-center gap-2 text-sm font-medium          ${isError ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}        >          {isError ? (            <svg              xmlns="http://www.w3.org/2000/svg"              className="h-5 w-5"              viewBox="0 0 20 20"              fill="currentColor"            >              <path                fillRule="evenodd"                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"                clipRule="evenodd"              />            </svg>          ) : (            <svg              xmlns="http://www.w3.org/2000/svg"              className="h-5 w-5"              viewBox="0 0 20 20"              fill="currentColor"            >              <path                fillRule="evenodd"                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"                clipRule="evenodd"              />            </svg>          )}          {toast.message}        </div>      </div>    );  };
+
+  // 이미지 갤러리 모달 컴포넌트
+  const ImageGalleryModal = () => {
+    if (!isImageModalOpen || !currentImages.length) return null;
+
+    const currentImage = currentImages[currentImageIndex];
 
     return (
-      <div
-        className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 
-        ${toast.visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}
-      >
-        <div
-          className={`py-2 px-4 rounded-lg shadow-lg flex items-center gap-2 text-sm font-medium
-          ${isError ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}
-        >
-          {isError ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
+        {/* 배경 클릭으로 모달 닫기 */}
+        <div className="absolute inset-0" onClick={handleCloseImageModal} />
+
+        {/* 모달 컨텐츠 */}
+        <div className="relative max-w-7xl max-h-full w-full h-full flex items-center justify-center p-4">
+          {/* 닫기 버튼 */}
+          <button
+            onClick={handleCloseImageModal}
+            className="absolute top-4 right-4 z-10 bg-black bg-opacity-50 text-white rounded-full p-2 hover:bg-opacity-70 transition-all"
+          >
+            <FiX size={24} />
+          </button>
+
+          {/* 이전 버튼 */}
+          {currentImages.length > 1 && (
+            <button
+              onClick={handlePrevImage}
+              className="absolute left-4 z-10 bg-black bg-opacity-50 text-white rounded-full p-3 hover:bg-opacity-70 transition-all"
             >
-              <path
-                fillRule="evenodd"
-                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                clipRule="evenodd"
-              />
-            </svg>
-          ) : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                clipRule="evenodd"
-              />
-            </svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M15 18L9 12L15 6"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
           )}
-          {toast.message}
+
+          {/* 다음 버튼 */}
+          {currentImages.length > 1 && (
+            <button
+              onClick={handleNextImage}
+              className="absolute right-4 z-10 bg-black bg-opacity-50 text-white rounded-full p-3 hover:bg-opacity-70 transition-all"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M9 18L15 12L9 6"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          )}
+
+          {/* 이미지 */}
+          <div className="relative max-w-full max-h-full">
+            <img
+              src={currentImage.url}
+              alt={currentImage.originalName || `이미지 ${currentImageIndex + 1}`}
+              className="max-w-full max-h-full object-contain"
+            />
+
+            {/* 이미지 정보 */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg">
+              <div className="text-center">
+                <div className="text-sm font-medium">
+                  {currentImageIndex + 1} / {currentImages.length}
+                </div>
+                <div className="text-xs opacity-80">{currentImage.originalName}</div>
+                <div className="text-xs opacity-70">{formatFileSize(currentImage.size)}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* 썸네일 네비게이션 (3개 이상일 때만 표시) */}
+          {currentImages.length > 2 && (
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 translate-y-16">
+              <div className="flex gap-2 bg-black bg-opacity-50 p-2 rounded-lg max-w-xs overflow-x-auto">
+                {currentImages.map((image, index) => (
+                  <button
+                    key={image.id || index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`flex-shrink-0 w-12 h-12 rounded border-2 overflow-hidden transition-all ${
+                      index === currentImageIndex
+                        ? 'border-white'
+                        : 'border-transparent opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    <img
+                      src={image.url}
+                      alt={`썸네일 ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 키보드 단축키 안내 */}
+          <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white text-xs px-3 py-2 rounded-lg">
+            <div>← → 이미지 전환</div>
+            <div>ESC 닫기</div>
+          </div>
         </div>
       </div>
     );
   };
+
+  // 이전 이미지로 이동
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prev) => (prev === 0 ? currentImages.length - 1 : prev - 1));
+  };
+
+  // 다음 이미지로 이동
+  const handleNextImage = () => {
+    setCurrentImageIndex((prev) => (prev === currentImages.length - 1 ? 0 : prev + 1));
+  };
+
+  // 모달 닫기
+  const handleCloseImageModal = () => {
+    setIsImageModalOpen(false);
+    setCurrentImages([]);
+    setCurrentImageIndex(0);
+  };
+
+  // 이미지 클릭 핸들러 (모달 열기)
+  const handleImageClick = (images, clickedIndex) => {
+    setCurrentImages(images);
+    setCurrentImageIndex(clickedIndex);
+    setIsImageModalOpen(true);
+  };
+
+  // 키보드 이벤트 핸들링
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!isImageModalOpen) return;
+
+      switch (e.key) {
+        case 'ArrowLeft':
+          e.preventDefault();
+          handlePrevImage();
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          handleNextImage();
+          break;
+        case 'Escape':
+          e.preventDefault();
+          handleCloseImageModal();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    // 모달이 열릴 때 body 스크롤 방지
+    if (isImageModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'auto';
+    };
+  }, [isImageModalOpen]);
 
   if (isLoading) {
     return <div>리뷰 목록을 불러오는 중입니다...</div>;
@@ -1252,12 +1597,52 @@ const ReviewContent = ({ userData, userId }) => {
   return (
     <div className="max-w-2xl mx-auto">
       {/* 토스트 메시지 */}
-      <Toast />
+      {toast.visible && toast.message && (
+        <div
+          className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 
+          ${toast.visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}
+        >
+          <div
+            className={`py-2 px-4 rounded-lg shadow-lg flex items-center gap-2 text-sm font-medium
+            ${toast.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}
+          >
+            {toast.type === 'error' ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            )}
+            {toast.message}
+          </div>
+        </div>
+      )}
 
+      {/* 이미지 갤러리 모달 */}
+      <ImageGalleryModal />
       <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-4 sm:mb-6 relative pb-2 sm:pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-8 sm:after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
         리뷰 작성
       </h2>
-
       <form onSubmit={handleSubmit} className="space-y-6 mb-10">
         <div>
           <label htmlFor="serviceType" className="block text-sm font-medium text-gray-700 mb-1">
@@ -1326,18 +1711,65 @@ const ReviewContent = ({ userData, userId }) => {
           </p>
         </div>
 
+        {/* 이미지 업로드 섹션 */}
+        <div>
+          <label htmlFor="imageInput" className="block text-sm font-medium text-gray-700 mb-1">
+            이미지 업로드 (최대 5장, 총 10MB 이하)
+          </label>
+          <input
+            type="file"
+            id="imageInput"
+            multiple
+            accept="image/jpeg,image/png,.jpg,.png"
+            onChange={handleImageSelect}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <p className="mt-1 text-xs text-gray-500">JPG, PNG 파일만 업로드 가능합니다.</p>
+          {imageError && <p className="mt-1 text-xs text-red-500">{imageError}</p>}
+        </div>
+
+        {/* 이미지 미리보기 */}
+        {selectedImages.length > 0 && (
+          <div>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">
+              선택된 이미지 ({selectedImages.length}/5)
+            </h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {selectedImages.map((image, index) => (
+                <div key={index} className="relative group">
+                  <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                    <img
+                      src={imagePreviewUrls[index]}
+                      alt={`미리보기 ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleImageRemove(index)}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                  >
+                    <FiX />
+                  </button>
+                  <div className="mt-1 text-xs text-gray-500 truncate">{image.name}</div>
+                  <div className="text-xs text-gray-400">{formatFileSize(image.size)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || !serviceType || rating === 0 || reviewText.trim().length < 10}
           className={`w-full py-3 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium flex items-center justify-center gap-2
-            ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}
+            ${isSubmitting || !serviceType || rating === 0 || reviewText.trim().length < 10 ? 'opacity-70 cursor-not-allowed' : ''}
           `}
         >
           {isSubmitting ? '제출 중...' : '리뷰 제출하기'}
           <FiSend className={isSubmitting ? 'opacity-0' : 'opacity-100'} />
         </button>
       </form>
-
       {/* 내가 작성한 리뷰 목록 */}
       <div className="mt-12">
         <h3 className="text-xl font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
@@ -1377,9 +1809,10 @@ const ReviewContent = ({ userData, userId }) => {
                         {formatReviewDate(review.createdAt)}
                       </span>
                     </div>
-
                     <div>
+                      {' '}
                       <div className="flex items-center gap-1 mb-2">
+                        {' '}
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
                             key={star}
@@ -1387,30 +1820,159 @@ const ReviewContent = ({ userData, userId }) => {
                             onClick={() => handleRatingChange(star)}
                             className="text-xl focus:outline-none"
                           >
+                            {' '}
                             <FiStar
-                              className={`${
-                                editForm.rating >= star
-                                  ? 'fill-yellow-400 text-yellow-400'
-                                  : 'text-gray-300'
-                              } transition-colors`}
-                            />
+                              className={`${editForm.rating >= star ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'} transition-colors`}
+                            />{' '}
                           </button>
-                        ))}
-                        <span className="ml-2 text-sm">{editForm.rating}점</span>
-                      </div>
-
+                        ))}{' '}
+                        <span className="ml-2 text-sm">{editForm.rating}점</span>{' '}
+                      </div>{' '}
                       <textarea
                         name="content"
                         value={editForm.content}
                         onChange={handleEditFormChange}
                         className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[100px] text-sm"
                         rows={6}
-                      />
+                      />{' '}
                       <p className="mt-1 text-xs text-gray-500">
-                        최소 10자 이상 작성해주세요. 현재 {editForm.content.length}자
-                      </p>
+                        {' '}
+                        최소 10자 이상 작성해주세요. 현재 {editForm.content.length}자{' '}
+                      </p>{' '}
+                    </div>{' '}
+                    {/* 이미지 관리 섹션 */}{' '}
+                    <div className="space-y-3">
+                      {' '}
+                      {/* 기존 이미지들 */}{' '}
+                      {editForm.existingImages && editForm.existingImages.length > 0 && (
+                        <div>
+                          {' '}
+                          <h5 className="text-sm font-medium text-gray-700 mb-2">
+                            기존 이미지
+                          </h5>{' '}
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                            {' '}
+                            {editForm.existingImages.map((image, index) => (
+                              <div key={image.id || index} className="relative group">
+                                {' '}
+                                <div
+                                  className={`aspect-square bg-gray-100 rounded-lg overflow-hidden ${editForm.imagesToDelete.includes(image.id) ? 'opacity-50 grayscale' : ''}`}
+                                >
+                                  {' '}
+                                  <img
+                                    src={image.url}
+                                    alt={image.originalName || `이미지 ${index + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />{' '}
+                                </div>{' '}
+                                {editForm.imagesToDelete.includes(image.id) ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleExistingImageRestore(image.id)}
+                                    className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-green-600 transition-colors"
+                                    title="복원"
+                                  >
+                                    {' '}
+                                    ↶{' '}
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleExistingImageRemove(image.id)}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                                    title="삭제"
+                                  >
+                                    {' '}
+                                    <FiX />{' '}
+                                  </button>
+                                )}{' '}
+                                <div className="mt-1 text-xs text-gray-500 truncate">
+                                  {' '}
+                                  {image.originalName}{' '}
+                                </div>{' '}
+                                <div className="text-xs text-gray-400">
+                                  {' '}
+                                  {formatFileSize(image.size)}{' '}
+                                </div>{' '}
+                                {editForm.imagesToDelete.includes(image.id) && (
+                                  <div className="text-xs text-red-500">삭제 예정</div>
+                                )}{' '}
+                              </div>
+                            ))}{' '}
+                          </div>{' '}
+                        </div>
+                      )}{' '}
+                      {/* 새 이미지 추가 */}{' '}
+                      <div>
+                        {' '}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          {' '}
+                          새 이미지 추가 (현재 총{' '}
+                          {editForm.existingImages.length -
+                            editForm.imagesToDelete.length +
+                            editForm.newImages.length}
+                          /5장){' '}
+                        </label>{' '}
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/jpeg,image/png,.jpg,.png"
+                          onChange={handleEditImageSelect}
+                          className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                          disabled={
+                            editForm.existingImages.length -
+                              editForm.imagesToDelete.length +
+                              editForm.newImages.length >=
+                            5
+                          }
+                        />{' '}
+                        <p className="mt-1 text-xs text-gray-500">
+                          {' '}
+                          JPG, PNG 파일만 업로드 가능합니다.{' '}
+                        </p>{' '}
+                      </div>{' '}
+                      {/* 새로 추가된 이미지들 */}{' '}
+                      {editForm.newImages.length > 0 && (
+                        <div>
+                          {' '}
+                          <h5 className="text-sm font-medium text-gray-700 mb-2">
+                            새로 추가된 이미지
+                          </h5>{' '}
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                            {' '}
+                            {editForm.newImages.map((image, index) => (
+                              <div key={index} className="relative group">
+                                {' '}
+                                <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                                  {' '}
+                                  <img
+                                    src={editForm.newImagePreviewUrls[index]}
+                                    alt={`새 이미지 ${index + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />{' '}
+                                </div>{' '}
+                                <button
+                                  type="button"
+                                  onClick={() => handleNewImageRemove(index)}
+                                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                                >
+                                  {' '}
+                                  <FiX />{' '}
+                                </button>{' '}
+                                <div className="mt-1 text-xs text-gray-500 truncate">
+                                  {' '}
+                                  {image.name}{' '}
+                                </div>{' '}
+                                <div className="text-xs text-gray-400">
+                                  {' '}
+                                  {formatFileSize(image.size)}{' '}
+                                </div>{' '}
+                              </div>
+                            ))}{' '}
+                          </div>{' '}
+                        </div>
+                      )}{' '}
                     </div>
-
                     <div className="flex gap-2 justify-end">
                       <button
                         onClick={handleCancelEdit}
@@ -1460,6 +2022,33 @@ const ReviewContent = ({ userData, userId }) => {
                     <p className="text-gray-700 whitespace-pre-line text-sm mb-3">
                       {review.content}
                     </p>
+
+                    {/* 이미지 표시 */}
+                    {review.images && review.images.length > 0 && (
+                      <div className="mb-3">
+                        <h5 className="text-sm font-medium text-gray-700 mb-2">첨부된 이미지</h5>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                          {review.images.map((image, index) => (
+                            <div key={image.id || index} className="relative group">
+                              <div className="bg-gray-100 rounded-lg overflow-hidden">
+                                <img
+                                  src={image.url}
+                                  alt={image.originalName || `이미지 ${index + 1}`}
+                                  className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
+                                  onClick={() => handleImageClick(review.images, index)}
+                                />
+                              </div>
+                              <div className="mt-1 text-xs text-gray-500 truncate">
+                                {image.originalName}
+                              </div>
+                              <div className="text-xs text-gray-400">
+                                {formatFileSize(image.size)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="flex justify-end">
                       <button
