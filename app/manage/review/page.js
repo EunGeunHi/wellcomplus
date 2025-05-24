@@ -83,6 +83,200 @@ function StarRating({ rating }) {
   );
 }
 
+// 이미지 갤러리 컴포넌트
+function ImageGallery({ images, reviewId }) {
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+  const [loadedImages, setLoadedImages] = useState(new Set());
+  const [failedImages, setFailedImages] = useState(new Set());
+
+  if (!images || images.length === 0) {
+    return null;
+  }
+
+  const handleImageLoad = (imageId) => {
+    setLoadedImages((prev) => new Set([...prev, imageId]));
+  };
+
+  const handleImageError = (imageId) => {
+    setFailedImages((prev) => new Set([...prev, imageId]));
+  };
+
+  const openModal = (index) => {
+    setSelectedImageIndex(index);
+  };
+
+  const closeModal = () => {
+    setSelectedImageIndex(null);
+  };
+
+  const nextImage = () => {
+    setSelectedImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  const prevImage = () => {
+    setSelectedImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  // 키보드 이벤트 처리
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (selectedImageIndex === null) return;
+
+      switch (e.key) {
+        case 'Escape':
+          closeModal();
+          break;
+        case 'ArrowLeft':
+          prevImage();
+          break;
+        case 'ArrowRight':
+          nextImage();
+          break;
+        default:
+          break;
+      }
+    };
+
+    if (selectedImageIndex !== null) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedImageIndex]);
+
+  return (
+    <div className="mt-4">
+      <p className="text-xs text-gray-500 mb-3">첨부 이미지 ({images.length}장)</p>
+
+      {/* 썸네일 그리드 */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+        {images.map((image, index) => (
+          <div
+            key={image.id}
+            className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity border-2 border-gray-200 hover:border-indigo-300"
+            onClick={() => openModal(index)}
+          >
+            {failedImages.has(image.id) ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+                <div className="text-center text-gray-400">
+                  <FiAlertCircle className="mx-auto mb-1" size={20} />
+                  <span className="text-xs">로드 실패</span>
+                </div>
+              </div>
+            ) : (
+              <>
+                <img
+                  src={image.url}
+                  alt={image.originalName}
+                  className="w-full h-full object-cover"
+                  onLoad={() => handleImageLoad(image.id)}
+                  onError={() => handleImageError(image.id)}
+                  loading="lazy"
+                />
+                {!loadedImages.has(image.id) && !failedImages.has(image.id) && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* 이미지 정보 오버레이 */}
+            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-1">
+              <p className="text-xs truncate">{image.originalName}</p>
+              <p className="text-xs text-gray-300">{(image.size / 1024).toFixed(1)}KB</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* 이미지 모달 */}
+      {selectedImageIndex !== null && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+          onClick={closeModal}
+        >
+          <div className="relative max-w-4xl max-h-full" onClick={(e) => e.stopPropagation()}>
+            {/* 닫기 버튼 */}
+            <button
+              onClick={closeModal}
+              className="absolute top-4 right-4 text-white hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full p-2 transition-colors"
+              title="닫기 (ESC)"
+            >
+              <FiX size={24} />
+            </button>
+
+            {/* 이전/다음 버튼 */}
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={prevImage}
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full p-3 transition-colors"
+                  title="이전 이미지 (←)"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
+                </button>
+                <button
+                  onClick={nextImage}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full p-3 transition-colors"
+                  title="다음 이미지 (→)"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              </>
+            )}
+
+            {/* 메인 이미지 */}
+            <div className="bg-white rounded-lg overflow-hidden">
+              <img
+                src={images[selectedImageIndex].url}
+                alt={images[selectedImageIndex].originalName}
+                className="max-w-full max-h-[80vh] object-contain mx-auto block"
+                onError={() => handleImageError(images[selectedImageIndex].id)}
+              />
+
+              {/* 이미지 정보 */}
+              <div className="p-4 bg-gray-50">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="font-medium text-gray-900">
+                      {images[selectedImageIndex].originalName}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      크기: {(images[selectedImageIndex].size / 1024).toFixed(1)}KB
+                    </p>
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {selectedImageIndex + 1} / {images.length}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ReviewManagementPage() {
   const { data: session, status } = useSession();
   const [activeTab, setActiveTab] = useState('register');
@@ -98,6 +292,12 @@ export default function ReviewManagementPage() {
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
 
+  // 페이지네이션 상태 추가
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [pageLimit] = useState(20); // 페이지당 아이템 수
+
   // 탭 메뉴 정의
   const tabs = [
     { id: 'register', label: '승인대기', icon: <FiClipboard /> },
@@ -106,8 +306,8 @@ export default function ReviewManagementPage() {
     { id: 'deleted', label: '삭제됨', icon: <FiTrash2 /> },
   ];
 
-  // 데이터 로드 함수
-  const fetchReviews = async (status, search = searchQuery, type = serviceTypeFilter) => {
+  // 데이터 로드 함수 (페이지네이션 지원)
+  const fetchReviews = async (status, search = searchQuery, type = serviceTypeFilter, page = 1) => {
     try {
       setLoading(true);
       setError(null);
@@ -117,6 +317,8 @@ export default function ReviewManagementPage() {
       // URL 파라미터 구성
       const params = new URLSearchParams();
       params.append('status', status);
+      params.append('page', page.toString());
+      params.append('limit', pageLimit.toString());
       if (search) params.append('search', search);
       if (type) params.append('type', type);
 
@@ -129,26 +331,46 @@ export default function ReviewManagementPage() {
 
       const data = await response.json();
       setReviews(data.reviews || []);
+
+      // 페이지네이션 정보 업데이트
+      if (data.pagination) {
+        setCurrentPage(data.pagination.currentPage);
+        setTotalPages(data.pagination.totalPages);
+        setTotalCount(data.pagination.totalCount);
+      }
     } catch (err) {
       console.error('리뷰 데이터 로드 중 오류:', err);
       setError(err.message);
       setReviews([]);
+      setTotalCount(0);
+      setTotalPages(1);
+      setCurrentPage(1);
     } finally {
       setLoading(false);
     }
   };
 
-  // 검색 실행 함수
-  const handleSearch = (e) => {
-    e.preventDefault();
-    fetchReviews(activeTab);
+  // 페이지 변경 함수
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
+      setCurrentPage(newPage);
+      fetchReviews(activeTab, searchQuery, serviceTypeFilter, newPage);
+    }
   };
 
-  // 검색 초기화 함수
+  // 검색 실행 함수 (페이지 초기화)
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setCurrentPage(1);
+    fetchReviews(activeTab, searchQuery, serviceTypeFilter, 1);
+  };
+
+  // 검색 초기화 함수 (페이지 초기화)
   const clearSearch = () => {
     setSearchQuery('');
     setServiceTypeFilter('');
-    fetchReviews(activeTab, '', '');
+    setCurrentPage(1);
+    fetchReviews(activeTab, '', '', 1);
   };
 
   // 토스트 메시지 표시 함수
@@ -194,8 +416,8 @@ export default function ReviewManagementPage() {
         status: newStatus,
       });
 
-      // 목록 새로고침
-      await fetchReviews(activeTab);
+      // 목록 새로고침 (현재 페이지 유지)
+      await fetchReviews(activeTab, searchQuery, serviceTypeFilter, currentPage);
 
       // 성공 메시지 표시
       showToast(`상태가 '${statusText[newStatus]}'으로 변경되었습니다.`, 'success');
@@ -207,10 +429,11 @@ export default function ReviewManagementPage() {
     }
   };
 
-  // 탭 변경 시 해당 상태의 데이터 로드
+  // 탭 변경 시 해당 상태의 데이터 로드 (페이지네이션 초기화)
   useEffect(() => {
     if (status === 'authenticated') {
-      fetchReviews(activeTab);
+      setCurrentPage(1);
+      fetchReviews(activeTab, searchQuery, serviceTypeFilter, 1);
     }
   }, [activeTab, status]);
 
@@ -313,7 +536,8 @@ export default function ReviewManagementPage() {
                   value={serviceTypeFilter}
                   onChange={(e) => {
                     setServiceTypeFilter(e.target.value);
-                    fetchReviews(activeTab, searchQuery, e.target.value);
+                    setCurrentPage(1);
+                    fetchReviews(activeTab, searchQuery, e.target.value, 1);
                   }}
                   className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
@@ -357,149 +581,6 @@ export default function ReviewManagementPage() {
 
           {/* 메인 컨텐츠 */}
           <div className="flex flex-col gap-6">
-            {/* 리뷰 목록 (테이블 형식) */}
-            <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-              <div className="flex justify-between items-center p-4 border-b">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  {tabs.find((tab) => tab.id === activeTab)?.label} 리뷰 목록
-                  {isSearching && (
-                    <span className="text-sm font-normal text-gray-500 ml-2">
-                      {reviews.length > 0 ? `검색 결과: ${reviews.length}건` : '검색 결과 없음'}
-                    </span>
-                  )}
-                </h2>
-                <button
-                  onClick={() => fetchReviews(activeTab)}
-                  className="p-2 text-gray-600 hover:text-indigo-600 rounded-full hover:bg-indigo-50 transition-colors"
-                  title="새로고침"
-                >
-                  <FiRefreshCw />
-                </button>
-              </div>
-
-              {loading ? (
-                <div className="py-32 text-center">
-                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">데이터를 불러오는 중입니다...</p>
-                </div>
-              ) : error ? (
-                <div className="py-32 text-center">
-                  <div className="text-red-500 text-4xl mb-4">⚠️</div>
-                  <p className="text-red-500 mb-2">오류가 발생했습니다</p>
-                  <p className="text-gray-600 mb-4">{error}</p>
-                  <button
-                    onClick={() => fetchReviews(activeTab)}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-                  >
-                    다시 시도
-                  </button>
-                </div>
-              ) : reviews.length === 0 ? (
-                <div className="py-32 text-center">
-                  <div className="text-gray-400 text-4xl mb-4">📭</div>
-                  <p className="text-gray-600 mb-2">데이터가 없습니다</p>
-                  <p className="text-gray-500 text-sm">
-                    {statusText[activeTab]} 상태의 리뷰가 없습니다.
-                  </p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          유형
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          평점
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          내용 미리보기
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          작성자
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          작성일
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          상태
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {reviews.map((review) => (
-                        <tr
-                          key={review._id}
-                          onClick={() => handleItemSelect(review)}
-                          className={`cursor-pointer hover:bg-gray-50 transition-colors ${
-                            selectedReview?._id === review._id ? 'bg-indigo-50' : ''
-                          }`}
-                        >
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <span className="text-xl mr-2">
-                                {serviceTypeInfo[review.serviceType]?.icon || '📋'}
-                              </span>
-                              <span className="text-sm text-gray-900">
-                                {serviceTypeInfo[review.serviceType]?.text || review.serviceType}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <StarRating rating={review.rating} />
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm text-gray-900 max-w-xs truncate">
-                              {review.content}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">
-                              {review.userId?.name || '알 수 없음'}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {review.userId?.email || '이메일 없음'}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {formatDate(review.createdAt)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`px-2 py-1 text-xs rounded-full ${
-                                statusBadgeStyle[review.status]
-                              }`}
-                            >
-                              {statusText[review.status]}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-
             {/* 선택된 리뷰 상세 정보 */}
             {selectedReview && (
               <div className="bg-white shadow-sm rounded-lg p-6">
@@ -580,6 +661,12 @@ export default function ReviewManagementPage() {
                     </div>
                   </div>
 
+                  {/* 이미지 갤러리 */}
+                  <ImageGallery
+                    images={selectedReview.images || []}
+                    reviewId={selectedReview._id}
+                  />
+
                   {/* 상태 변경 버튼 */}
                   <div className="flex flex-wrap gap-2 items-center bg-gray-50 p-4 rounded-lg">
                     <h3 className="text-lg font-medium text-gray-900 mr-4 flex-shrink-0">
@@ -590,6 +677,243 @@ export default function ReviewManagementPage() {
                 </div>
               </div>
             )}
+            {/* 리뷰 목록 (테이블 형식) */}
+            <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+              <div className="flex justify-between items-center p-4 border-b">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  {tabs.find((tab) => tab.id === activeTab)?.label} 리뷰 목록
+                  {isSearching && (
+                    <span className="text-sm font-normal text-gray-500 ml-2">
+                      {totalCount > 0 ? `검색 결과: ${totalCount}건` : '검색 결과 없음'}
+                    </span>
+                  )}
+                </h2>
+                <button
+                  onClick={() =>
+                    fetchReviews(activeTab, searchQuery, serviceTypeFilter, currentPage)
+                  }
+                  className="p-2 text-gray-600 hover:text-indigo-600 rounded-full hover:bg-indigo-50 transition-colors"
+                  title="새로고침"
+                >
+                  <FiRefreshCw />
+                </button>
+              </div>
+
+              {loading ? (
+                <div className="py-32 text-center">
+                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">데이터를 불러오는 중입니다...</p>
+                </div>
+              ) : error ? (
+                <div className="py-32 text-center">
+                  <div className="text-red-500 text-4xl mb-4">⚠️</div>
+                  <p className="text-red-500 mb-2">오류가 발생했습니다</p>
+                  <p className="text-gray-600 mb-4">{error}</p>
+                  <button
+                    onClick={() =>
+                      fetchReviews(activeTab, searchQuery, serviceTypeFilter, currentPage)
+                    }
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+                  >
+                    다시 시도
+                  </button>
+                </div>
+              ) : reviews.length === 0 ? (
+                <div className="py-32 text-center">
+                  <div className="text-gray-400 text-4xl mb-4">📭</div>
+                  <p className="text-gray-600 mb-2">데이터가 없습니다</p>
+                  <p className="text-gray-500 text-sm">
+                    {statusText[activeTab]} 상태의 리뷰가 없습니다.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          유형
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          평점
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          내용 미리보기
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          작성자
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          작성일
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          상태
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {reviews.map((review) => (
+                        <tr
+                          key={review._id}
+                          onClick={() => handleItemSelect(review)}
+                          className={`cursor-pointer hover:bg-gray-50 transition-colors ${
+                            selectedReview?._id === review._id ? 'bg-indigo-50' : ''
+                          }`}
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <span className="text-xl mr-2">
+                                {serviceTypeInfo[review.serviceType]?.icon || '📋'}
+                              </span>
+                              <div>
+                                <span className="text-sm text-gray-900">
+                                  {serviceTypeInfo[review.serviceType]?.text || review.serviceType}
+                                </span>
+                                {/* 이미지 개수 표시 */}
+                                {review.images && review.images.length > 0 && (
+                                  <div className="flex items-center mt-1">
+                                    <FiEye className="w-3 h-3 text-blue-500 mr-1" />
+                                    <span className="text-xs text-blue-600 font-medium">
+                                      {review.images.length}장
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <StarRating rating={review.rating} />
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm text-gray-900 max-w-xs truncate">
+                              {review.content}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {review.userId?.name || '알 수 없음'}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {review.userId?.email || '이메일 없음'}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {formatDate(review.createdAt)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`px-2 py-1 text-xs rounded-full ${
+                                statusBadgeStyle[review.status]
+                              }`}
+                            >
+                              {statusText[review.status]}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* 페이지네이션 */}
+              {!loading && !error && reviews.length > 0 && totalPages > 1 && (
+                <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+                  <div className="flex-1 flex justify-between items-center">
+                    <div className="text-sm text-gray-700">
+                      <span className="font-medium">{(currentPage - 1) * pageLimit + 1}</span>
+                      {' - '}
+                      <span className="font-medium">
+                        {Math.min(currentPage * pageLimit, totalCount)}
+                      </span>
+                      {' / '}
+                      <span className="font-medium">{totalCount}</span>개 항목
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handlePageChange(1)}
+                        disabled={currentPage === 1}
+                        className="px-2 py-1 text-sm bg-white border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                      >
+                        처음
+                      </button>
+
+                      <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="px-2 py-1 text-sm bg-white border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                      >
+                        이전
+                      </button>
+
+                      <div className="flex items-center space-x-1">
+                        {[...Array(Math.min(5, totalPages))].map((_, index) => {
+                          let pageNum;
+                          if (totalPages <= 5) {
+                            pageNum = index + 1;
+                          } else if (currentPage <= 3) {
+                            pageNum = index + 1;
+                          } else if (currentPage >= totalPages - 2) {
+                            pageNum = totalPages - 4 + index;
+                          } else {
+                            pageNum = currentPage - 2 + index;
+                          }
+
+                          return (
+                            <button
+                              key={pageNum}
+                              onClick={() => handlePageChange(pageNum)}
+                              className={`px-3 py-1 text-sm border rounded-md transition-colors ${
+                                currentPage === pageNum
+                                  ? 'bg-indigo-600 text-white border-indigo-600'
+                                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                              }`}
+                            >
+                              {pageNum}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="px-2 py-1 text-sm bg-white border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                      >
+                        다음
+                      </button>
+
+                      <button
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className="px-2 py-1 text-sm bg-white border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                      >
+                        마지막
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

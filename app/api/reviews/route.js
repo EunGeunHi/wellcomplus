@@ -175,6 +175,8 @@ async function handler(req) {
     const status = searchParams.get('status') || 'register';
     const search = searchParams.get('search') || '';
     const serviceType = searchParams.get('type') || '';
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20'); // 기본 20개로 제한
 
     // Build the query
     const query = { status };
@@ -189,13 +191,47 @@ async function handler(req) {
       query['$or'] = [{ content: { $regex: search, $options: 'i' } }];
     }
 
-    // Fetch reviews with populated user data
+    // Calculate skip value for pagination
+    const skip = (page - 1) * limit;
+
+    // Fetch reviews with optimized query
     const reviews = await Review.find(query)
       .populate('userId', 'name email') // Populate user data
+      .select('-images.data') // 이미지 바이너리 데이터 제외
       .sort({ createdAt: -1 }) // Sort by creation date, newest first
-      .lean();
+      .skip(skip)
+      .limit(limit)
+      .lean(); // 성능 최적화
 
-    return NextResponse.json({ reviews });
+    // Get total count for pagination info
+    const totalCount = await Review.countDocuments(query);
+    const totalPages = Math.ceil(totalCount / limit);
+
+    // 이미지 메타데이터만 포함하도록 최적화
+    const optimizedReviews = reviews.map((review) => {
+      if (review.images && review.images.length > 0) {
+        review.images = review.images.map((image) => ({
+          id: image._id,
+          originalName: image.originalName,
+          mimeType: image.mimeType,
+          size: image.size,
+          // 이미지 조회를 위한 URL 엔드포인트
+          url: `/api/reviews/images/${review._id}/${image._id}`,
+        }));
+      }
+      return review;
+    });
+
+    return NextResponse.json({
+      reviews: optimizedReviews,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalCount,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+    });
   } catch (error) {
     console.error('Error fetching reviews:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

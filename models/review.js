@@ -144,5 +144,11 @@ reviewSchema.methods.toJSONWithImages = function () {
   return obj;
 };
 
+// 성능 최적화를 위한 인덱스 추가
+reviewSchema.index({ status: 1, createdAt: -1 }); // 상태별 최신순 조회
+reviewSchema.index({ userId: 1, createdAt: -1 }); // 사용자별 최신순 조회
+reviewSchema.index({ serviceType: 1, status: 1 }); // 서비스 타입별 상태 조회
+reviewSchema.index({ content: 'text' }); // 텍스트 검색용 인덱스
+
 // 이미 모델이 있으면 기존 모델을 사용, 없으면 새로 생성
 export default mongoose.models.Review || mongoose.model('Review', reviewSchema);

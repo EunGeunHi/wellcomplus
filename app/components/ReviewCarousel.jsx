@@ -30,6 +30,25 @@ const ReviewCard = ({ review, onClick }) => {
     return serviceTypes[type] || type;
   };
 
+  // 이미지 로드 에러 처리
+  const handleImageError = (e) => {
+    e.target.style.display = 'none';
+    // 플레이스홀더 표시
+    const placeholder = e.target.nextElementSibling;
+    if (placeholder) {
+      placeholder.style.display = 'flex';
+    }
+  };
+
+  // 이미지 로드 성공 처리
+  const handleImageLoad = (e) => {
+    // 플레이스홀더 숨기기
+    const placeholder = e.target.nextElementSibling;
+    if (placeholder) {
+      placeholder.style.display = 'none';
+    }
+  };
+
   return (
     <div
       className="group relative bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden border border-gray-100 w-full h-full min-h-[260px] cursor-pointer"
@@ -61,17 +80,41 @@ const ReviewCard = ({ review, onClick }) => {
         {review.images && review.images.length > 0 && (
           <div className="mb-1">
             <div className="flex space-x-1.5 overflow-x-auto scrollbar-hide pb-1">
-              {review.images.map((image, index) => (
-                <div key={image.id || index} className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200">
-                    <img
-                      src={image.url}
-                      alt={image.originalName || `이미지 ${index + 1}`}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
+              {review.images.map((image, index) => {
+                return (
+                  <div key={image.id || index} className="flex-shrink-0">
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 relative">
+                      <img
+                        src={image.url}
+                        alt={image.originalName || `이미지 ${index + 1}`}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={handleImageError}
+                        onLoad={handleImageLoad}
+                        loading="lazy"
+                      />
+                      {/* 이미지 로드 실패 시 플레이스홀더 */}
+                      <div
+                        className="absolute inset-0 bg-gray-200 flex items-center justify-center text-gray-400 text-xs"
+                        style={{ display: 'none' }}
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -155,6 +198,20 @@ const ReviewDetailModal = ({ review, isOpen, onClose }) => {
     return serviceTypes[type] || type;
   };
 
+  // 이미지 로드 에러 처리
+  const handleImageError = (e) => {
+    e.target.src = '';
+    e.target.style.display = 'none';
+    // 에러가 발생한 이미지 다음으로 넘어가기
+    const parent = e.target.closest('.image-container');
+    if (parent) {
+      const errorDiv = parent.querySelector('.image-error-placeholder');
+      if (errorDiv) {
+        errorDiv.style.display = 'flex';
+      }
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
@@ -222,7 +279,7 @@ const ReviewDetailModal = ({ review, isOpen, onClose }) => {
                   )}
 
                   {/* 이미지 컨테이너 */}
-                  <div className="relative bg-gray-64 rounded-xl overflow-hidden mx-auto">
+                  <div className="relative bg-gray-100 rounded-xl overflow-hidden mx-auto image-container">
                     <img
                       src={review.images[currentImageIndex].url}
                       alt={
@@ -230,7 +287,28 @@ const ReviewDetailModal = ({ review, isOpen, onClose }) => {
                         `이미지 ${currentImageIndex + 1}`
                       }
                       className="w-full h-128 object-contain"
+                      onError={handleImageError}
+                      loading="lazy"
                     />
+                    {/* 이미지 로드 실패 시 플레이스홀더 */}
+                    <div className="image-error-placeholder absolute inset-0 bg-gray-200 flex items-center justify-center text-gray-500 hidden">
+                      <div className="text-center">
+                        <svg
+                          className="w-16 h-16 mx-auto mb-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <p className="text-sm">이미지를 불러올 수 없습니다</p>
+                      </div>
+                    </div>
                   </div>
 
                   {/* 다음 버튼 */}
@@ -255,7 +333,7 @@ const ReviewDetailModal = ({ review, isOpen, onClose }) => {
                       <button
                         key={image.id || index}
                         onClick={() => setCurrentImageIndex(index)}
-                        className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                        className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all relative ${
                           currentImageIndex === index
                             ? 'border-blue-500'
                             : 'border-gray-200 hover:border-gray-300'
@@ -265,7 +343,29 @@ const ReviewDetailModal = ({ review, isOpen, onClose }) => {
                           src={image.url}
                           alt={image.originalName || `썸네일 ${index + 1}`}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            const errorDiv = e.target.nextElementSibling;
+                            if (errorDiv) errorDiv.style.display = 'flex';
+                          }}
+                          loading="lazy"
                         />
+                        {/* 썸네일 에러 플레이스홀더 */}
+                        <div className="absolute inset-0 bg-gray-200 flex items-center justify-center text-gray-400 text-xs hidden">
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
+                          </svg>
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -372,11 +472,16 @@ const ReviewCarousel = () => {
       try {
         setLoading(true);
         const response = await fetch('/api/reviews/active');
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
+
         const data = await response.json();
-        setReviews(data);
+
+        // 클라이언트 측에서도 active 상태 확인 (이중 안전장치)
+        const activeReviews = data.filter((review) => review.status === 'active');
+        setReviews(activeReviews);
       } catch (e) {
         console.error('Failed to fetch reviews:', e);
         setError(e.message);
