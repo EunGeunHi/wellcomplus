@@ -1761,6 +1761,26 @@ const ReviewContent = ({ userData, userId }) => {
 
         <button
           type="submit"
+          disabled={isSubmitting || !serviceType || rating === 0 || reviewText.trim().length < 10}
+          className={`w-full py-3 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium flex items-center justify-center gap-2
+            ${
+              isSubmitting || !serviceType || rating === 0 || reviewText.trim().length < 10
+                ? 'opacity-70 cursor-not-allowed'
+                : ''
+            }
+          `}
+        >
+          {isSubmitting ? (
+            '리뷰 등록 중...'
+          ) : (
+            <>
+              <FiSend size={16} />
+              리뷰 등록하기
+            </>
+          )}
+        </button>
+      </form>
+
       {/* 내가 작성한 리뷰 목록 */}
       <div className="mt-12">
         <h3 className="text-xl font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
@@ -1801,9 +1821,7 @@ const ReviewContent = ({ userData, userId }) => {
                       </span>
                     </div>
                     <div>
-                        <option value="notebook">노트북</option>
                       <div className="flex items-center gap-1 mb-2">
-                        <option value="other">기타 서비스</option>
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
                             key={star}
@@ -1811,60 +1829,48 @@ const ReviewContent = ({ userData, userId }) => {
                             onClick={() => handleRatingChange(star)}
                             className="text-xl focus:outline-none"
                           >
-                      <div className="flex items-center gap-1 mb-2">
                             <FiStar
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <button
+                              className={`${
+                                editForm.rating >= star
+                                  ? 'fill-yellow-400 text-yellow-400'
+                                  : 'text-gray-300'
+                              } transition-colors`}
+                            />
                           </button>
-                            type="button"
-                            onClick={() => handleRatingChange(star)}
-                            className="text-xl focus:outline-none"
+                        ))}
+                        <span className="ml-2 text-sm text-gray-500">
+                          {editForm.rating > 0 ? `${editForm.rating}점` : '별점을 선택해주세요'}
+                        </span>
+                      </div>
                       <textarea
                         name="content"
                         value={editForm.content}
                         onChange={handleEditFormChange}
                         className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[100px] text-sm"
                         rows={6}
-                        ))}{' '}
+                      />
                       <p className="mt-1 text-xs text-gray-500">
-                      </div>{' '}
-                      <textarea
-                        name="content"
-                        value={editForm.content}
-                        onChange={handleEditFormChange}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[100px] text-sm"
-                        rows={6}
-                      />{' '}
-                      <p className="mt-1 text-xs text-gray-500">
-                        {' '}
-                        최소 10자 이상 작성해주세요. 현재 {editForm.content.length}자{' '}
-                      </p>{' '}
-                    </div>{' '}
-                    {/* 이미지 관리 섹션 */}{' '}
+                        최소 10자 이상 작성해주세요. 현재 {editForm.content.length}자
+                      </p>
+                    </div>
+                    {/* 이미지 관리 섹션 */}
                     <div className="space-y-3">
-                      {' '}
-                      {/* 기존 이미지들 */}{' '}
+                      {/* 기존 이미지들 */}
                       {editForm.existingImages && editForm.existingImages.length > 0 && (
                         <div>
-                          {' '}
-                          <h5 className="text-sm font-medium text-gray-700 mb-2">
-                            기존 이미지
-                          </h5>{' '}
+                          <h5 className="text-sm font-medium text-gray-700 mb-2">기존 이미지</h5>
                           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                            {' '}
                             {editForm.existingImages.map((image, index) => (
                               <div key={image.id || index} className="relative group">
-                                {' '}
                                 <div
                                   className={`aspect-square bg-gray-100 rounded-lg overflow-hidden ${editForm.imagesToDelete.includes(image.id) ? 'opacity-50 grayscale' : ''}`}
                                 >
-                                  {' '}
                                   <img
                                     src={image.url}
                                     alt={image.originalName || `이미지 ${index + 1}`}
                                     className="w-full h-full object-cover"
-                                  />{' '}
-                                </div>{' '}
+                                  />
+                                </div>
                                 {editForm.imagesToDelete.includes(image.id) ? (
                                   <button
                                     type="button"
@@ -1872,8 +1878,7 @@ const ReviewContent = ({ userData, userId }) => {
                                     className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-green-600 transition-colors"
                                     title="복원"
                                   >
-                                    {' '}
-                                    ↶{' '}
+                                    ↶
                                   </button>
                                 ) : (
                                   <button
@@ -1882,37 +1887,32 @@ const ReviewContent = ({ userData, userId }) => {
                                     className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
                                     title="삭제"
                                   >
-                                    {' '}
-                                    <FiX />{' '}
+                                    <FiX />
                                   </button>
-                                )}{' '}
+                                )}
                                 <div className="mt-1 text-xs text-gray-500 truncate">
-                                  {' '}
-                                  {image.originalName}{' '}
-                                </div>{' '}
+                                  {image.originalName}
+                                </div>
                                 <div className="text-xs text-gray-400">
-                                  {' '}
-                                  {formatFileSize(image.size)}{' '}
-                                </div>{' '}
+                                  {formatFileSize(image.size)}
+                                </div>
                                 {editForm.imagesToDelete.includes(image.id) && (
                                   <div className="text-xs text-red-500">삭제 예정</div>
-                                )}{' '}
+                                )}
                               </div>
-                            ))}{' '}
-                          </div>{' '}
+                            ))}
+                          </div>
                         </div>
-                      )}{' '}
-                      {/* 새 이미지 추가 */}{' '}
+                      )}
+                      {/* 새 이미지 추가 */}
                       <div>
-                        {' '}
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          {' '}
                           새 이미지 추가 (현재 총{' '}
                           {editForm.existingImages.length -
                             editForm.imagesToDelete.length +
                             editForm.newImages.length}
                           /5장){' '}
-                        </label>{' '}
+                        </label>
                         <input
                           type="file"
                           multiple
@@ -1925,45 +1925,46 @@ const ReviewContent = ({ userData, userId }) => {
                               editForm.newImages.length >=
                             5
                           }
-                        />{' '}
+                        />
                         <p className="mt-1 text-xs text-gray-500">
-                          {' '}
-                          JPG, PNG 파일만 업로드 가능합니다.{' '}
-                        </p>{' '}
-                      </div>{' '}
-                      {/* 새로 추가된 이미지들 */}{' '}
+                          JPG, PNG 파일만 업로드 가능합니다.
+                        </p>
+                      </div>
+                      {/* 새로 추가된 이미지들 */}
                       {editForm.newImages.length > 0 && (
                         <div>
-                          {' '}
                           <h5 className="text-sm font-medium text-gray-700 mb-2">
                             새로 추가된 이미지
-                          </h5>{' '}
+                          </h5>
                           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                            {' '}
                             {editForm.newImages.map((image, index) => (
                               <div key={index} className="relative group">
-                                {' '}
                                 <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                                  {' '}
                                   <img
                                     src={editForm.newImagePreviewUrls[index]}
                                     alt={`새 이미지 ${index + 1}`}
                                     className="w-full h-full object-cover"
-                                  />{' '}
-                                </div>{' '}
+                                  />
+                                </div>
                                 <button
                                   type="button"
                                   onClick={() => handleNewImageRemove(index)}
                                   className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
                                 >
-                                  {' '}
-                                  <FiX />{' '}
-                                </button>{' '}
+                                  <FiX />
+                                </button>
                                 <div className="mt-1 text-xs text-gray-500 truncate">
-                                  {' '}
-                                  {image.name}{' '}
-                                </div>{' '}
+                                  {image.name}
+                                </div>
                                 <div className="text-xs text-gray-400">
+                                  {formatFileSize(image.size)}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     <div className="flex gap-2 justify-end">
                       <button
                         onClick={handleCancelEdit}
@@ -2013,15 +2014,6 @@ const ReviewContent = ({ userData, userId }) => {
                     <p className="text-gray-700 whitespace-pre-line text-sm mb-3">
                       {review.content}
                     </p>
-                          }`}
-                        />
-                      ))}
-                      <span className="ml-2 text-sm font-medium">{review.rating}점</span>
-                    </div>
-
-                    <p className="text-gray-700 whitespace-pre-line text-sm mb-3">
-                      {review.content}
-                    </p>
 
                     {/* 이미지 표시 */}
                     {review.images && review.images.length > 0 && (
@@ -2040,6 +2032,12 @@ const ReviewContent = ({ userData, userId }) => {
                               </div>
                               <div className="mt-1 text-xs text-gray-500 truncate">
                                 {image.originalName}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="flex justify-end">
                       <button

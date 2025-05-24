@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { Star, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormat';
 
-const ReviewCard = ({ review }) => {
+const ReviewCard = ({ review, onClick }) => {
   const renderStars = (rating) => {
     const stars = [];
     for (let i = 0; i < 5; i++) {
@@ -31,7 +31,10 @@ const ReviewCard = ({ review }) => {
   };
 
   return (
-    <div className="group relative bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden border border-gray-100 w-full h-full min-h-[260px]">
+    <div
+      className="group relative bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden border border-gray-100 w-full h-full min-h-[260px] cursor-pointer"
+      onClick={() => onClick(review)}
+    >
       {/* 카드 상단 테두리 라인 */}
       <div className="h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
 
@@ -108,6 +111,189 @@ const ReviewCard = ({ review }) => {
   );
 };
 
+const ReviewDetailModal = ({ review, isOpen, onClose }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (isOpen) {
+      document.addEventListener('keydown', handleEsc);
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.removeEventListener('keydown', handleEsc);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen || !review) return null;
+
+  const renderStars = (rating) => {
+    const stars = [];
+    for (let i = 0; i < 5; i++) {
+      stars.push(
+        <Star
+          key={i}
+          className={`w-5 h-5 ${i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+          fill={i < rating ? 'currentColor' : 'none'}
+        />
+      );
+    }
+    return stars;
+  };
+
+  const getServiceTypeInKorean = (type) => {
+    const serviceTypes = {
+      computer: '컴퓨터',
+      printer: '프린터',
+      notebook: '노트북',
+      as: 'AS서비스',
+      other: '기타서비스',
+    };
+    return serviceTypes[type] || type;
+  };
+
+  return (
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* 모달 헤더 */}
+        <div className="flex items-center justify-between p-3 border-b border-gray-200 flex-shrink-0">
+          <h3 className="text-xl font-bold text-gray-800">리뷰 상세보기</h3>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <X className="w-6 h-6 text-gray-600" />
+          </button>
+        </div>
+
+        {/* 모달 내용 - 스크롤 영역 */}
+        <div className="p-4 space-y-6 overflow-y-auto flex-1">
+          {/* 사용자 정보 및 서비스 타입 */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-lg font-bold text-gray-800 mb-1">
+                {review.userId && review.userId.name ? review.userId.name : '익명'} 님
+              </h4>
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                {getServiceTypeInKorean(review.serviceType)}
+              </span>
+            </div>
+            <div className="text-right">
+              <div className="flex items-center space-x-1 mb-1">{renderStars(review.rating)}</div>
+              <span className="text-lg font-bold text-gray-700">{review.rating}점</span>
+            </div>
+          </div>
+
+          {/* 리뷰 내용 */}
+          <div>
+            <h5 className="text-md font-semibold text-gray-800 mb-3">리뷰 내용</h5>
+            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+              <p className="text-gray-700 leading-relaxed whitespace-pre-line font-['NanumGothic']">
+                {review.content}
+              </p>
+            </div>
+          </div>
+
+          {/* 이미지 갤러리 */}
+          {review.images && review.images.length > 0 && (
+            <div>
+              <h5 className="text-md font-semibold text-gray-800 mb-3">첨부 이미지</h5>
+              <div className="space-y-4">
+                {/* 메인 이미지 */}
+                <div className="relative flex items-center">
+                  {/* 이전 버튼 */}
+                  {review.images.length > 1 && (
+                    <button
+                      onClick={() =>
+                        setCurrentImageIndex((prev) =>
+                          prev === 0 ? review.images.length - 1 : prev - 1
+                        )
+                      }
+                      className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-110 z-10"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                  )}
+
+                  {/* 이미지 컨테이너 */}
+                  <div className="relative bg-gray-64 rounded-xl overflow-hidden mx-auto">
+                    <img
+                      src={review.images[currentImageIndex].url}
+                      alt={
+                        review.images[currentImageIndex].originalName ||
+                        `이미지 ${currentImageIndex + 1}`
+                      }
+                      className="w-full h-128 object-contain"
+                    />
+                  </div>
+
+                  {/* 다음 버튼 */}
+                  {review.images.length > 1 && (
+                    <button
+                      onClick={() =>
+                        setCurrentImageIndex((prev) =>
+                          prev === review.images.length - 1 ? 0 : prev + 1
+                        )
+                      }
+                      className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-110 z-10"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                {/* 썸네일 */}
+                {review.images.length > 1 && (
+                  <div className="flex space-x-2 overflow-x-auto pb-2">
+                    {review.images.map((image, index) => (
+                      <button
+                        key={image.id || index}
+                        onClick={() => setCurrentImageIndex(index)}
+                        className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                          currentImageIndex === index
+                            ? 'border-blue-500'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <img
+                          src={image.url}
+                          alt={image.originalName || `썸네일 ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 작성 날짜 */}
+          <div className="text-right pt-4 border-t border-gray-200">
+            <div className="flex items-center justify-end space-x-1 text-sm text-gray-500">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              <span>작성일: {formatDate(review.createdAt)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ReviewCarousel = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -115,6 +301,49 @@ const ReviewCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cardsPerView, setCardsPerView] = useState(1);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [selectedReview, setSelectedReview] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const intervalRef = useRef(null);
+
+  const handleReviewClick = (review) => {
+    setSelectedReview(review);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedReview(null);
+  };
+
+  // 자동 슬라이드 시작 함수
+  const startAutoSlide = useCallback(() => {
+    if (reviews.length <= cardsPerView) return;
+
+    // 기존 interval 제거
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
+    // 새 interval 시작
+    intervalRef.current = setInterval(() => {
+      setIsAnimating(true);
+
+      setTimeout(() => {
+        setCurrentIndex((prevIndex) => {
+          return (prevIndex + cardsPerView) % reviews.length;
+        });
+        setTimeout(() => setIsAnimating(false), 150);
+      }, 150);
+    }, 10000);
+  }, [reviews.length, cardsPerView]);
+
+  // 자동 슬라이드 정리 함수
+  const stopAutoSlide = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  }, []);
 
   // 화면 크기에 따른 카드 수 계산
   const calculateCardsPerView = useCallback(() => {
@@ -161,37 +390,36 @@ const ReviewCarousel = () => {
 
   // 자동 슬라이드 기능
   useEffect(() => {
-    if (reviews.length <= cardsPerView) return; // 카드가 화면에 모두 들어가면 슬라이드 불필요
-
-    const interval = setInterval(() => {
-      setIsAnimating(true);
-      setCurrentIndex((prevIndex) => {
-        return (prevIndex + cardsPerView) % reviews.length;
-      });
-
-      // 애니메이션 상태 리셋
-      setTimeout(() => setIsAnimating(false), 500);
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, [reviews.length, cardsPerView]);
+    startAutoSlide();
+    return () => stopAutoSlide();
+  }, [startAutoSlide, stopAutoSlide]);
 
   // 수동 네비게이션
   const goToPrevious = () => {
     setIsAnimating(true);
-    setCurrentIndex((prevIndex) => {
-      const newIndex = prevIndex - cardsPerView;
-      return newIndex < 0 ? reviews.length + newIndex : newIndex;
-    });
-    setTimeout(() => setIsAnimating(false), 500);
+    setTimeout(() => {
+      setCurrentIndex((prevIndex) => {
+        const newIndex = prevIndex - cardsPerView;
+        return newIndex < 0 ? reviews.length + newIndex : newIndex;
+      });
+      setTimeout(() => setIsAnimating(false), 150);
+    }, 150);
+
+    // 수동 네비게이션 후 자동 슬라이드 타이머 리셋
+    startAutoSlide();
   };
 
   const goToNext = () => {
     setIsAnimating(true);
-    setCurrentIndex((prevIndex) => {
-      return (prevIndex + cardsPerView) % reviews.length;
-    });
-    setTimeout(() => setIsAnimating(false), 500);
+    setTimeout(() => {
+      setCurrentIndex((prevIndex) => {
+        return (prevIndex + cardsPerView) % reviews.length;
+      });
+      setTimeout(() => setIsAnimating(false), 150);
+    }, 150);
+
+    // 수동 네비게이션 후 자동 슬라이드 타이머 리셋
+    startAutoSlide();
   };
 
   // 현재 보여줄 리뷰들 - 순환 배열로 처리
@@ -279,7 +507,7 @@ const ReviewCarousel = () => {
           {/* 리뷰 카드 그리드 */}
           <div className="mx-8 sm:mx-12 lg:mx-16">
             <div
-              className={`grid gap-4 sm:gap-6 transition-all duration-500 ease-in-out ${
+              className={`grid gap-4 sm:gap-6 transition-all duration-300 ease-in-out ${
                 cardsPerView === 1
                   ? 'grid-cols-1'
                   : cardsPerView === 2
@@ -291,17 +519,21 @@ const ReviewCarousel = () => {
                         : cardsPerView === 5
                           ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
                           : 'grid-cols-1'
-              } ${isAnimating ? 'opacity-0 transform scale-95' : 'opacity-100 transform scale-100'}`}
+              } ${isAnimating ? 'opacity-0' : 'opacity-100'}`}
             >
               {visibleReviews.map((review) => (
                 <div key={`${review._id}-${currentIndex}`} className="h-auto min-h-[200px]">
-                  <ReviewCard review={review} />
+                  <ReviewCard review={review} onClick={handleReviewClick} />
                 </div>
               ))}
             </div>
           </div>
         </div>
       </div>
+
+      {selectedReview && (
+        <ReviewDetailModal review={selectedReview} isOpen={isModalOpen} onClose={closeModal} />
+      )}
 
       <style jsx global>{`
         /* 스크롤바 스타일 */
