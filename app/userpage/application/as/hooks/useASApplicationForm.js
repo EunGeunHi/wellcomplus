@@ -67,29 +67,26 @@ export const useASApplicationForm = () => {
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     const newFiles = [...selectedFiles];
-    let newTotalSize = totalFileSize;
 
     files.forEach((file) => {
-      newTotalSize += file.size;
       newFiles.push(file);
     });
 
-    if (newTotalSize > FILE_CONSTRAINTS.MAX_TOTAL_SIZE) {
-      toast.error('총 파일 크기가 4MB를 초과할 수 없습니다.');
+    if (newFiles.length > FILE_CONSTRAINTS.MAX_FILES) {
+      toast.error('파일은 최대 5개까지만 업로드 가능합니다.');
       return;
     }
 
     setSelectedFiles(newFiles);
-    setTotalFileSize(newTotalSize);
+    setTotalFileSize(newFiles.reduce((sum, file) => sum + file.size, 0));
     e.target.value = null;
   };
 
   const removeFile = (index) => {
     const newFiles = [...selectedFiles];
-    const removedFile = newFiles[index];
     newFiles.splice(index, 1);
     setSelectedFiles(newFiles);
-    setTotalFileSize(totalFileSize - removedFile.size);
+    setTotalFileSize(newFiles.reduce((sum, file) => sum + file.size, 0));
   };
 
   const openFileDialog = () => {

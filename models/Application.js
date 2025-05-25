@@ -1,14 +1,38 @@
 import mongoose from 'mongoose';
 
-// 첨부파일 스키마
+// 첨부파일 스키마 (Vercel Blob Storage 사용)
 const FileSchema = new mongoose.Schema(
   {
-    data: Buffer, // 파일의 실제 데이터 (바이너리)
-    contentType: String, // 파일의 MIME 타입 (예: image/jpeg, application/pdf)
-    fileName: String, // 원본 파일명
-    fileSize: Number, // 파일 크기 (바이트 단위)
+    url: {
+      type: String,
+      required: true, // Vercel Blob Storage URL
+    },
+    filename: {
+      type: String,
+      required: true, // Blob Storage에서의 파일명
+    },
+    originalName: {
+      type: String,
+      required: true, // 사용자가 업로드한 원본 파일명
+    },
+    mimeType: {
+      type: String,
+      required: true, // 파일의 MIME 타입
+    },
+    size: {
+      type: Number,
+      required: true, // 파일 크기 (바이트)
+    },
+    blobId: {
+      type: String,
+      required: true, // Blob Storage에서의 고유 식별자
+    },
+    uploadedAt: {
+      type: Date,
+      default: Date.now, // 업로드 시간
+    },
   },
-  { _id: false }
+  { _id: true } // 파일별 고유 ID 생성
 );
 
 // 신청서 메인 스키마
@@ -32,15 +56,12 @@ const applicationSchema = new mongoose.Schema({
       validator: function (files) {
         if (!files || files.length === 0) return true;
 
-        // 모든 파일 크기의 합계 계산 (바이트 단위)
-        const totalSize = files.reduce((sum, file) => sum + (file.fileSize || 0), 0);
-
-        // 4MB = 4 * 1024 * 1024 = 4194304 바이트
-        return totalSize <= 4194304;
+        // 파일 개수 제한 (최대 5개)
+        return files.length <= 5;
       },
-      message: '파일 크기의 총합이 4MB를 초과할 수 없습니다.',
+      message: '파일은 최대 5개까지만 업로드 가능합니다.',
     },
-    // 첨부파일 배열 (최대 4MB 제한)
+    // 첨부파일 배열 (최대 5개 제한, 크기 제한 없음)
   },
 
   // === 컴퓨터 견적 신청 정보 ===

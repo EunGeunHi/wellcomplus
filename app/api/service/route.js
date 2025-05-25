@@ -107,12 +107,17 @@ export const GET = withKingAuthAPI(async (req, { session }) => {
         // 서비스 유형별 정보 추가
         information: getInformation(app),
         comment: app.comment,
-        // 파일 정보 추가 (바이너리 데이터 제외)
+        // 파일 정보 추가 (Blob Storage)
         files: app.files
           ? app.files.map((file) => ({
-              fileName: file.fileName,
-              fileSize: file.fileSize,
-              contentType: file.contentType,
+              id: file._id,
+              url: file.url,
+              filename: file.filename,
+              originalName: file.originalName,
+              mimeType: file.mimeType,
+              size: file.size,
+              blobId: file.blobId,
+              uploadedAt: file.uploadedAt,
             }))
           : [],
       };

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Application from '@/models/Application';
 import { withKingAuthAPI } from '@/app/api/middleware';
+import { uploadFileToBlob, validateFileCount } from '@/lib/application-blob-storage';
 
 /**
  * 파일 업로드 API
@@ -30,53 +31,47 @@ export const POST = withKingAuthAPI(async (req, { params }) => {
       return NextResponse.json({ error: '업로드할 파일이 없습니다.' }, { status: 400 });
     }
 
-    // 파일 처리
-    const newFiles = [];
-    for (const file of files) {
-      // File 객체 확인
-      if (!(file instanceof File)) {
-        continue;
-      }
+    // 실제 파일만 필터링
+    const validFiles = files.filter((file) => file instanceof File && file.size > 0);
 
-      // 파일 크기 제한 (2MB)
-      if (file.size > 2 * 1024 * 1024) {
-        return NextResponse.json(
-          { error: '총 파일 크기는 2MB를 초과할 수 없습니다.' },
-          { status: 400 }
-        );
-      }
+    if (validFiles.length === 0) {
+      return NextResponse.json({ error: '업로드할 유효한 파일이 없습니다.' }, { status: 400 });
+    }
 
-      // 파일 데이터 읽기
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
+    // 현재 파일 개수와 새 파일 개수 합계 검증
+    const currentFileCount = application.files ? application.files.length : 0;
+    if (currentFileCount + validFiles.length > 5) {
+      return NextResponse.json(
+        { error: '파일은 최대 5개까지만 업로드 가능합니다.' },
+        { status: 400 }
+      );
+    }
 
-      // 파일 정보 저장
-      newFiles.push({
-        data: buffer,
-        contentType: file.type,
-        fileName: file.name,
-        fileSize: file.size,
-      });
+    // 파일 업로드
+    const uploadedFiles = [];
+    for (let i = 0; i < validFiles.length; i++) {
+      const file = validFiles[i];
+      const fileIndex = currentFileCount + i; // 기존 파일 개수에 이어서 인덱스 부여
+      const uploadedFile = await uploadFileToBlob(file, id, fileIndex);
+      uploadedFiles.push(uploadedFile);
     }
 
     // 현재 파일 목록에 새 파일 추가
     const existingFiles = application.files || [];
-    application.files = [...existingFiles, ...newFiles];
-
-    // 총 파일 크기 검증
-    const totalFileSize = application.files.reduce((sum, file) => sum + file.fileSize, 0);
-    if (totalFileSize > 2 * 1024 * 1024) {
-      return NextResponse.json({ error: '총 파일 크기가 2MB를 초과합니다.' }, { status: 400 });
-    }
+    application.files = [...existingFiles, ...uploadedFiles];
 
     // 저장
     await application.save();
 
-    // 파일 정보 반환 (바이너리 데이터 제외)
+    // 파일 정보 반환
     const fileInfos = application.files.map((file) => ({
-      fileName: file.fileName,
-      fileSize: file.fileSize,
-      contentType: file.contentType,
+      id: file._id,
+      url: file.url,
+      filename: file.filename,
+      originalName: file.originalName,
+      mimeType: file.mimeType,
+      size: file.size,
+      uploadedAt: file.uploadedAt,
     }));
 
     return NextResponse.json({

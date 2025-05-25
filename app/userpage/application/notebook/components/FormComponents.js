@@ -251,7 +251,6 @@ export const FileUpload = ({
         <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-500">
           참고할 파일이 있으면 업로드해주세요
         </p>
-        <p className="text-xs text-gray-400 mt-1">최대 파일 크기: 총 4MB</p>
       </div>
 
       <input
@@ -301,13 +300,6 @@ export const FileUpload = ({
               </li>
             ))}
           </ul>
-        </div>
-      )}
-
-      {totalFileSize > 2097152 && (
-        <div className="mt-2 sm:mt-3 flex items-center text-xs text-amber-700">
-          <FiAlertCircle className="mr-1 w-3 h-3 sm:w-4 sm:h-4" />
-          <span>총 파일 크기가 {formatFileSize(totalFileSize)} / 4MB</span>
         </div>
       )}
     </div>

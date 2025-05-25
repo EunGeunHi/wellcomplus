@@ -85,7 +85,7 @@ const DetailPage = () => {
       if (!response.ok) throw new Error('파일 다운로드에 실패했습니다');
 
       const blob = await response.blob();
-      const fileName = application.files[fileIndex].fileName;
+      const fileName = application.files[fileIndex].originalName;
 
       // 파일 다운로드를 위한 임시 링크 생성
       const url = window.URL.createObjectURL(blob);
@@ -1260,14 +1260,14 @@ const DetailPage = () => {
                         <div className="truncate flex-1">
                           <p
                             className="text-gray-900 font-medium text-sm truncate"
-                            title={file.fileName}
+                            title={file.originalName}
                           >
-                            {file.fileName}
+                            {file.originalName}
                           </p>
                         </div>
                       </div>
 
-                      <p className="text-xs text-gray-500 mb-3">{formatFileSize(file.fileSize)}</p>
+                      <p className="text-xs text-gray-500 mb-3">{formatFileSize(file.size)}</p>
 
                       <motion.button
                         onClick={() => handleFileDownload(index)}

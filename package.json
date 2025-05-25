@@ -7,11 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write .",
-    "db:cleanup": "node utils/migrate-images-to-blob.mjs cleanup",
-    "db:status": "node utils/migrate-images-to-blob.mjs status",
-    "db:validate": "node utils/migrate-images-to-blob.mjs validate",
-    "db:reset": "node utils/migrate-images-to-blob.mjs delete-all --confirm"
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@emotion/styled": "^11.14.0",

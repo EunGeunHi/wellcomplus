@@ -8,7 +8,7 @@ export const FORM_OPTIONS = {
 
 // 파일 업로드 제한
 export const FILE_CONSTRAINTS = {
-  MAX_TOTAL_SIZE: 4194304, // 4MB
+  MAX_FILES: 5, // 최대 5개 파일
   ACCEPTED_TYPES: 'image/*,.pdf,.doc,.docx,.txt',
 };
 

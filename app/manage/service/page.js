@@ -47,6 +47,14 @@ const statusText = {
   cancelled: '취소',
 };
 
+// 파일 크기를 읽기 쉽게 변환하는 함수
+const formatFileSize = (bytes) => {
+  if (!bytes || bytes === 0) return '0 B';
+  if (bytes < 1024) return bytes + ' B';
+  else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  else return (bytes / 1048576).toFixed(1) + ' MB';
+};
+
 // 토스트 메시지 컴포넌트
 function Toast({ message, type, visible, onClose }) {
   return (
@@ -261,7 +269,7 @@ export default function ServiceManagementPage() {
       const blob = await response.blob();
 
       // 선택된 파일의 원본 파일명 사용
-      let filename = selectedApp.files[fileId]?.fileName || 'download';
+      let filename = selectedApp.files[fileId]?.originalName || 'download';
 
       // 브라우저 다운로드 트리거
       const url = window.URL.createObjectURL(blob);
@@ -730,7 +738,7 @@ export default function ServiceManagementPage() {
                               <div className="flex items-center overflow-hidden">
                                 <FiFile className="text-indigo-500 mr-2 flex-shrink-0" />
                                 <span className="text-sm text-gray-700 truncate">
-                                  {file.fileName} ({(file.fileSize / 1024).toFixed(1)} KB)
+                                  {file.originalName} ({formatFileSize(file.size)})
                                 </span>
                               </div>
                               <div className="flex space-x-2">

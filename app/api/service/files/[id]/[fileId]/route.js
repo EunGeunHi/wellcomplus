@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Application from '@/models/Application';
 import { withKingAuthAPI } from '@/app/api/middleware';
+import { deleteFileFromBlob } from '@/lib/application-blob-storage';
 
 /**
  * 파일 다운로드 API
@@ -35,25 +36,12 @@ export const GET = withKingAuthAPI(async (req, { params }) => {
     // 파일 다운로드
     const file = application.files[fileIndex];
 
-    // 응답 헤더 설정 및 파일 데이터 반환
-    const headers = new Headers();
-    headers.set('Content-Type', file.contentType);
-
-    // RFC 5987에 따라 파일명 인코딩 처리
-    // ASCII 문자면 따옴표로 감싸고, 아니면 UTF-8로 인코딩
-    const filenameAscii = /^[\x00-\x7F]*$/.test(file.fileName);
-    const filenameForHeader = filenameAscii
-      ? `"${file.fileName}"`
-      : `UTF-8''${encodeURIComponent(file.fileName)}`;
-
-    headers.set('Content-Disposition', `attachment; filename=${filenameForHeader}`);
-    headers.set('Content-Length', file.data.length.toString());
-
-    // 파일 데이터 전송
-    return new NextResponse(file.data, {
-      status: 200,
-      headers,
-    });
+    // Blob Storage URL로 리다이렉트
+    if (file.url) {
+      return NextResponse.redirect(file.url);
+    } else {
+      return NextResponse.json({ error: '파일 URL을 찾을 수 없습니다.' }, { status: 404 });
+    }
   } catch (error) {
     console.error('파일 다운로드 중 오류:', error);
     return NextResponse.json({ error: '파일 처리 중 오류가 발생했습니다.' }, { status: 500 });
@@ -89,15 +77,30 @@ export const DELETE = withKingAuthAPI(async (req, { params }) => {
       return NextResponse.json({ error: '해당 파일을 찾을 수 없습니다.' }, { status: 404 });
     }
 
+    // Blob Storage에서 파일 삭제
+    const fileToDelete = application.files[fileIndex];
+    if (fileToDelete.url) {
+      try {
+        await deleteFileFromBlob(fileToDelete.url);
+      } catch (error) {
+        console.error('Blob Storage 파일 삭제 오류:', error);
+        // Blob 삭제 실패해도 DB에서는 제거 진행
+      }
+    }
+
     // 파일 삭제
     application.files.splice(fileIndex, 1);
     await application.save();
 
-    // 업데이트된 파일 목록 반환 (바이너리 데이터 제외)
+    // 업데이트된 파일 목록 반환
     const fileInfos = application.files.map((file) => ({
-      fileName: file.fileName,
-      fileSize: file.fileSize,
-      contentType: file.contentType,
+      id: file._id,
+      url: file.url,
+      filename: file.filename,
+      originalName: file.originalName,
+      mimeType: file.mimeType,
+      size: file.size,
+      uploadedAt: file.uploadedAt,
     }));
 
     return NextResponse.json({
