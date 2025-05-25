@@ -13,6 +13,7 @@ import {
   FiX,
   FiStar,
   FiSend,
+  FiAlertTriangle,
 } from 'react-icons/fi';
 import { FaComputer } from 'react-icons/fa6';
 import { AiFillPrinter } from 'react-icons/ai';
@@ -915,6 +916,10 @@ const ReviewContent = ({ userData, userId }) => {
   // OptimizedReviewList의 새로고침 함수에 접근하기 위한 ref
   const reviewListRefreshRef = useRef(null);
 
+  // 리뷰 삭제 확인 모달 상태
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [reviewToDelete, setReviewToDelete] = useState(null);
+
   // 리뷰 편집 관련 상태는 OptimizedReviewList 컴포넌트에서 처리됨
 
   // 이미지 업로드 관련 상태
@@ -1043,15 +1048,20 @@ const ReviewContent = ({ userData, userId }) => {
 
   // 리뷰 편집 관련 함수들은 OptimizedReviewList 컴포넌트에서 처리됨
 
-  // 삭제 버튼 클릭 시 호출되는 함수
+  // 삭제 버튼 클릭 시 호출되는 함수 (모달 표시)
   const handleDeleteReview = async (reviewId) => {
-    if (!confirm('정말로 이 리뷰를 삭제하시겠습니까?')) {
-      return false;
-    }
+    setReviewToDelete(reviewId);
+    setShowDeleteConfirmModal(true);
+    return false; // 일단 false 반환 (모달에서 실제 삭제 처리)
+  };
+
+  // 실제 리뷰 삭제 함수
+  const confirmDeleteReview = async () => {
+    if (!reviewToDelete) return;
 
     try {
       // 리뷰 삭제 API 호출 (isDeleted를 true로 설정)
-      const response = await fetch(`/api/reviews/${reviewId}/delete`, {
+      const response = await fetch(`/api/reviews/${reviewToDelete}/delete`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -1066,11 +1076,26 @@ const ReviewContent = ({ userData, userId }) => {
 
       // 성공 메시지 표시
       showToast('리뷰가 성공적으로 삭제되었습니다.', 'success');
-      return true; // 성공 반환
+
+      // 모달 닫기
+      setShowDeleteConfirmModal(false);
+      setReviewToDelete(null);
+
+      // 리뷰 목록 새로고침
+      if (reviewListRefreshRef.current) {
+        reviewListRefreshRef.current();
+      }
     } catch (err) {
       showToast(err.message, 'error');
-      return false; // 실패 반환
+      setShowDeleteConfirmModal(false);
+      setReviewToDelete(null);
     }
+  };
+
+  // 삭제 취소 함수
+  const cancelDeleteReview = () => {
+    setShowDeleteConfirmModal(false);
+    setReviewToDelete(null);
   };
 
   const handleSubmit = async (e) => {
@@ -1480,6 +1505,48 @@ const ReviewContent = ({ userData, userId }) => {
 
       {/* 업로드 진행률 모달 */}
       <ReviewUploadProgress progress={uploadProgress} />
+
+      {/* 리뷰 삭제 확인 모달 */}
+      {showDeleteConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+            <div className="flex items-center mb-4">
+              <div className="bg-red-100 rounded-full p-2 mr-3">
+                <FiAlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">리뷰 삭제 확인</h3>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-gray-700 mb-3">
+                <strong>정말로 이 리뷰를 삭제하시겠습니까?</strong>
+              </p>
+              <div className="bg-red-50 border border-red-200 p-3 rounded-md">
+                <p className="text-sm text-red-700">
+                  ⚠️ <strong>주의:</strong> 삭제된 리뷰는 복구할 수 없습니다.
+                </p>
+                <p className="text-sm text-red-600 mt-1">• 리뷰 내용과 이미지가 모두 삭제됩니다</p>
+                <p className="text-sm text-red-600">• 이 작업은 되돌릴 수 없습니다</p>
+              </div>
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={cancelDeleteReview}
+                className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+              >
+                취소
+              </button>
+              <button
+                onClick={confirmDeleteReview}
+                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+              >
+                삭제하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
