@@ -23,6 +23,7 @@ import { formatDate } from '@/utils/dateFormat';
 import { formatKoreanPhoneNumber, isValidPhoneNumber } from '@/utils/phoneFormatter';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 import LoginFallback from '@/app/components/LoginFallback';
+import OptimizedReviewList from '@/app/components/OptimizedReviewList';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
@@ -909,28 +910,13 @@ const ReviewContent = ({ userData, userId }) => {
   const [hoveredRating, setHoveredRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serviceType, setServiceType] = useState('');
-  const [userReviews, setUserReviews] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [editingReview, setEditingReview] = useState(null);
-  const [editForm, setEditForm] = useState({
-    content: '',
-    rating: 0,
-    serviceType: '',
-    existingImages: [], // 기존 이미지들
-    newImages: [], // 새로 추가할 이미지들
-    newImagePreviewUrls: [], // 새 이미지 미리보기 URLs
-    imagesToDelete: [], // 삭제할 기존 이미지들의 ID
-  });
+
+  // 리뷰 편집 관련 상태는 OptimizedReviewList 컴포넌트에서 처리됨
 
   // 이미지 업로드 관련 상태
   const [selectedImages, setSelectedImages] = useState([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState([]);
-  const [imageError, setImageError] = useState(''); // 이미지 갤러리 모달 상태  const [isImageModalOpen, setIsImageModalOpen] = useState(false);  const [currentImageIndex, setCurrentImageIndex] = useState(0);  const [currentImages, setCurrentImages] = useState([]);
-
-  // 이미지 갤러리 모달 상태
-  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [currentImages, setCurrentImages] = useState([]);
+  const [imageError, setImageError] = useState('');
 
   // 토스트 상태를 하나의 객체로 관리
   const [toast, setToast] = useState({
@@ -993,41 +979,6 @@ const ReviewContent = ({ userData, userId }) => {
     }
   };
 
-  // 수정 모드용 새 이미지 선택 핸들러
-  const handleEditImageSelect = (e) => {
-    const files = Array.from(e.target.files);
-
-    if (files.length === 0) return;
-
-    // 현재 총 이미지 수 계산 (기존 - 삭제할 것들 + 새로 추가할 것들 + 지금 선택한 것들)
-    const currentExistingCount = editForm.existingImages.length - editForm.imagesToDelete.length;
-    const currentNewCount = editForm.newImages.length;
-    const totalAfterAdd = currentExistingCount + currentNewCount + files.length;
-
-    if (totalAfterAdd > 5) {
-      showToast('이미지는 최대 5장까지만 업로드 가능합니다.', 'error');
-      return;
-    }
-
-    try {
-      // 각 파일 검증
-      files.forEach(validateImageFile);
-
-      // 새로운 이미지들과 미리보기 URL 추가
-      const newImages = [...editForm.newImages, ...files];
-      const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
-      const allNewPreviewUrls = [...editForm.newImagePreviewUrls, ...newPreviewUrls];
-
-      setEditForm({
-        ...editForm,
-        newImages: newImages,
-        newImagePreviewUrls: allNewPreviewUrls,
-      });
-    } catch (error) {
-      showToast(error.message, 'error');
-    }
-  };
-
   // 이미지 제거 핸들러
   const handleImageRemove = (index) => {
     const newImages = selectedImages.filter((_, i) => i !== index);
@@ -1041,42 +992,10 @@ const ReviewContent = ({ userData, userId }) => {
     setImageError('');
   };
 
-  // 수정 모드용 기존 이미지 삭제 핸들러
-  const handleExistingImageRemove = (imageId) => {
-    setEditForm({
-      ...editForm,
-      imagesToDelete: [...editForm.imagesToDelete, imageId],
-    });
-  };
-
-  // 수정 모드용 기존 이미지 삭제 취소 핸들러
-  const handleExistingImageRestore = (imageId) => {
-    setEditForm({
-      ...editForm,
-      imagesToDelete: editForm.imagesToDelete.filter((id) => id !== imageId),
-    });
-  };
-
-  // 수정 모드용 새 이미지 제거 핸들러
-  const handleNewImageRemove = (index) => {
-    const newImages = editForm.newImages.filter((_, i) => i !== index);
-    const newPreviewUrls = editForm.newImagePreviewUrls.filter((_, i) => i !== index);
-
-    // 기존 URL 해제
-    URL.revokeObjectURL(editForm.newImagePreviewUrls[index]);
-
-    setEditForm({
-      ...editForm,
-      newImages: newImages,
-      newImagePreviewUrls: newPreviewUrls,
-    });
-  };
-
   // 컴포넌트 언마운트 시 미리보기 URL 정리
   useEffect(() => {
     return () => {
       imagePreviewUrls.forEach((url) => URL.revokeObjectURL(url));
-      editForm.newImagePreviewUrls.forEach((url) => URL.revokeObjectURL(url));
     };
   }, []);
 
@@ -1113,31 +1032,7 @@ const ReviewContent = ({ userData, userId }) => {
     });
   };
 
-  // 사용자 리뷰 목록 조회
-  useEffect(() => {
-    const fetchUserReviews = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch(`/api/reviews/user/${userId}`);
-
-        if (!response.ok) {
-          throw new Error('리뷰 목록을 불러오는데 실패했습니다');
-        }
-
-        const data = await response.json();
-        setUserReviews(data.reviews || []);
-      } catch (err) {
-        console.error('리뷰 데이터를 가져오는 중 오류 발생:', err);
-        showToast(err.message, 'error');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (userId) {
-      fetchUserReviews();
-    }
-  }, [userId, toast.visible]); // 의존성 배열 수정
+  // 기존 리뷰 로딩 로직 제거 - OptimizedReviewList에서 처리
 
   // 컴포넌트가 언마운트될 때 타이머 정리
   useEffect(() => {
@@ -1148,30 +1043,16 @@ const ReviewContent = ({ userData, userId }) => {
     };
   }, [toast.timerId]);
 
-  // 수정 버튼 클릭 시 호출되는 함수
-  const handleEditClick = (review) => {
-    setEditingReview(review.id);
-    setEditForm({
-      content: review.content,
-      rating: review.rating,
-      serviceType: review.serviceType,
-      existingImages: review.images || [],
-      newImages: [],
-      newImagePreviewUrls: [],
-      imagesToDelete: [],
-    });
-  };
+  // 리뷰 편집 관련 함수들은 OptimizedReviewList 컴포넌트에서 처리됨
 
   // 삭제 버튼 클릭 시 호출되는 함수
   const handleDeleteReview = async (reviewId) => {
     if (!confirm('정말로 이 리뷰를 삭제하시겠습니까?')) {
-      return;
+      return false;
     }
 
-    setIsSubmitting(true);
-
     try {
-      // 리뷰 삭제 API 호출 (isDeleted를 true로 설정) - App Router 방식 API 사용
+      // 리뷰 삭제 API 호출 (isDeleted를 true로 설정)
       const response = await fetch(`/api/reviews/${reviewId}/delete`, {
         method: 'PATCH',
         headers: {
@@ -1187,131 +1068,10 @@ const ReviewContent = ({ userData, userId }) => {
 
       // 성공 메시지 표시
       showToast('리뷰가 성공적으로 삭제되었습니다.', 'success');
-
-      // 리뷰 목록에서 삭제된 리뷰 제거
-      setUserReviews(userReviews.filter((review) => review.id !== reviewId));
+      return true; // 성공 반환
     } catch (err) {
       showToast(err.message, 'error');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // 수정 취소 버튼 클릭 시 호출되는 함수
-  const handleCancelEdit = () => {
-    // 새 이미지 미리보기 URL들 정리
-    editForm.newImagePreviewUrls.forEach((url) => URL.revokeObjectURL(url));
-
-    setEditingReview(null);
-    setEditForm({
-      content: '',
-      rating: 0,
-      serviceType: '',
-      existingImages: [],
-      newImages: [],
-      newImagePreviewUrls: [],
-      imagesToDelete: [],
-    });
-  };
-
-  // 수정 내용 변경 시 호출되는 함수
-  const handleEditFormChange = (e) => {
-    const { name, value } = e.target;
-    setEditForm({
-      ...editForm,
-      [name]: value,
-    });
-  };
-
-  // 별점 변경 시 호출되는 함수
-  const handleRatingChange = (newRating) => {
-    setEditForm({
-      ...editForm,
-      rating: newRating,
-    });
-  };
-
-  // 리뷰 수정 저장 함수
-  const handleSaveEdit = async (reviewId) => {
-    if (editForm.content.trim().length < 10) {
-      showToast('리뷰는 최소 10자 이상 작성해주세요.', 'error');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      // 이미지 변경사항이 있는지 확인
-      const hasImageChanges = editForm.newImages.length > 0 || editForm.imagesToDelete.length > 0;
-
-      if (hasImageChanges) {
-        // FormData로 이미지와 함께 전송
-        const formData = new FormData();
-        formData.append('content', editForm.content);
-        formData.append('rating', editForm.rating.toString());
-        formData.append('serviceType', editForm.serviceType);
-        formData.append('keepExistingImages', 'true');
-
-        // 삭제할 이미지 ID들 추가
-        editForm.imagesToDelete.forEach((imageId) => {
-          formData.append('imagesToDelete', imageId);
-        });
-
-        // 새로운 이미지들 추가
-        editForm.newImages.forEach((image) => {
-          formData.append('images', image);
-        });
-
-        const response = await fetch(`/api/reviews/${reviewId}`, {
-          method: 'PATCH',
-          body: formData,
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || '리뷰 수정에 실패했습니다.');
-        }
-      } else {
-        // 텍스트만 변경된 경우 JSON으로 전송
-        const response = await fetch(`/api/reviews/${reviewId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            content: editForm.content,
-            rating: editForm.rating,
-            serviceType: editForm.serviceType,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || '리뷰 수정에 실패했습니다.');
-        }
-      }
-
-      // 성공 메시지 표시
-      showToast('리뷰가 성공적으로 수정되었습니다.', 'success');
-
-      // 새 이미지 미리보기 URL들 정리
-      editForm.newImagePreviewUrls.forEach((url) => URL.revokeObjectURL(url));
-
-      // 수정 모드 종료
-      setEditingReview(null);
-
-      // 리뷰 목록을 다시 조회하여 최신 데이터로 업데이트
-      const response = await fetch(`/api/reviews/user/${userId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setUserReviews(data.reviews || []);
-      }
-    } catch (err) {
-      showToast(err.message, 'error');
-    } finally {
-      setIsSubmitting(false);
+      return false; // 실패 반환
     }
   };
 
@@ -1383,29 +1143,7 @@ const ReviewContent = ({ userData, userId }) => {
     }
   };
 
-  // 서비스 유형에 따른 텍스트 변환 함수
-  const getServiceTypeText = (type) => {
-    switch (type) {
-      case 'computer':
-        return '컴퓨터';
-      case 'printer':
-        return '프린터';
-      case 'notebook':
-        return '노트북';
-      case 'as':
-        return 'AS 서비스';
-      case 'other':
-        return '기타 서비스';
-      default:
-        return type;
-    }
-  };
-
-  // 날짜 포맷 함수
-  const formatReviewDate = (dateString) => {
-    const date = new Date(dateString);
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-  };
+  // 서비스 유형 변환 및 날짜 포맷 함수들은 OptimizedReviewList 컴포넌트에서 처리됨
 
   // 파일 크기 포맷 함수
   const formatFileSize = (bytes) => {
@@ -1418,181 +1156,7 @@ const ReviewContent = ({ userData, userId }) => {
 
   // 토스트 메시지 컴포넌트  const Toast = () => {    if (!toast.visible || !toast.message) return null;    const isError = toast.type === 'error';    return (      <div        className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300         ${toast.visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}      >        <div          className={`py-2 px-4 rounded-lg shadow-lg flex items-center gap-2 text-sm font-medium          ${isError ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}        >          {isError ? (            <svg              xmlns="http://www.w3.org/2000/svg"              className="h-5 w-5"              viewBox="0 0 20 20"              fill="currentColor"            >              <path                fillRule="evenodd"                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"                clipRule="evenodd"              />            </svg>          ) : (            <svg              xmlns="http://www.w3.org/2000/svg"              className="h-5 w-5"              viewBox="0 0 20 20"              fill="currentColor"            >              <path                fillRule="evenodd"                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"                clipRule="evenodd"              />            </svg>          )}          {toast.message}        </div>      </div>    );  };
 
-  // 이미지 갤러리 모달 컴포넌트
-  const ImageGalleryModal = () => {
-    if (!isImageModalOpen || !currentImages.length) return null;
-
-    const currentImage = currentImages[currentImageIndex];
-
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
-        {/* 배경 클릭으로 모달 닫기 */}
-        <div className="absolute inset-0" onClick={handleCloseImageModal} />
-
-        {/* 모달 컨텐츠 */}
-        <div className="relative max-w-7xl max-h-full w-full h-full flex items-center justify-center p-4">
-          {/* 닫기 버튼 */}
-          <button
-            onClick={handleCloseImageModal}
-            className="absolute top-4 right-4 z-10 bg-black bg-opacity-50 text-white rounded-full p-2 hover:bg-opacity-70 transition-all"
-          >
-            <FiX size={24} />
-          </button>
-
-          {/* 이전 버튼 */}
-          {currentImages.length > 1 && (
-            <button
-              onClick={handlePrevImage}
-              className="absolute left-4 z-10 bg-black bg-opacity-50 text-white rounded-full p-3 hover:bg-opacity-70 transition-all"
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M15 18L9 12L15 6"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          )}
-
-          {/* 다음 버튼 */}
-          {currentImages.length > 1 && (
-            <button
-              onClick={handleNextImage}
-              className="absolute right-4 z-10 bg-black bg-opacity-50 text-white rounded-full p-3 hover:bg-opacity-70 transition-all"
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M9 18L15 12L9 6"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          )}
-
-          {/* 이미지 */}
-          <div className="relative max-w-full max-h-full">
-            <img
-              src={currentImage.url}
-              alt={currentImage.originalName || `이미지 ${currentImageIndex + 1}`}
-              className="max-w-full max-h-full object-contain"
-            />
-
-            {/* 이미지 정보 */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg">
-              <div className="text-center">
-                <div className="text-sm font-medium">
-                  {currentImageIndex + 1} / {currentImages.length}
-                </div>
-                <div className="text-xs opacity-80">{currentImage.originalName}</div>
-                <div className="text-xs opacity-70">{formatFileSize(currentImage.size)}</div>
-              </div>
-            </div>
-          </div>
-
-          {/* 썸네일 네비게이션 (3개 이상일 때만 표시) */}
-          {currentImages.length > 2 && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 translate-y-16">
-              <div className="flex gap-2 bg-black bg-opacity-50 p-2 rounded-lg max-w-xs overflow-x-auto">
-                {currentImages.map((image, index) => (
-                  <button
-                    key={image.id || index}
-                    onClick={() => setCurrentImageIndex(index)}
-                    className={`flex-shrink-0 w-12 h-12 rounded border-2 overflow-hidden transition-all ${
-                      index === currentImageIndex
-                        ? 'border-white'
-                        : 'border-transparent opacity-70 hover:opacity-100'
-                    }`}
-                  >
-                    <img
-                      src={image.url}
-                      alt={`썸네일 ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 키보드 단축키 안내 */}
-          <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white text-xs px-3 py-2 rounded-lg">
-            <div>← → 이미지 전환</div>
-            <div>ESC 닫기</div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // 이전 이미지로 이동
-  const handlePrevImage = () => {
-    setCurrentImageIndex((prev) => (prev === 0 ? currentImages.length - 1 : prev - 1));
-  };
-
-  // 다음 이미지로 이동
-  const handleNextImage = () => {
-    setCurrentImageIndex((prev) => (prev === currentImages.length - 1 ? 0 : prev + 1));
-  };
-
-  // 모달 닫기
-  const handleCloseImageModal = () => {
-    setIsImageModalOpen(false);
-    setCurrentImages([]);
-    setCurrentImageIndex(0);
-  };
-
-  // 이미지 클릭 핸들러 (모달 열기)
-  const handleImageClick = (images, clickedIndex) => {
-    setCurrentImages(images);
-    setCurrentImageIndex(clickedIndex);
-    setIsImageModalOpen(true);
-  };
-
-  // 키보드 이벤트 핸들링
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (!isImageModalOpen) return;
-
-      switch (e.key) {
-        case 'ArrowLeft':
-          e.preventDefault();
-          handlePrevImage();
-          break;
-        case 'ArrowRight':
-          e.preventDefault();
-          handleNextImage();
-          break;
-        case 'Escape':
-          e.preventDefault();
-          handleCloseImageModal();
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    // 모달이 열릴 때 body 스크롤 방지
-    if (isImageModalOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-    }
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'auto';
-    };
-  }, [isImageModalOpen]);
-
-  if (isLoading) {
-    return <div>리뷰 목록을 불러오는 중입니다...</div>;
-  }
+  // 이미지 갤러리 모달 관련 코드는 OptimizedReviewList 컴포넌트에서 처리됨
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -1638,8 +1202,6 @@ const ReviewContent = ({ userData, userId }) => {
         </div>
       )}
 
-      {/* 이미지 갤러리 모달 */}
-      <ImageGalleryModal />
       <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-4 sm:mb-6 relative pb-2 sm:pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-8 sm:after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
         리뷰 작성
       </h2>
@@ -1787,278 +1349,7 @@ const ReviewContent = ({ userData, userId }) => {
           내가 작성한 리뷰
         </h3>
 
-        {isLoading ? (
-          <div className="py-6 text-center text-gray-500">리뷰 목록을 불러오는 중...</div>
-        ) : userReviews.length === 0 ? (
-          <div className="py-10 text-center">
-            <div className="text-gray-400 mb-2">
-              <FiStar size={40} className="mx-auto mb-2" />
-            </div>
-            <p className="text-gray-600">작성한 리뷰가 없습니다.</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {userReviews.map((review) => (
-              <div key={review.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                {editingReview === review.id ? (
-                  // 수정 모드 UI
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <select
-                        name="serviceType"
-                        value={editForm.serviceType}
-                        onChange={handleEditFormChange}
-                        className="py-1 px-2 border border-gray-300 rounded text-sm"
-                      >
-                        <option value="computer">컴퓨터</option>
-                        <option value="printer">프린터</option>
-                        <option value="notebook">노트북</option>
-                        <option value="as">AS 서비스</option>
-                        <option value="other">기타 서비스</option>
-                      </select>
-                      <span className="text-xs text-gray-500">
-                        {formatReviewDate(review.createdAt)}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1 mb-2">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <button
-                            key={star}
-                            type="button"
-                            onClick={() => handleRatingChange(star)}
-                            className="text-xl focus:outline-none"
-                          >
-                            <FiStar
-                              className={`${
-                                editForm.rating >= star
-                                  ? 'fill-yellow-400 text-yellow-400'
-                                  : 'text-gray-300'
-                              } transition-colors`}
-                            />
-                          </button>
-                        ))}
-                        <span className="ml-2 text-sm text-gray-500">
-                          {editForm.rating > 0 ? `${editForm.rating}점` : '별점을 선택해주세요'}
-                        </span>
-                      </div>
-                      <textarea
-                        name="content"
-                        value={editForm.content}
-                        onChange={handleEditFormChange}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[100px] text-sm"
-                        rows={6}
-                      />
-                      <p className="mt-1 text-xs text-gray-500">
-                        최소 10자 이상 작성해주세요. 현재 {editForm.content.length}자
-                      </p>
-                    </div>
-                    {/* 이미지 관리 섹션 */}
-                    <div className="space-y-3">
-                      {/* 기존 이미지들 */}
-                      {editForm.existingImages && editForm.existingImages.length > 0 && (
-                        <div>
-                          <h5 className="text-sm font-medium text-gray-700 mb-2">기존 이미지</h5>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                            {editForm.existingImages.map((image, index) => (
-                              <div key={image.id || index} className="relative group">
-                                <div
-                                  className={`aspect-square bg-gray-100 rounded-lg overflow-hidden ${editForm.imagesToDelete.includes(image.id) ? 'opacity-50 grayscale' : ''}`}
-                                >
-                                  <img
-                                    src={image.url}
-                                    alt={image.originalName || `이미지 ${index + 1}`}
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
-                                {editForm.imagesToDelete.includes(image.id) ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleExistingImageRestore(image.id)}
-                                    className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-green-600 transition-colors"
-                                    title="복원"
-                                  >
-                                    ↶
-                                  </button>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleExistingImageRemove(image.id)}
-                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
-                                    title="삭제"
-                                  >
-                                    <FiX />
-                                  </button>
-                                )}
-                                <div className="mt-1 text-xs text-gray-500 truncate">
-                                  {image.originalName}
-                                </div>
-                                <div className="text-xs text-gray-400">
-                                  {formatFileSize(image.size)}
-                                </div>
-                                {editForm.imagesToDelete.includes(image.id) && (
-                                  <div className="text-xs text-red-500">삭제 예정</div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {/* 새 이미지 추가 */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          새 이미지 추가 (현재 총{' '}
-                          {editForm.existingImages.length -
-                            editForm.imagesToDelete.length +
-                            editForm.newImages.length}
-                          /5장){' '}
-                        </label>
-                        <input
-                          type="file"
-                          multiple
-                          accept="image/jpeg,image/png,.jpg,.png"
-                          onChange={handleEditImageSelect}
-                          className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                          disabled={
-                            editForm.existingImages.length -
-                              editForm.imagesToDelete.length +
-                              editForm.newImages.length >=
-                            5
-                          }
-                        />
-                        <p className="mt-1 text-xs text-gray-500">
-                          JPG, PNG 파일만 업로드 가능합니다.
-                        </p>
-                      </div>
-                      {/* 새로 추가된 이미지들 */}
-                      {editForm.newImages.length > 0 && (
-                        <div>
-                          <h5 className="text-sm font-medium text-gray-700 mb-2">
-                            새로 추가된 이미지
-                          </h5>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                            {editForm.newImages.map((image, index) => (
-                              <div key={index} className="relative group">
-                                <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                                  <img
-                                    src={editForm.newImagePreviewUrls[index]}
-                                    alt={`새 이미지 ${index + 1}`}
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => handleNewImageRemove(index)}
-                                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
-                                >
-                                  <FiX />
-                                </button>
-                                <div className="mt-1 text-xs text-gray-500 truncate">
-                                  {image.name}
-                                </div>
-                                <div className="text-xs text-gray-400">
-                                  {formatFileSize(image.size)}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex gap-2 justify-end">
-                      <button
-                        onClick={handleCancelEdit}
-                        className="py-1.5 px-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-xs"
-                      >
-                        취소
-                      </button>
-                      <button
-                        onClick={() => handleSaveEdit(review.id)}
-                        disabled={isSubmitting}
-                        className={`py-1.5 px-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-xs
-                          ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}
-                        `}
-                      >
-                        {isSubmitting ? '저장 중...' : '저장하기'}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  // 일반 보기 모드 UI
-                  <>
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex items-center">
-                        <span className="inline-block px-2 py-1 bg-indigo-100 text-indigo-700 text-xs rounded-md mr-2">
-                          {getServiceTypeText(review.serviceType)}
-                        </span>
-                      </div>
-                      <span className="text-xs text-gray-500">
-                        {formatReviewDate(review.createdAt)}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center mb-2">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <FiStar
-                          key={star}
-                          className={`${
-                            star <= review.rating
-                              ? 'fill-yellow-400 text-yellow-400'
-                              : 'text-gray-300'
-                          }`}
-                        />
-                      ))}
-                      <span className="ml-2 text-sm font-medium">{review.rating}점</span>
-                    </div>
-
-                    <p className="text-gray-700 whitespace-pre-line text-sm mb-3">
-                      {review.content}
-                    </p>
-
-                    {/* 이미지 표시 */}
-                    {review.images && review.images.length > 0 && (
-                      <div className="mb-3">
-                        <h5 className="text-sm font-medium text-gray-700 mb-2">첨부된 이미지</h5>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-                          {review.images.map((image, index) => (
-                            <div key={image.id || index} className="relative group">
-                              <div className="bg-gray-100 rounded-lg overflow-hidden">
-                                <img
-                                  src={image.url}
-                                  alt={image.originalName || `이미지 ${index + 1}`}
-                                  className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
-                                  onClick={() => handleImageClick(review.images, index)}
-                                />
-                              </div>
-                              <div className="mt-1 text-xs text-gray-500 truncate">
-                                {image.originalName}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex justify-end">
-                      <button
-                        onClick={() => handleEditClick(review)}
-                        className="py-1 px-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-xs flex items-center gap-1 mr-1"
-                      >
-                        <FiEdit size={12} /> 수정하기
-                      </button>
-                      <button
-                        onClick={() => handleDeleteReview(review.id)}
-                        className="py-1 px-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-xs flex items-center"
-                      >
-                        <MdDeleteForever size={12} /> 삭제
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+        <OptimizedReviewList userId={userId} onDelete={handleDeleteReview} showToast={showToast} />
       </div>
     </div>
   );
