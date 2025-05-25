@@ -99,16 +99,6 @@ const ReviewUploadProgress = ({ progress, onCancel }) => {
           </div>
         )}
 
-        {/* 취소 버튼 (업로드 중일 때만 표시) */}
-        {progress.status === 'uploading' && onCancel && (
-          <button
-            onClick={onCancel}
-            className="w-full py-2 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium"
-          >
-            취소
-          </button>
-        )}
-
         {/* 완료/오류 시 확인 버튼 */}
         {(progress.status === 'completed' || progress.status === 'error') && (
           <div className="space-y-2">

@@ -1479,7 +1479,7 @@ const ReviewContent = ({ userData, userId }) => {
       </div>
 
       {/* 업로드 진행률 모달 */}
-      <ReviewUploadProgress progress={uploadProgress} onCancel={() => setUploadProgress(null)} />
+      <ReviewUploadProgress progress={uploadProgress} />
     </div>
   );
 };

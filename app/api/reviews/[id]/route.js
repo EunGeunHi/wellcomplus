@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Review from '@/models/review';
 import { withAuthAPI } from '@/app/api/middleware';
+import { deleteReviewImagesFromBlob } from '@/lib/review-blob-storage';
 
 /**
  * 리뷰 수정 API (PATCH)
@@ -20,6 +21,7 @@ export const PATCH = withAuthAPI(async (req, { params, session }) => {
       rating,
       serviceType,
       images = [], // 클라이언트에서 업로드된 새로운 이미지 정보
+      imagesToDelete = [], // 삭제할 기존 이미지 ID 배열
     } = body;
 
     // 필수 필드 검증
@@ -70,6 +72,23 @@ export const PATCH = withAuthAPI(async (req, { params, session }) => {
         { error: '본인이 작성한 리뷰만 수정할 수 있습니다.' },
         { status: 403 }
       );
+    }
+
+    // 삭제할 기존 이미지들을 Blob Storage에서 실제로 삭제
+    if (imagesToDelete && imagesToDelete.length > 0) {
+      try {
+        // 삭제할 이미지들 찾기
+        const imagesToDeleteFromBlob = review.images.filter((img) =>
+          imagesToDelete.includes(img._id.toString())
+        );
+
+        if (imagesToDeleteFromBlob.length > 0) {
+          await deleteReviewImagesFromBlob(imagesToDeleteFromBlob);
+        }
+      } catch (error) {
+        console.error('Blob Storage 이미지 삭제 오류:', error);
+        // Blob 삭제 실패해도 리뷰 수정은 진행 (로그만 남김)
+      }
     }
 
     // 이미지 데이터 검증 및 필수 필드 보장

@@ -34,9 +34,6 @@ export const DELETE = withKingAuthAPI(async (req, { params }) => {
     if (review.images && review.images.length > 0) {
       try {
         await deleteReviewImagesFromBlob(review.images);
-        console.log(
-          `리뷰 ${id}의 ${review.images.length}개 이미지가 Blob Storage에서 삭제되었습니다.`
-        );
       } catch (error) {
         console.error('Blob Storage 이미지 삭제 오류:', error);
         // Blob 삭제 실패해도 DB 삭제는 진행

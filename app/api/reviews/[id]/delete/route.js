@@ -29,16 +29,6 @@ export const PATCH = withAuthAPI(async (req, { params, session }) => {
       );
     }
 
-    // Vercel Blob Storage에서 이미지 삭제
-    if (review.images && review.images.length > 0) {
-      try {
-        await deleteReviewImagesFromBlob(review.images);
-      } catch (error) {
-        console.error('Blob Storage 이미지 삭제 실패:', error);
-        // 이미지 삭제 실패해도 리뷰 삭제는 진행
-      }
-    }
-
     // isDeleted 플래그를 true로 업데이트
     review.isDeleted = true;
     review.status = 'register';

@@ -217,6 +217,7 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
           rating: editForm.rating,
           serviceType: editForm.serviceType,
           images: allImages,
+          imagesToDelete: editForm.imagesToDelete, // 삭제할 기존 이미지 ID 배열 추가
         }),
       });
 
@@ -588,7 +589,7 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
       </div>
 
       {/* 업로드 진행률 모달 */}
-      <ReviewUploadProgress progress={uploadProgress} onCancel={() => setUploadProgress(null)} />
+      <ReviewUploadProgress progress={uploadProgress} />
     </div>
   );
 };
