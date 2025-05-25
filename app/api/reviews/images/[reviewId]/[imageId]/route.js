@@ -45,83 +45,27 @@ export async function GET(request, { params }) {
 
     await connectDB();
 
-    // 특정 리뷰에서 특정 이미지만 조회 (이미지 데이터 포함)
-    let review = await Review.findOne(
+    // 리뷰에서 해당 이미지 찾기
+    const review = await Review.findOne(
       {
         _id: reviewObjectId,
         'images._id': imageObjectId,
       },
-      { 'images.$': 1 } // 해당 이미지만 반환, 데이터 포함
-    ); // lean() 제거 - 이미지 데이터 필요
+      { 'images.$': 1 }
+    ).lean();
 
-    // 첫 번째 쿼리 실패 시 전체 리뷰 조회 후 이미지 필터링
-    if (!review) {
-      const fullReview = await Review.findById(reviewObjectId);
-      if (fullReview && fullReview.images) {
-        const targetImage = fullReview.images.find(
-          (img) => img._id.toString() === imageObjectId.toString()
-        );
-        if (targetImage) {
-          review = {
-            _id: fullReview._id,
-            images: [targetImage],
-          };
-        }
-      }
-    }
-
-    if (!review) {
-      return NextResponse.json({ message: 'Review not found' }, { status: 404 });
-    }
-
-    if (!review.images || review.images.length === 0) {
-      return NextResponse.json({ message: 'Images array is empty' }, { status: 404 });
+    if (!review || !review.images || review.images.length === 0) {
+      return NextResponse.json({ message: 'Image not found' }, { status: 404 });
     }
 
     const image = review.images[0];
 
-    // 이미지 데이터가 없거나 유효하지 않은 경우
-    if (!image.data) {
-      return NextResponse.json({ message: 'Image data not found' }, { status: 404 });
+    // Vercel Blob Storage URL로 리다이렉트
+    if (image.url) {
+      return NextResponse.redirect(image.url, 302);
     }
 
-    // Buffer가 아닌 경우 변환 시도
-    let imageBuffer = image.data;
-    if (!Buffer.isBuffer(imageBuffer)) {
-      try {
-        if (typeof imageBuffer === 'string') {
-          imageBuffer = Buffer.from(imageBuffer, 'base64');
-        } else if (
-          imageBuffer &&
-          typeof imageBuffer === 'object' &&
-          imageBuffer.type === 'Buffer'
-        ) {
-          imageBuffer = Buffer.from(imageBuffer.data);
-        } else {
-          throw new Error('알 수 없는 데이터 형식');
-        }
-      } catch (convertError) {
-        return NextResponse.json({ message: 'Invalid image data format' }, { status: 500 });
-      }
-    }
-
-    // 파일명 안전 인코딩
-    const safeFilename = encodeFilename(image.originalName);
-
-    // 이미지 응답 헤더 설정
-    const response = new NextResponse(imageBuffer, {
-      status: 200,
-      headers: {
-        'Content-Type': image.mimeType,
-        'Content-Length': image.size.toString(),
-        'Cache-Control': 'public, max-age=31536000, immutable', // 1년 캐싱
-        ETag: `"${imageId}"`,
-        'Content-Disposition': `inline; filename*=UTF-8''${encodeURIComponent(image.originalName || 'image')}`,
-        'Access-Control-Allow-Origin': '*', // CORS 문제 해결
-      },
-    });
-
-    return response;
+    return NextResponse.json({ message: 'Image URL not found' }, { status: 404 });
   } catch (error) {
     console.error('Error fetching image:', error);
     return NextResponse.json(

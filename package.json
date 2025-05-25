@@ -7,11 +7,16 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "db:cleanup": "node utils/migrate-images-to-blob.mjs cleanup",
+    "db:status": "node utils/migrate-images-to-blob.mjs status",
+    "db:validate": "node utils/migrate-images-to-blob.mjs validate",
+    "db:reset": "node utils/migrate-images-to-blob.mjs delete-all --confirm"
   },
   "dependencies": {
     "@emotion/styled": "^11.14.0",
     "@vercel/analytics": "^1.5.0",
+    "@vercel/blob": "^0.23.4",
     "@vercel/speed-insights": "^1.2.0",
     "bcryptjs": "^3.0.2",
     "date-fns": "^4.1.0",

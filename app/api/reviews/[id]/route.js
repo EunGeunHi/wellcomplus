@@ -2,32 +2,12 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Review from '@/models/review';
 import { withAuthAPI } from '@/app/api/middleware';
-
-/**
- * 이미지 파일 검증 함수
- */
-function validateImage(file) {
-  const allowedTypes = ['image/jpeg', 'image/png'];
-  const maxSize = 10 * 1024 * 1024; // 10MB
-
-  if (!allowedTypes.includes(file.type)) {
-    throw new Error('JPG, PNG 파일만 업로드 가능합니다.');
-  }
-
-  if (file.size > maxSize) {
-    throw new Error('개별 파일 크기는 10MB를 초과할 수 없습니다.');
-  }
-
-  return true;
-}
-
-/**
- * 파일을 Buffer로 변환하는 함수
- */
-async function fileToBuffer(file) {
-  const arrayBuffer = await file.arrayBuffer();
-  return Buffer.from(arrayBuffer);
-}
+import {
+  uploadImageToBlob,
+  deleteImageFromBlob,
+  validateImage,
+  validateImageCount,
+} from '@/lib/blob-storage';
 
 /**
  * 리뷰 수정 API (PATCH)
@@ -40,12 +20,10 @@ export const PATCH = withAuthAPI(async (req, { params, session }) => {
     // Content-Type 확인
     const contentType = req.headers.get('content-type');
 
-    let content,
-      rating,
-      serviceType,
-      images = [];
+    let content, rating, serviceType;
+    let newImages = [];
     let keepExistingImages = true;
-    let imagesToDelete = []; // 삭제할 이미지 ID들을 저장할 변수
+    let imagesToDelete = [];
 
     if (contentType?.includes('multipart/form-data')) {
       // FormData로 이미지와 함께 전송된 경우
@@ -56,62 +34,31 @@ export const PATCH = withAuthAPI(async (req, { params, session }) => {
       serviceType = formData.get('serviceType');
       keepExistingImages = formData.get('keepExistingImages') === 'true';
 
-      // 삭제할 이미지 ID들 추출 (실제 처리는 review 조회 후)
+      // 삭제할 이미지 ID들 추출
       imagesToDelete = formData.getAll('imagesToDelete');
 
       // 새로운 이미지 파일 처리
       const imageFiles = formData.getAll('images');
 
       if (imageFiles && imageFiles.length > 0) {
-        // 이미지 개수 검증
-        if (imageFiles.length > 5) {
-          return NextResponse.json(
-            { error: '이미지는 최대 5장까지만 업로드 가능합니다.' },
-            { status: 400 }
-          );
-        }
+        // 실제 파일만 필터링 (빈 파일 제외)
+        const validFiles = imageFiles.filter((file) => file.size > 0);
 
-        let totalSize = 0;
+        if (validFiles.length > 0) {
+          // 이미지 검증
+          validateImageCount(validFiles);
 
-        for (let i = 0; i < imageFiles.length; i++) {
-          const file = imageFiles[i];
-
-          // 파일이 실제로 업로드된 것인지 확인
-          if (file.size === 0) continue;
-
-          try {
-            // 개별 파일 검증
+          // 각 파일 개별 검증 (업로드는 나중에)
+          for (const file of validFiles) {
             validateImage(file);
-            totalSize += file.size;
-
-            // 파일을 Buffer로 변환
-            const buffer = await fileToBuffer(file);
-
-            images.push({
-              filename: `${Date.now()}_${i}_${file.name}`,
-              originalName: file.name,
-              mimeType: file.type,
-              size: file.size,
-              data: buffer,
-            });
-          } catch (error) {
-            return NextResponse.json(
-              { error: `이미지 ${i + 1}: ${error.message}` },
-              { status: 400 }
-            );
           }
-        }
 
-        // 총 파일 크기 검증
-        if (totalSize > 10 * 1024 * 1024) {
-          return NextResponse.json(
-            { error: '이미지 총 크기는 10MB를 초과할 수 없습니다.' },
-            { status: 400 }
-          );
+          // 임시로 파일들을 저장 (실제 업로드는 리뷰 조회 후)
+          newImages = validFiles;
         }
       }
     } else {
-      // JSON으로 텍스트만 전송된 경우 (기존 로직 유지)
+      // JSON으로 텍스트만 전송된 경우
       const body = await req.json();
       content = body.content;
       rating = body.rating;
@@ -160,29 +107,63 @@ export const PATCH = withAuthAPI(async (req, { params, session }) => {
       );
     }
 
-    // 리뷰 업데이트
+    // 기본 필드 업데이트
     review.content = content;
     review.rating = rating;
     review.serviceType = serviceType;
 
-    // 이미지 처리 (review 조회 후 실행)
+    // 이미지 처리
     if (contentType?.includes('multipart/form-data')) {
-      // 기존 이미지에서 삭제할 이미지들 제거
+      // 삭제할 이미지들을 Blob Storage에서 삭제
+      const imagesToDeleteFromBlob = [];
       if (imagesToDelete && imagesToDelete.length > 0) {
-        // MongoDB ObjectId는 문자열로 비교해야 함
-        const filteredExistingImages =
-          review.images?.filter((img) => !imagesToDelete.includes(img._id.toString())) || [];
+        review.images.forEach((image) => {
+          if (imagesToDelete.includes(image._id.toString())) {
+            imagesToDeleteFromBlob.push(image);
+          }
+        });
 
-        // 기존 이미지 업데이트
-        review.images = filteredExistingImages;
+        // Blob Storage에서 이미지 삭제
+        if (imagesToDeleteFromBlob.length > 0) {
+          try {
+            for (const image of imagesToDeleteFromBlob) {
+              await deleteImageFromBlob(image.url);
+            }
+          } catch (error) {
+            console.error('Blob Storage 이미지 삭제 실패:', error);
+            // 삭제 실패해도 계속 진행
+          }
+        }
+
+        // MongoDB에서 이미지 제거
+        review.images = review.images.filter((img) => !imagesToDelete.includes(img._id.toString()));
       }
 
-      // 새로운 이미지 추가
-      if (images.length > 0) {
+      // 새로운 이미지 업로드
+      const uploadedImages = [];
+      if (newImages.length > 0) {
+        try {
+          for (let i = 0; i < newImages.length; i++) {
+            const file = newImages[i];
+            const uploadedImage = await uploadImageToBlob(file, id, i);
+            uploadedImages.push(uploadedImage);
+          }
+        } catch (error) {
+          return NextResponse.json({ error: error.message }, { status: 400 });
+        }
+
         if (keepExistingImages) {
           // 기존 이미지 유지하면서 새 이미지 추가
-          const totalImages = [...(review.images || []), ...images];
+          const totalImages = [...review.images, ...uploadedImages];
           if (totalImages.length > 5) {
+            // 업로드된 새 이미지들을 Blob Storage에서 삭제
+            for (const image of uploadedImages) {
+              try {
+                await deleteImageFromBlob(image.url);
+              } catch (error) {
+                console.error('새 이미지 롤백 실패:', error);
+              }
+            }
             return NextResponse.json(
               { error: '기존 이미지와 새 이미지를 합쳐서 최대 5장까지만 가능합니다.' },
               { status: 400 }
@@ -191,7 +172,17 @@ export const PATCH = withAuthAPI(async (req, { params, session }) => {
           review.images = totalImages;
         } else {
           // 기존 이미지 모두 삭제하고 새 이미지로 교체
-          review.images = images;
+          const oldImages = [...review.images];
+          review.images = uploadedImages;
+
+          // 기존 이미지들을 Blob Storage에서 삭제
+          for (const image of oldImages) {
+            try {
+              await deleteImageFromBlob(image.url);
+            } catch (error) {
+              console.error('기존 이미지 삭제 실패:', error);
+            }
+          }
         }
       }
     }
@@ -213,15 +204,15 @@ export const PATCH = withAuthAPI(async (req, { params, session }) => {
         status: review.status,
         createdAt: review.createdAt,
         updatedAt: review.updatedAt,
-        images: review.images
-          ? review.images.map((img) => ({
-              id: img._id,
-              filename: img.filename,
-              originalName: img.originalName,
-              mimeType: img.mimeType,
-              size: img.size,
-            }))
-          : [],
+        images: review.images.map((img) => ({
+          id: img._id,
+          url: img.url,
+          filename: img.filename,
+          originalName: img.originalName,
+          mimeType: img.mimeType,
+          size: img.size,
+          uploadedAt: img.uploadedAt,
+        })),
       },
     });
   } catch (error) {

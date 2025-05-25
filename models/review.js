@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 /**
  * 사용자 리뷰 정보를 저장하기 위한 MongoDB 스키마
+ * Vercel Blob Storage를 사용하여 이미지 저장
  *
  * timestamps: true 옵션으로 createdAt, updatedAt 필드가 자동 생성됨
  */
@@ -39,13 +40,17 @@ const reviewSchema = new mongoose.Schema(
     },
     images: [
       {
+        url: {
+          type: String,
+          required: true, // Vercel Blob Storage URL
+        },
         filename: {
           type: String,
-          required: true,
+          required: true, // Blob Storage에서의 파일명
         },
         originalName: {
           type: String,
-          required: true,
+          required: true, // 사용자가 업로드한 원본 파일명
         },
         mimeType: {
           type: String,
@@ -54,11 +59,15 @@ const reviewSchema = new mongoose.Schema(
         },
         size: {
           type: Number,
-          required: true,
+          required: true, // 파일 크기 (바이트)
         },
-        data: {
-          type: Buffer, // 바이너리 데이터로 저장
-          required: true,
+        blobId: {
+          type: String,
+          required: true, // Blob Storage에서의 고유 식별자
+        },
+        uploadedAt: {
+          type: Date,
+          default: Date.now, // 업로드 시간
         },
       },
     ],
@@ -73,72 +82,49 @@ reviewSchema.pre('save', function (next) {
     return next(error);
   }
 
-  if (this.images && this.images.length > 0) {
-    const totalSize = this.images.reduce((sum, img) => sum + img.size, 0);
-    const maxSize = 10 * 1024 * 1024; // 10MB
-
-    if (totalSize > maxSize) {
-      const error = new Error('이미지 총 크기는 10MB를 초과할 수 없습니다.');
-      return next(error);
-    }
-  }
-
   next();
 });
 
-// 이미지를 안전하게 반환하기 위한 메서드
+// 특정 이미지 URL 반환
 reviewSchema.methods.getImageUrl = function (imageIndex) {
   if (!this.images || !this.images[imageIndex]) {
     return null;
   }
 
-  const image = this.images[imageIndex];
-  const base64Data = image.data.toString('base64');
-  return `data:${image.mimeType};base64,${base64Data}`;
+  return this.images[imageIndex].url;
 };
 
-// 이미지 목록을 안전하게 반환하기 위한 메서드
+// 모든 이미지 정보 반환
 reviewSchema.methods.getImageUrls = function () {
   if (!this.images || this.images.length === 0) {
     return [];
   }
 
-  return this.images.map((image) => {
-    const base64Data = image.data.toString('base64');
-    return {
-      id: image._id,
-      filename: image.filename,
-      originalName: image.originalName,
-      mimeType: image.mimeType,
-      size: image.size,
-      url: `data:${image.mimeType};base64,${base64Data}`,
-    };
-  });
+  return this.images.map((image) => ({
+    id: image._id,
+    url: image.url,
+    filename: image.filename,
+    originalName: image.originalName,
+    mimeType: image.mimeType,
+    size: image.size,
+    uploadedAt: image.uploadedAt,
+  }));
 };
 
-// 이미지 데이터를 제외한 안전한 JSON 변환
+// JSON 변환 (모든 이미지 정보 포함)
 reviewSchema.methods.toSafeJSON = function () {
   const obj = this.toObject();
 
   if (obj.images) {
     obj.images = obj.images.map((image) => ({
       id: image._id,
+      url: image.url,
       filename: image.filename,
       originalName: image.originalName,
       mimeType: image.mimeType,
       size: image.size,
+      uploadedAt: image.uploadedAt,
     }));
-  }
-
-  return obj;
-};
-
-// 이미지를 포함한 전체 데이터 반환
-reviewSchema.methods.toJSONWithImages = function () {
-  const obj = this.toObject();
-
-  if (obj.images) {
-    obj.images = this.getImageUrls();
   }
 
   return obj;

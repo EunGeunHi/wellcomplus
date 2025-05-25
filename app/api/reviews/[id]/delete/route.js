@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Review from '@/models/review';
 import { withAuthAPI } from '@/app/api/middleware';
+import { deleteReviewImagesFromBlob } from '@/lib/blob-storage';
 
 /**
  * 리뷰 삭제 API (isDeleted 플래그를 true로 설정)
@@ -26,6 +27,16 @@ export const PATCH = withAuthAPI(async (req, { params, session }) => {
         { error: '본인이 작성한 리뷰만 삭제할 수 있습니다.' },
         { status: 403 }
       );
+    }
+
+    // Vercel Blob Storage에서 이미지 삭제
+    if (review.images && review.images.length > 0) {
+      try {
+        await deleteReviewImagesFromBlob(review.images);
+      } catch (error) {
+        console.error('Blob Storage 이미지 삭제 실패:', error);
+        // 이미지 삭제 실패해도 리뷰 삭제는 진행
+      }
     }
 
     // isDeleted 플래그를 true로 업데이트

@@ -928,14 +928,9 @@ const ReviewContent = ({ userData, userId }) => {
   // 이미지 파일 검증 함수
   const validateImageFile = (file) => {
     const allowedTypes = ['image/jpeg', 'image/png'];
-    const maxSize = 10 * 1024 * 1024; // 10MB
 
     if (!allowedTypes.includes(file.type)) {
       throw new Error('JPG, PNG 파일만 업로드 가능합니다.');
-    }
-
-    if (file.size > maxSize) {
-      throw new Error('개별 파일 크기는 10MB를 초과할 수 없습니다.');
     }
 
     return true;
@@ -957,15 +952,6 @@ const ReviewContent = ({ userData, userId }) => {
     try {
       // 각 파일 검증
       files.forEach(validateImageFile);
-
-      // 총 용량 체크
-      const currentSize = selectedImages.reduce((sum, img) => sum + img.size, 0);
-      const newSize = files.reduce((sum, file) => sum + file.size, 0);
-
-      if (currentSize + newSize > 10 * 1024 * 1024) {
-        setImageError('이미지 총 크기는 10MB를 초과할 수 없습니다.');
-        return;
-      }
 
       // 새로운 이미지들 추가
       const newImages = [...selectedImages, ...files];
@@ -1276,7 +1262,7 @@ const ReviewContent = ({ userData, userId }) => {
         {/* 이미지 업로드 섹션 */}
         <div>
           <label htmlFor="imageInput" className="block text-sm font-medium text-gray-700 mb-1">
-            이미지 업로드 (최대 5장, 총 10MB 이하)
+            이미지 업로드 (최대 5장)
           </label>
           <input
             type="file"
