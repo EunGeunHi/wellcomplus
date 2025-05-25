@@ -7,15 +7,15 @@ import { uploadImageToBlob, validateImage, validateImageCount } from '@/lib/blob
 /**
  * 리뷰 등록 API (POST)
  * 인증된 사용자만 접근 가능
+ * 클라이언트 업로드 방식 사용
  */
 export const POST = withAuthAPI(async (req, { session }) => {
   try {
-    const formData = await req.formData();
+    // JSON 데이터 처리 (클라이언트 업로드 방식)
+    const body = await req.json();
 
     // 기본 필드 추출
-    const serviceType = formData.get('serviceType');
-    const rating = parseInt(formData.get('rating'));
-    const content = formData.get('content');
+    const { serviceType, rating, content, images = [] } = body;
 
     // 필수 필드 검증
     if (!serviceType || !rating || !content) {
@@ -41,70 +41,41 @@ export const POST = withAuthAPI(async (req, { session }) => {
       );
     }
 
+    // 이미지 개수 검증 (클라이언트에서 업로드된 이미지)
+    if (images && images.length > 5) {
+      return NextResponse.json(
+        { error: '이미지는 최대 5장까지만 업로드 가능합니다.' },
+        { status: 400 }
+      );
+    }
+
     // MongoDB 연결
     await connectDB();
 
-    // 임시 리뷰 생성 (이미지 없이)
-    const tempReview = new Review({
+    // 리뷰 생성 (클라이언트에서 업로드된 이미지 정보 포함)
+    const review = new Review({
       serviceType,
       rating,
       content,
       userId: session.user.id,
       status: 'register',
-      images: [], // 빈 배열로 시작
+      images: images || [], // 클라이언트에서 업로드된 이미지 정보
     });
 
-    // 임시 저장하여 리뷰 ID 생성
-    await tempReview.save();
-    const reviewId = tempReview._id.toString();
-
-    // 이미지 파일 처리
-    const images = [];
-    const imageFiles = formData.getAll('images');
-
-    if (imageFiles && imageFiles.length > 0) {
-      // 실제 파일만 필터링 (빈 파일 제외)
-      const validFiles = imageFiles.filter((file) => file.size > 0);
-
-      if (validFiles.length > 0) {
-        try {
-          // 이미지 검증
-          validateImageCount(validFiles);
-
-          // 각 파일 개별 검증 및 업로드
-          for (let i = 0; i < validFiles.length; i++) {
-            const file = validFiles[i];
-
-            // 개별 파일 검증
-            validateImage(file);
-
-            // Vercel Blob Storage에 업로드
-            const uploadedImage = await uploadImageToBlob(file, reviewId, i);
-            images.push(uploadedImage);
-          }
-        } catch (error) {
-          // 업로드 실패 시 임시 리뷰 삭제
-          await Review.findByIdAndDelete(reviewId);
-          return NextResponse.json({ error: error.message }, { status: 400 });
-        }
-      }
-    }
-
-    // 리뷰에 이미지 정보 업데이트
-    tempReview.images = images;
-    await tempReview.save();
+    // 리뷰 저장
+    await review.save();
 
     // 성공 응답
     return NextResponse.json({
       success: true,
       message: '리뷰가 성공적으로 등록되었습니다.',
       review: {
-        id: tempReview._id,
-        serviceType: tempReview.serviceType,
-        rating: tempReview.rating,
-        content: tempReview.content,
-        createdAt: tempReview.createdAt,
-        images: tempReview.images.map((img) => ({
+        id: review._id,
+        serviceType: review.serviceType,
+        rating: review.rating,
+        content: review.content,
+        createdAt: review.createdAt,
+        images: review.images.map((img) => ({
           id: img._id,
           url: img.url,
           filename: img.filename,

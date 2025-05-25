@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { FiStar, FiX } from 'react-icons/fi';
+import ReviewUploadProgress from './ReviewUploadProgress';
 
 const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId }) => {
   const [editForm, setEditForm] = useState({
@@ -14,6 +15,7 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
     imagesToDelete: [],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(null);
 
   useEffect(() => {
     if (isOpen && review) {
@@ -164,51 +166,53 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
     setIsSubmitting(true);
 
     try {
-      const hasImageChanges = editForm.newImages.length > 0 || editForm.imagesToDelete.length > 0;
+      let allImages = [];
 
-      if (hasImageChanges) {
-        const formData = new FormData();
-        formData.append('content', editForm.content);
-        formData.append('rating', editForm.rating.toString());
-        formData.append('serviceType', editForm.serviceType);
-        formData.append('keepExistingImages', 'true');
+      // 기존 이미지 중 삭제되지 않은 것들 추가
+      const remainingExistingImages = editForm.existingImages.filter(
+        (img) => !editForm.imagesToDelete.includes(img.id)
+      );
+      allImages = [...remainingExistingImages];
 
-        editForm.imagesToDelete.forEach((imageId) => {
-          formData.append('imagesToDelete', imageId);
-        });
+      // 새 이미지가 있는 경우 클라이언트에서 직접 업로드
+      if (editForm.newImages.length > 0) {
+        const { uploadMultipleReviewImages } = await import('@/lib/client-blob-upload-review');
 
-        editForm.newImages.forEach((image) => {
-          formData.append('images', image);
-        });
+        // 임시 리뷰 ID 생성 (파일명에 사용)
+        const tempId = Date.now().toString();
 
-        const response = await fetch(`/api/reviews/${review.id}`, {
-          method: 'PATCH',
-          body: formData,
-        });
+        const uploadedImages = await uploadMultipleReviewImages(
+          editForm.newImages,
+          tempId,
+          (progress) => {
+            setUploadProgress(progress);
+          }
+        );
 
-        const data = await response.json();
+        allImages = [...allImages, ...uploadedImages];
+      }
 
-        if (!response.ok) {
-          throw new Error(data.error || '리뷰 수정에 실패했습니다.');
-        }
-      } else {
-        const response = await fetch(`/api/reviews/${review.id}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            content: editForm.content,
-            rating: editForm.rating,
-            serviceType: editForm.serviceType,
-          }),
-        });
+      // 업로드 진행률 초기화
+      setUploadProgress(null);
 
-        const data = await response.json();
+      // 리뷰 수정 API 호출 (JSON 방식)
+      const response = await fetch(`/api/reviews/${review.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: editForm.content,
+          rating: editForm.rating,
+          serviceType: editForm.serviceType,
+          images: allImages,
+        }),
+      });
 
-        if (!response.ok) {
-          throw new Error(data.error || '리뷰 수정에 실패했습니다.');
-        }
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || '리뷰 수정에 실패했습니다.');
       }
 
       showToast('리뷰가 성공적으로 수정되었습니다.', 'success');
@@ -220,6 +224,7 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
       onClose();
     } catch (err) {
       showToast(err.message, 'error');
+      setUploadProgress(null);
     } finally {
       setIsSubmitting(false);
     }
@@ -401,7 +406,9 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
               {/* 새 이미지 추가 */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-gray-700">새 이미지 추가</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    새 이미지 추가 (각 10MB 이하)
+                  </label>
                   <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
                     현재 총{' '}
                     {editForm.existingImages.length -
@@ -415,16 +422,19 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
                   multiple
                   accept="image/jpeg,image/png,.jpg,.png"
                   onChange={handleNewImageSelect}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                   disabled={
+                    isSubmitting ||
                     editForm.existingImages.length -
                       editForm.imagesToDelete.length +
                       editForm.newImages.length >=
-                    5
+                      5
                   }
                 />
                 <div className="mt-2 space-y-1">
-                  <p className="text-xs text-gray-500">JPG, PNG 파일만 업로드 가능합니다.</p>
+                  <p className="text-xs text-gray-500">
+                    📱 모바일에서도 안정적으로 업로드됩니다. JPG, PNG 파일만 가능합니다.
+                  </p>
                   {editForm.existingImages.length -
                     editForm.imagesToDelete.length +
                     editForm.newImages.length >=
@@ -486,24 +496,83 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
         </div>
 
         {/* 하단 버튼 */}
-        <div className="p-4 border-t flex justify-end space-x-2">
-          <button
-            onClick={handleClose}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-          >
-            취소
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={isSubmitting}
-            className={`px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors ${
-              isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
-            }`}
-          >
-            {isSubmitting ? '저장 중...' : '저장하기'}
-          </button>
+        <div className="p-4 border-t space-y-3">
+          {/* 진행 상황 표시 */}
+          <div className="bg-gray-50 rounded-lg p-3">
+            <div className="flex items-center justify-between text-sm mb-2">
+              <span className="text-gray-600">수정 진행 상황:</span>
+              <span className="font-medium text-gray-800">
+                {[
+                  editForm.serviceType ? '✅' : '⭕',
+                  editForm.rating > 0 ? '✅' : '⭕',
+                  editForm.content.trim().length >= 10 ? '✅' : '⭕',
+                ].join(' ')}{' '}
+                (
+                {
+                  [
+                    editForm.serviceType,
+                    editForm.rating > 0,
+                    editForm.content.trim().length >= 10,
+                  ].filter(Boolean).length
+                }
+                /3)
+              </span>
+            </div>
+            <div className="text-xs text-gray-500 space-y-1">
+              <div
+                className={
+                  editForm.content.trim().length >= 10 ? 'text-green-600' : 'text-gray-500'
+                }
+              >
+                • 리뷰 내용 (최소 10자){' '}
+                {editForm.content.trim().length >= 10 ? '✅' : `(${editForm.content.length}/10)`}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex space-x-2">
+            <button
+              onClick={handleClose}
+              disabled={isSubmitting || uploadProgress}
+              className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              취소
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isSubmitting || uploadProgress || editForm.content.trim().length < 10}
+              className={`flex-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+                isSubmitting || uploadProgress || editForm.content.trim().length < 10
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800 shadow-lg hover:shadow-xl'
+              }`}
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  저장 중...
+                </>
+              ) : uploadProgress ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  업로드 중...
+                </>
+              ) : (
+                '저장하기'
+              )}
+            </button>
+          </div>
+
+          {(isSubmitting || uploadProgress) && (
+            <p className="text-xs text-center text-gray-600">
+              📱 모바일에서는 화면을 끄지 마시고 잠시만 기다려주세요.
+            </p>
+          )}
         </div>
       </div>
+
+      {/* 업로드 진행률 모달 */}
+      <ReviewUploadProgress progress={uploadProgress} onCancel={() => setUploadProgress(null)} />
     </div>
   );
 };

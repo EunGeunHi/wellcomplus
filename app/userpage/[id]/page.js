@@ -23,6 +23,7 @@ import { formatDate } from '@/utils/dateFormat';
 import { formatKoreanPhoneNumber, isValidPhoneNumber } from '@/utils/phoneFormatter';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 import LoginFallback from '@/app/components/LoginFallback';
+import ReviewUploadProgress from '@/app/components/ReviewUploadProgress';
 import OptimizedReviewList from '@/app/components/OptimizedReviewList';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -917,6 +918,7 @@ const ReviewContent = ({ userData, userId }) => {
   const [selectedImages, setSelectedImages] = useState([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState([]);
   const [imageError, setImageError] = useState('');
+  const [uploadProgress, setUploadProgress] = useState(null);
 
   // 토스트 상태를 하나의 객체로 관리
   const [toast, setToast] = useState({
@@ -931,6 +933,11 @@ const ReviewContent = ({ userData, userId }) => {
 
     if (!allowedTypes.includes(file.type)) {
       throw new Error('JPG, PNG 파일만 업로드 가능합니다.');
+    }
+
+    // 파일 크기 검증 (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      throw new Error('이미지 크기가 너무 큽니다. 최대 10MB까지 업로드 가능합니다.');
     }
 
     return true;
@@ -1082,21 +1089,35 @@ const ReviewContent = ({ userData, userId }) => {
     setIsSubmitting(true);
 
     try {
-      // FormData 생성
-      const formData = new FormData();
-      formData.append('serviceType', serviceType);
-      formData.append('rating', rating.toString());
-      formData.append('content', reviewText);
+      let uploadedImages = [];
 
-      // 이미지 파일들 추가
-      selectedImages.forEach((image, index) => {
-        formData.append('images', image);
-      });
+      // 이미지가 있는 경우 클라이언트에서 직접 업로드
+      if (selectedImages.length > 0) {
+        const { uploadMultipleReviewImages } = await import('@/lib/client-blob-upload-review');
 
-      // 리뷰 API 호출
+        // 임시 리뷰 ID 생성 (파일명에 사용)
+        const tempId = Date.now().toString();
+
+        uploadedImages = await uploadMultipleReviewImages(selectedImages, tempId, (progress) => {
+          setUploadProgress(progress);
+        });
+      }
+
+      // 업로드 진행률 초기화
+      setUploadProgress(null);
+
+      // 리뷰 API 호출 (JSON 방식)
       const response = await fetch('/api/reviews', {
         method: 'POST',
-        body: formData, // FormData 사용
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          serviceType,
+          rating,
+          content: reviewText,
+          images: uploadedImages,
+        }),
       });
 
       const data = await response.json();
@@ -1116,6 +1137,7 @@ const ReviewContent = ({ userData, userId }) => {
       setSelectedImages([]);
       setImagePreviewUrls([]);
       setImageError('');
+      setUploadProgress(null);
 
       // 파일 입력 필드 초기화
       const fileInput = document.getElementById('imageInput');
@@ -1124,6 +1146,7 @@ const ReviewContent = ({ userData, userId }) => {
       }
     } catch (err) {
       showToast(err.message, 'error');
+      setUploadProgress(null);
     } finally {
       setIsSubmitting(false);
     }
@@ -1262,71 +1285,171 @@ const ReviewContent = ({ userData, userId }) => {
         {/* 이미지 업로드 섹션 */}
         <div>
           <label htmlFor="imageInput" className="block text-sm font-medium text-gray-700 mb-1">
-            이미지 업로드 (최대 5장)
+            이미지 업로드 (최대 5장, 각 10MB 이하)
           </label>
-          <input
-            type="file"
-            id="imageInput"
-            multiple
-            accept="image/jpeg,image/png,.jpg,.png"
-            onChange={handleImageSelect}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          />
-          <p className="mt-1 text-xs text-gray-500">JPG, PNG 파일만 업로드 가능합니다.</p>
-          {imageError && <p className="mt-1 text-xs text-red-500">{imageError}</p>}
+          <div className="relative">
+            <input
+              type="file"
+              id="imageInput"
+              multiple
+              accept="image/jpeg,image/png,.jpg,.png"
+              onChange={handleImageSelect}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+              disabled={isSubmitting}
+            />
+            {selectedImages.length > 0 && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  {selectedImages.length}/5
+                </span>
+              </div>
+            )}
+          </div>
+          <div className="mt-1 space-y-1">
+            <p className="text-xs text-gray-500">
+              📱 모바일에서도 안정적으로 업로드됩니다. JPG, PNG 파일만 가능합니다.
+            </p>
+            {selectedImages.length >= 5 && (
+              <p className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                ⚠️ 최대 5장까지만 업로드할 수 있습니다.
+              </p>
+            )}
+          </div>
+          {imageError && (
+            <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-xs text-red-700">{imageError}</p>
+            </div>
+          )}
         </div>
 
         {/* 이미지 미리보기 */}
         {selectedImages.length > 0 && (
-          <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">
-              선택된 이미지 ({selectedImages.length}/5)
-            </h4>
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-medium text-gray-700">
+                선택된 이미지 ({selectedImages.length}/5)
+              </h4>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedImages([]);
+                  setImagePreviewUrls([]);
+                  setImageError('');
+                  const fileInput = document.getElementById('imageInput');
+                  if (fileInput) fileInput.value = '';
+                }}
+                className="text-xs text-red-600 hover:text-red-800 font-medium"
+                disabled={isSubmitting}
+              >
+                전체 삭제
+              </button>
+            </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {selectedImages.map((image, index) => (
                 <div key={index} className="relative group">
-                  <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                  <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-indigo-300 transition-colors">
                     <img
                       src={imagePreviewUrls[index]}
                       alt={`미리보기 ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
+                    {/* 로딩 오버레이 */}
+                    {isSubmitting && (
+                      <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    )}
                   </div>
                   <button
                     type="button"
                     onClick={() => handleImageRemove(index)}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm hover:bg-red-600 active:bg-red-700 transition-colors shadow-lg border-2 border-white"
+                    disabled={isSubmitting}
+                    title="이미지 삭제"
                   >
                     <FiX />
                   </button>
-                  <div className="mt-1 text-xs text-gray-500 truncate">{image.name}</div>
-                  <div className="text-xs text-gray-400">{formatFileSize(image.size)}</div>
+                  <div className="mt-2 space-y-1">
+                    <div className="text-xs text-gray-600 truncate font-medium" title={image.name}>
+                      {image.name}
+                    </div>
+                    <div className="text-xs text-gray-500">{formatFileSize(image.size)}</div>
+                  </div>
                 </div>
               ))}
+            </div>
+            <div className="mt-3 p-2 bg-blue-50 rounded-lg">
+              <p className="text-xs text-blue-700">
+                💡 <strong>팁:</strong> 이미지를 터치하여 삭제할 수 있습니다. 업로드 중에는 수정할
+                수 없습니다.
+              </p>
             </div>
           </div>
         )}
 
-        <button
-          type="submit"
-          disabled={isSubmitting || !serviceType || rating === 0 || reviewText.trim().length < 10}
-          className={`w-full py-3 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium flex items-center justify-center gap-2
-            ${
-              isSubmitting || !serviceType || rating === 0 || reviewText.trim().length < 10
-                ? 'opacity-70 cursor-not-allowed'
-                : ''
-            }
-          `}
-        >
-          {isSubmitting ? (
-            '리뷰 등록 중...'
-          ) : (
-            <>
-              <FiSend size={16} />
-              리뷰 등록하기
-            </>
+        <div className="bg-gray-50 rounded-lg p-4">
+          <div className="mb-3">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-600">진행 상황:</span>
+              <span className="font-medium text-gray-800">
+                {[
+                  serviceType ? '✅' : '⭕',
+                  rating > 0 ? '✅' : '⭕',
+                  reviewText.trim().length >= 10 ? '✅' : '⭕',
+                ].join(' ')}{' '}
+                ({[serviceType, rating > 0, reviewText.trim().length >= 10].filter(Boolean).length}
+                /3)
+              </span>
+            </div>
+            <div className="mt-2 text-xs text-gray-500 space-y-1">
+              <div className={serviceType ? 'text-green-600' : 'text-gray-500'}>
+                • 서비스 유형 선택 {serviceType ? '✅' : ''}
+              </div>
+              <div className={rating > 0 ? 'text-green-600' : 'text-gray-500'}>
+                • 별점 선택 {rating > 0 ? '✅' : ''}
+              </div>
+              <div className={reviewText.trim().length >= 10 ? 'text-green-600' : 'text-gray-500'}>
+                • 리뷰 내용 작성 (최소 10자){' '}
+                {reviewText.trim().length >= 10 ? '✅' : `(${reviewText.length}/10)`}
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSubmitting || !serviceType || rating === 0 || reviewText.trim().length < 10}
+            className={`w-full py-4 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-200 text-base
+              ${
+                isSubmitting || !serviceType || rating === 0 || reviewText.trim().length < 10
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800 shadow-lg hover:shadow-xl'
+              }
+            `}
+          >
+            {isSubmitting ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                리뷰 등록 중...
+              </>
+            ) : uploadProgress ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                이미지 업로드 중...
+              </>
+            ) : (
+              <>
+                <FiSend size={18} />
+                리뷰 등록하기
+              </>
+            )}
+          </button>
+
+          {(isSubmitting || uploadProgress) && (
+            <p className="mt-2 text-xs text-center text-gray-600">
+              📱 모바일에서는 화면을 끄지 마시고 잠시만 기다려주세요.
+            </p>
           )}
-        </button>
+        </div>
       </form>
 
       {/* 내가 작성한 리뷰 목록 */}
@@ -1337,6 +1460,9 @@ const ReviewContent = ({ userData, userId }) => {
 
         <OptimizedReviewList userId={userId} onDelete={handleDeleteReview} showToast={showToast} />
       </div>
+
+      {/* 업로드 진행률 모달 */}
+      <ReviewUploadProgress progress={uploadProgress} onCancel={() => setUploadProgress(null)} />
     </div>
   );
 };
