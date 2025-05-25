@@ -6,6 +6,7 @@ import {
   FiAlertCircle,
   FiCheckCircle,
   FiAlertTriangle,
+  FiUpload,
 } from 'react-icons/fi';
 import { BUDGET_AMOUNTS, FILE_CONSTRAINTS } from '../constants';
 import { formatFileSize } from '../utils';
@@ -229,6 +230,41 @@ export const AddressInput = ({ value, onChange }) => (
     />
   </div>
 );
+
+// 업로드 진행률 컴포넌트
+export const UploadProgress = ({ progress }) => {
+  if (!progress) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+        <div className="text-center">
+          <div className="mb-4">
+            <FiUpload className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+            <h3 className="text-lg font-[BMJUA] text-gray-900">파일 업로드 중</h3>
+          </div>
+
+          <div className="mb-4">
+            <div className="bg-gray-200 rounded-full h-2 mb-2">
+              <div
+                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${(progress.current / progress.total) * 100}%` }}
+              />
+            </div>
+            <p className="text-sm text-gray-600">
+              {progress.current} / {progress.total} 파일 업로드 중...
+            </p>
+            <p className="text-xs text-gray-500 mt-1">{progress.fileName}</p>
+          </div>
+
+          {progress.status === 'error' && (
+            <div className="text-red-600 text-sm">오류: {progress.error}</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // 파일 업로드 컴포넌트
 export const FileUpload = ({

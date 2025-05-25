@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import { formatKoreanPhoneNumber } from '@/utils/phoneFormatter';
 import { INITIAL_FORM_DATA, INITIAL_SECTIONS_STATE, FILE_CONSTRAINTS } from '../constants';
 import { validateForm, logFormData, formatFileSize } from '../utils';
+import { uploadMultipleFiles, validateFiles } from '@/lib/client-blob-upload';
 
 export const useASApplicationForm = () => {
   const router = useRouter();
@@ -17,6 +18,7 @@ export const useASApplicationForm = () => {
   const [openSections, setOpenSections] = useState(INITIAL_SECTIONS_STATE);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(null);
 
   // Form handlers
   const handleChange = (e) => {
@@ -72,14 +74,17 @@ export const useASApplicationForm = () => {
       newFiles.push(file);
     });
 
-    if (newFiles.length > FILE_CONSTRAINTS.MAX_FILES) {
-      toast.error('파일은 최대 5개까지만 업로드 가능합니다.');
-      return;
-    }
+    try {
+      // 파일 검증 (개수, 타입, 크기)
+      validateFiles(newFiles);
 
-    setSelectedFiles(newFiles);
-    setTotalFileSize(newFiles.reduce((sum, file) => sum + file.size, 0));
-    e.target.value = null;
+      setSelectedFiles(newFiles);
+      setTotalFileSize(newFiles.reduce((sum, file) => sum + file.size, 0));
+      e.target.value = null;
+    } catch (error) {
+      toast.error(error.message);
+      e.target.value = null;
+    }
   };
 
   const removeFile = (index) => {
@@ -129,22 +134,36 @@ export const useASApplicationForm = () => {
       logFormData(formData, selectedFiles, formatFileSize);
       console.log('총 파일 크기:', formatFileSize(totalFileSize));
 
-      // API 호출 부분
-      const formDataToSubmit = new FormData();
-      Object.keys(formData).forEach((key) => {
-        formDataToSubmit.append(key, formData[key]);
-      });
-      selectedFiles.forEach((file) => {
-        formDataToSubmit.append('files', file);
-      });
+      let uploadedFiles = [];
 
+      // 파일이 있는 경우 클라이언트에서 직접 업로드
+      if (selectedFiles.length > 0) {
+        // 임시 신청서 ID 생성 (파일명에 사용)
+        const tempId = Date.now().toString();
+
+        uploadedFiles = await uploadMultipleFiles(selectedFiles, tempId, (progress) => {
+          setUploadProgress(progress);
+        });
+      }
+
+      // 업로드 진행률 초기화
+      setUploadProgress(null);
+
+      // API 호출 (JSON 방식)
       const response = await fetch('/api/applications/as', {
         method: 'POST',
-        body: formDataToSubmit,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          files: uploadedFiles,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('A/S 신청 중 오류가 발생했습니다.');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'A/S 신청 중 오류가 발생했습니다.');
       }
 
       // 폼 초기화
@@ -155,6 +174,7 @@ export const useASApplicationForm = () => {
     } catch (error) {
       console.error('Error submitting application:', error);
       toast.error(error.message || 'A/S 신청 중 오류가 발생했습니다.');
+      setUploadProgress(null);
     } finally {
       setIsSubmitting(false);
     }
@@ -166,6 +186,7 @@ export const useASApplicationForm = () => {
     setSelectedFiles([]);
     setTotalFileSize(0);
     setOpenSections(INITIAL_SECTIONS_STATE);
+    setUploadProgress(null);
   };
 
   // Prevent form submission on Enter key
@@ -185,6 +206,7 @@ export const useASApplicationForm = () => {
     fileInputRef,
     showConfirmModal,
     showSuccessModal,
+    uploadProgress,
 
     // Handlers
     handleChange,

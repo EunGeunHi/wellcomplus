@@ -3,7 +3,6 @@ import connectDB from '@/lib/mongodb';
 import Application from '@/models/Application';
 import User from '@/models/User';
 import { withAuthAPI } from '../../middleware';
-import { uploadFileToBlob, validateFileCount } from '@/lib/application-blob-storage';
 
 async function handler(req, { session }) {
   if (req.method !== 'POST') {
@@ -12,25 +11,35 @@ async function handler(req, { session }) {
   try {
     await connectDB();
 
-    // FormData 처리
-    const formData = await req.formData();
+    // JSON 데이터 처리 (클라이언트 업로드 방식)
+    const body = await req.json();
 
-    // 폼 데이터에서 파일 및 필드 추출
-    const files = formData.getAll('files');
-    const purpose = formData.get('purpose');
-    const budget = formData.get('budget');
-    const printType = formData.get('printType');
-    const infiniteInk = formData.get('infiniteInk');
-    const outputColor = formData.get('outputColor');
-    const additionalRequests = formData.get('additionalRequests');
-    const phoneNumber = formData.get('phoneNumber');
-    const deliveryMethod = formData.get('deliveryMethod');
-    const address = formData.get('address');
+    // 폼 데이터에서 필드 추출
+    const {
+      files = [], // 클라이언트에서 이미 업로드된 파일 정보
+      purpose,
+      budget,
+      printType,
+      infiniteInk,
+      outputColor,
+      additionalRequests,
+      phoneNumber,
+      deliveryMethod,
+      address,
+    } = body;
 
     // 필수 필드 검증
     if (!purpose || !budget || !phoneNumber) {
       return NextResponse.json(
         { error: '사용 목적, 예산, 연락처는 필수로 입력해야 합니다.' },
+        { status: 400 }
+      );
+    }
+
+    // 파일 개수 검증 (클라이언트에서 업로드된 파일)
+    if (files && files.length > 5) {
+      return NextResponse.json(
+        { error: '파일은 최대 5개까지만 업로드 가능합니다.' },
         { status: 400 }
       );
     }
@@ -41,11 +50,11 @@ async function handler(req, { session }) {
       return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
     }
 
-    // 임시 신청서 생성 (파일 없이)
-    const tempApplication = new Application({
+    // 신청서 생성 (클라이언트에서 업로드된 파일 정보 포함)
+    const application = new Application({
       type: 'printer',
       userId: session.user.id,
-      files: [], // 빈 배열로 시작
+      files: files || [], // 클라이언트에서 업로드된 파일 정보
       printer_information: {
         purpose: purpose,
         budget: budget,
@@ -59,48 +68,18 @@ async function handler(req, { session }) {
       },
     });
 
-    // 임시 저장하여 신청서 ID 생성
-    await tempApplication.save();
-    const applicationId = tempApplication._id.toString();
-
-    // 파일 처리
-    const uploadedFiles = [];
-    if (files && files.length > 0) {
-      // 실제 파일만 필터링 (빈 파일 제외)
-      const validFiles = files.filter((file) => file.size > 0);
-
-      if (validFiles.length > 0) {
-        try {
-          // 파일 개수 검증
-          validateFileCount(validFiles);
-
-          // 각 파일을 Vercel Blob Storage에 업로드
-          for (let i = 0; i < validFiles.length; i++) {
-            const file = validFiles[i];
-            const uploadedFile = await uploadFileToBlob(file, applicationId, i);
-            uploadedFiles.push(uploadedFile);
-          }
-        } catch (error) {
-          // 업로드 실패 시 임시 신청서 삭제
-          await Application.findByIdAndDelete(applicationId);
-          return NextResponse.json({ error: error.message }, { status: 400 });
-        }
-      }
-    }
-
-    // 신청서에 파일 정보 업데이트
-    tempApplication.files = uploadedFiles;
-    await tempApplication.save();
+    // 신청서 저장
+    await application.save();
 
     return NextResponse.json(
       {
         message: '견적 신청이 완료되었습니다.',
         application: {
-          id: tempApplication._id,
-          type: tempApplication.type,
-          status: tempApplication.status,
-          createdAt: tempApplication.createdAt,
-          files: tempApplication.files.map((file) => ({
+          id: application._id,
+          type: application.type,
+          status: application.status,
+          createdAt: application.createdAt,
+          files: application.files.map((file) => ({
             id: file._id,
             url: file.url,
             filename: file.filename,
