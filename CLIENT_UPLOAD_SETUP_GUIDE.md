@@ -41,7 +41,7 @@ BLOB_READ_WRITE_TOKEN=vercel_blob_rw_xxxxxxxxxx
 
 ### 2. 클라이언트 업로드 유틸리티
 
-- **파일**: `lib/client-blob-upload.js`
+- **파일**: `lib/client-blob-upload-application.js`
 - **기능**:
   - 직접 파일 업로드
   - 다중 파일 순차 업로드
@@ -78,7 +78,7 @@ BLOB_READ_WRITE_TOKEN=vercel_blob_rw_xxxxxxxxxx
 ### 제한사항 수정 방법
 
 ```javascript
-// lib/client-blob-upload.js에서 수정
+// lib/client-blob-upload-application.js에서 수정
 export function validateFileSize(file, maxSize = 50 * 1024 * 1024) {
   // maxSize 값을 변경하여 파일 크기 제한 조정
 }

@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 import { formatKoreanPhoneNumber } from '@/utils/phoneFormatter';
 import { INITIAL_FORM_DATA, INITIAL_SECTIONS_STATE, FILE_CONSTRAINTS } from '../constants';
 import { validateForm, logFormData, formatFileSize } from '../utils';
-import { uploadMultipleFiles, validateFiles } from '@/lib/client-blob-upload';
+import { uploadMultipleFiles, validateFiles } from '@/lib/client-blob-upload-application';
 
 export const useASApplicationForm = () => {
   const router = useRouter();

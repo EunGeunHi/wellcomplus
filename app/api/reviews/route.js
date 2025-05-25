@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Review from '@/models/review';
 import { withAuthAPI, withKingAuthAPI } from '@/app/api/middleware';
-import { uploadImageToBlob, validateImage, validateImageCount } from '@/lib/blob-storage';
+import { uploadImageToBlob, validateImage, validateImageCount } from '@/lib/review-blob-storage';
 
 /**
  * 리뷰 등록 API (POST)

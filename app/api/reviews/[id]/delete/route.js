@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Review from '@/models/review';
 import { withAuthAPI } from '@/app/api/middleware';
-import { deleteReviewImagesFromBlob } from '@/lib/blob-storage';
+import { deleteReviewImagesFromBlob } from '@/lib/review-blob-storage';
 
 /**
  * 리뷰 삭제 API (isDeleted 플래그를 true로 설정)
