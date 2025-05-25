@@ -72,11 +72,22 @@ export const PATCH = withAuthAPI(async (req, { params, session }) => {
       );
     }
 
+    // 이미지 데이터 검증 및 필수 필드 보장
+    const validatedImages = (images || []).map((img, index) => ({
+      url: img.url,
+      filename: img.filename || `review_${review._id}_${index}_${Date.now()}`,
+      originalName: img.originalName || `image_${index + 1}`,
+      mimeType: img.mimeType || 'image/jpeg',
+      size: img.size || 0,
+      blobId: img.blobId || img.url?.split('/').pop() || `blob_${Date.now()}_${index}`,
+      uploadedAt: img.uploadedAt || new Date(),
+    }));
+
     // 리뷰 정보 업데이트
     review.content = content;
     review.rating = rating;
     review.serviceType = serviceType;
-    review.images = images || []; // 클라이언트에서 업로드된 이미지 정보로 교체
+    review.images = validatedImages; // 검증된 이미지 정보로 교체
     review.status = 'register'; // 관리자 검토를 위해 상태 변경
 
     await review.save();

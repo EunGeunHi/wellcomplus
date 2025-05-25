@@ -1393,9 +1393,9 @@ const ReviewContent = ({ userData, userId }) => {
               <span className="text-gray-600">진행 상황:</span>
               <span className="font-medium text-gray-800">
                 {[
-                  serviceType ? '✅' : '⭕',
-                  rating > 0 ? '✅' : '⭕',
-                  reviewText.trim().length >= 10 ? '✅' : '⭕',
+                  serviceType ? '✅' : '❌',
+                  rating > 0 ? '✅' : '❌',
+                  reviewText.trim().length >= 10 ? '✅' : '❌',
                 ].join(' ')}{' '}
                 ({[serviceType, rating > 0, reviewText.trim().length >= 10].filter(Boolean).length}
                 /3)

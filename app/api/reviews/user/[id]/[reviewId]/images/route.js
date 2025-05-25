@@ -32,14 +32,17 @@ export const GET = withAuthAPI(async (req, { params, session }) => {
       return NextResponse.json({ error: '리뷰를 찾을 수 없습니다.' }, { status: 404 });
     }
 
-    // 이미지 메타데이터만 반환
+    // 이미지 메타데이터 반환 (스키마 필수 필드 포함)
     const images = review.images
       ? review.images.map((image) => ({
           id: image._id,
+          url: image.url || `/api/reviews/images/${reviewId}/${image._id}`, // Blob Storage URL 우선 사용
+          filename: image.filename,
           originalName: image.originalName,
           mimeType: image.mimeType,
           size: image.size,
-          url: `/api/reviews/images/${reviewId}/${image._id}`,
+          blobId: image.blobId,
+          uploadedAt: image.uploadedAt,
         }))
       : [];
 

@@ -168,10 +168,18 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
     try {
       let allImages = [];
 
-      // 기존 이미지 중 삭제되지 않은 것들 추가
-      const remainingExistingImages = editForm.existingImages.filter(
-        (img) => !editForm.imagesToDelete.includes(img.id)
-      );
+      // 기존 이미지 중 삭제되지 않은 것들 추가 (스키마 필수 필드 보장)
+      const remainingExistingImages = editForm.existingImages
+        .filter((img) => !editForm.imagesToDelete.includes(img.id))
+        .map((img) => ({
+          url: img.url,
+          filename: img.filename || `legacy_${img.id}`, // fallback for legacy data
+          originalName: img.originalName,
+          mimeType: img.mimeType,
+          size: img.size,
+          blobId: img.blobId || img.id, // fallback for legacy data
+          uploadedAt: img.uploadedAt || new Date(),
+        }));
       allImages = [...remainingExistingImages];
 
       // 새 이미지가 있는 경우 클라이언트에서 직접 업로드
@@ -194,6 +202,9 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
 
       // 업로드 진행률 초기화
       setUploadProgress(null);
+
+      // 디버깅: 전송할 이미지 데이터 확인
+      console.log('전송할 이미지 데이터:', allImages);
 
       // 리뷰 수정 API 호출 (JSON 방식)
       const response = await fetch(`/api/reviews/${review.id}`, {
@@ -239,16 +250,18 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
   if (!isOpen || !review) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-hidden w-full">
-        <div className="p-4 border-b flex justify-between items-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-2 sm:p-4">
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] flex flex-col shadow-2xl">
+        {/* 헤더 - 고정 */}
+        <div className="p-4 border-b flex justify-between items-center flex-shrink-0">
           <h3 className="text-lg font-semibold">리뷰 수정</h3>
           <button onClick={handleClose} className="text-gray-500 hover:text-gray-700">
             <FiX size={20} />
           </button>
         </div>
 
-        <div className="p-4 overflow-y-auto max-h-[70vh]">
+        {/* 스크롤 가능한 콘텐츠 영역 */}
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4" style={{ minHeight: 0 }}>
           <div className="space-y-4">
             {/* 서비스 타입 */}
             <div>
@@ -495,17 +508,20 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
           </div>
         </div>
 
-        {/* 하단 버튼 */}
-        <div className="p-4 border-t space-y-3">
+        {/* 하단 버튼 영역 - 고정 */}
+        <div
+          className="p-3 sm:p-4 border-t space-y-3 flex-shrink-0 bg-white rounded-b-lg shadow-lg"
+          style={{ boxShadow: '0 -4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+        >
           {/* 진행 상황 표시 */}
           <div className="bg-gray-50 rounded-lg p-3">
             <div className="flex items-center justify-between text-sm mb-2">
               <span className="text-gray-600">수정 진행 상황:</span>
               <span className="font-medium text-gray-800">
                 {[
-                  editForm.serviceType ? '✅' : '⭕',
-                  editForm.rating > 0 ? '✅' : '⭕',
-                  editForm.content.trim().length >= 10 ? '✅' : '⭕',
+                  editForm.serviceType ? '✅' : '❌',
+                  editForm.rating > 0 ? '✅' : '❌',
+                  editForm.content.trim().length >= 10 ? '✅' : '❌',
                 ].join(' ')}{' '}
                 (
                 {
@@ -530,18 +546,18 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
             </div>
           </div>
 
-          <div className="flex space-x-2">
+          <div className="flex space-x-3 sm:space-x-4">
             <button
               onClick={handleClose}
               disabled={isSubmitting || uploadProgress}
-              className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 sm:px-5 py-3 sm:py-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               취소
             </button>
             <button
               onClick={handleSave}
               disabled={isSubmitting || uploadProgress || editForm.content.trim().length < 10}
-              className={`flex-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+              className={`flex-[2] px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base ${
                 isSubmitting || uploadProgress || editForm.content.trim().length < 10
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800 shadow-lg hover:shadow-xl'
@@ -549,12 +565,12 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
             >
               {isSubmitting ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   저장 중...
                 </>
               ) : uploadProgress ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   업로드 중...
                 </>
               ) : (
@@ -564,7 +580,7 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
           </div>
 
           {(isSubmitting || uploadProgress) && (
-            <p className="text-xs text-center text-gray-600">
+            <p className="text-xs sm:text-sm text-center text-gray-600 px-2">
               📱 모바일에서는 화면을 끄지 마시고 잠시만 기다려주세요.
             </p>
           )}
