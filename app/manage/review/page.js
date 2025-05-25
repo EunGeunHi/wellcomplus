@@ -16,6 +16,7 @@ import {
   FiBox,
   FiCheck,
   FiAlertCircle,
+  FiAlertTriangle,
 } from 'react-icons/fi';
 import { formatDate } from '@/utils/dateFormat';
 import KingFallback from '@/app/components/kingFallback';
@@ -291,6 +292,8 @@ export default function ReviewManagementPage() {
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // 페이지네이션 상태 추가
   const [currentPage, setCurrentPage] = useState(1);
@@ -426,6 +429,41 @@ export default function ReviewManagementPage() {
       showToast(err.message, 'error');
     } finally {
       setUpdateLoading(false);
+    }
+  };
+
+  // 리뷰 완전 삭제 함수
+  const handleReviewDelete = async () => {
+    if (!selectedReview?._id) return;
+
+    try {
+      setDeleteLoading(true);
+
+      const response = await fetch(`/api/reviews/delete/${selectedReview._id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '삭제에 실패했습니다.');
+      }
+
+      // 성공 메시지 표시
+      showToast('리뷰가 완전히 삭제되었습니다.', 'success');
+
+      // 모달 닫기
+      setShowDeleteModal(false);
+
+      // 선택된 리뷰 초기화
+      setSelectedReview(null);
+
+      // 목록 새로고침
+      await fetchReviews(activeTab, searchQuery, serviceTypeFilter, currentPage);
+    } catch (err) {
+      console.error('리뷰 삭제 중 오류:', err);
+      showToast(err.message, 'error');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -674,6 +712,27 @@ export default function ReviewManagementPage() {
                     </h3>
                     {renderStatusChangeButtons(selectedReview)}
                   </div>
+
+                  {/* 완전 삭제 버튼 (삭제됨 상태일 때만 표시) */}
+                  {selectedReview.status === 'deleted' && (
+                    <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
+                      <h3 className="text-lg font-medium text-red-900 mb-2">위험 구역</h3>
+                      <p className="text-sm text-red-700 mb-4">
+                        이 작업은 되돌릴 수 없습니다. 리뷰 데이터와 모든 첨부 이미지가 영구적으로
+                        삭제됩니다.
+                      </p>
+                      <button
+                        onClick={() => setShowDeleteModal(true)}
+                        disabled={updateLoading || deleteLoading}
+                        className={`px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center gap-2 ${
+                          updateLoading || deleteLoading ? 'opacity-70 cursor-not-allowed' : ''
+                        }`}
+                      >
+                        <FiTrash2 size={16} />
+                        완전 삭제
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -917,6 +976,83 @@ export default function ReviewManagementPage() {
           </div>
         </div>
       </div>
+
+      {/* 완전 삭제 확인 모달 */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+            <div className="flex items-center mb-4">
+              <div className="bg-red-100 rounded-full p-2 mr-3">
+                <FiAlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">완전 삭제 확인</h3>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-gray-700 mb-3">
+                <strong>정말로 이 리뷰를 완전히 삭제하시겠습니까?</strong>
+              </p>
+              <div className="bg-red-50 border border-red-200 p-3 rounded-md">
+                <p className="text-sm text-red-700 mb-2">
+                  <strong>⚠️ 주의사항:</strong>
+                </p>
+                <ul className="text-sm text-red-700 space-y-1">
+                  <li>• 이 작업은 되돌릴 수 없습니다</li>
+                  <li>• 리뷰 데이터가 영구적으로 삭제됩니다</li>
+                  <li>• 모든 첨부 이미지가 삭제됩니다</li>
+                  <li>• 삭제 후 복구가 불가능합니다</li>
+                </ul>
+              </div>
+              {selectedReview && (
+                <div className="mt-3 p-3 bg-gray-50 rounded-md">
+                  <p className="text-sm text-gray-600">
+                    <strong>삭제 대상:</strong> {serviceTypeInfo[selectedReview.serviceType]?.text}{' '}
+                    리뷰 - {selectedReview.userId?.name || '알 수 없음'}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    작성일: {formatDate(selectedReview.createdAt)}
+                  </p>
+                  <p className="text-xs text-gray-500">평점: {selectedReview.rating}점</p>
+                  {selectedReview.images && selectedReview.images.length > 0 && (
+                    <p className="text-xs text-gray-500">
+                      첨부 이미지: {selectedReview.images.length}장
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleteLoading}
+                className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleReviewDelete}
+                disabled={deleteLoading}
+                className={`px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center gap-2 ${
+                  deleteLoading ? 'opacity-70 cursor-not-allowed' : ''
+                }`}
+              >
+                {deleteLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    삭제 중...
+                  </>
+                ) : (
+                  <>
+                    <FiTrash2 size={16} />
+                    완전 삭제
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

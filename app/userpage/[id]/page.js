@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   FiUser,
   FiMail,
@@ -912,6 +912,9 @@ const ReviewContent = ({ userData, userId }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serviceType, setServiceType] = useState('');
 
+  // OptimizedReviewList의 새로고침 함수에 접근하기 위한 ref
+  const reviewListRefreshRef = useRef(null);
+
   // 리뷰 편집 관련 상태는 OptimizedReviewList 컴포넌트에서 처리됨
 
   // 이미지 업로드 관련 상태
@@ -992,38 +995,40 @@ const ReviewContent = ({ userData, userId }) => {
     };
   }, []);
 
-  // 토스트 메시지 표시 함수
-  const showToast = (message, type = 'success') => {
+  // 토스트 메시지 표시 함수 (useCallback으로 메모이제이션)
+  const showToast = useCallback((message, type = 'success') => {
     // 이전 타이머가 있다면 제거
-    if (toast.timerId) {
-      clearTimeout(toast.timerId);
-    }
+    setToast((prevToast) => {
+      if (prevToast.timerId) {
+        clearTimeout(prevToast.timerId);
+      }
 
-    // 토스트 표시
-    setToast({
-      visible: true,
-      message,
-      type,
-      // 타이머 ID 저장
-      timerId: setTimeout(() => {
-        // 토스트 숨김
-        setToast((prev) => ({
-          ...prev,
-          visible: false,
-          // 타이머 ID만 유지
-          timerId: setTimeout(() => {
-            // 토스트 상태 완전 초기화
-            setToast({
-              visible: false,
-              message: '',
-              type: '',
-              timerId: null,
-            });
-          }, 300),
-        }));
-      }, 2000),
+      // 토스트 표시
+      return {
+        visible: true,
+        message,
+        type,
+        // 타이머 ID 저장
+        timerId: setTimeout(() => {
+          // 토스트 숨김
+          setToast((prev) => ({
+            ...prev,
+            visible: false,
+            // 타이머 ID만 유지
+            timerId: setTimeout(() => {
+              // 토스트 상태 완전 초기화
+              setToast({
+                visible: false,
+                message: '',
+                type: '',
+                timerId: null,
+              });
+            }, 300),
+          }));
+        }, 2000),
+      };
     });
-  };
+  }, []); // 의존성 없음 - 함수가 변경되지 않음
 
   // 기존 리뷰 로딩 로직 제거 - OptimizedReviewList에서 처리
 
@@ -1144,6 +1149,13 @@ const ReviewContent = ({ userData, userId }) => {
       if (fileInput) {
         fileInput.value = '';
       }
+
+      // 1초 후 리뷰 목록 새로고침
+      setTimeout(() => {
+        if (reviewListRefreshRef.current) {
+          reviewListRefreshRef.current();
+        }
+      }, 1000);
     } catch (err) {
       showToast(err.message, 'error');
       setUploadProgress(null);
@@ -1458,7 +1470,12 @@ const ReviewContent = ({ userData, userId }) => {
           내가 작성한 리뷰
         </h3>
 
-        <OptimizedReviewList userId={userId} onDelete={handleDeleteReview} showToast={showToast} />
+        <OptimizedReviewList
+          userId={userId}
+          onDelete={handleDeleteReview}
+          showToast={showToast}
+          onRefreshRef={reviewListRefreshRef}
+        />
       </div>
 
       {/* 업로드 진행률 모달 */}

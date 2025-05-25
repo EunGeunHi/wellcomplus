@@ -293,7 +293,7 @@ const ImageViewer = ({ isOpen, onClose, reviewId, userId }) => {
 };
 
 // 메인 리뷰 목록 컴포넌트
-const OptimizedReviewList = ({ userId, onDelete, showToast }) => {
+const OptimizedReviewList = ({ userId, onDelete, showToast, onRefreshRef }) => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -316,17 +316,35 @@ const OptimizedReviewList = ({ userId, onDelete, showToast }) => {
           setReviews(data.reviews || []);
           setPagination(data.pagination || {});
         } else {
-          showToast('리뷰 목록을 불러오는데 실패했습니다.', 'error');
+          // showToast를 의존성에서 제거하고 직접 호출
+          if (showToast) {
+            showToast('리뷰 목록을 불러오는데 실패했습니다.', 'error');
+          }
         }
       } catch (error) {
         console.error('리뷰 로딩 실패:', error);
-        showToast('리뷰 목록을 불러오는데 실패했습니다.', 'error');
+        // showToast를 의존성에서 제거하고 직접 호출
+        if (showToast) {
+          showToast('리뷰 목록을 불러오는데 실패했습니다.', 'error');
+        }
       } finally {
         setLoading(false);
       }
     },
-    [userId, limit, showToast]
+    [userId, limit] // showToast 의존성 제거
   );
+
+  // 새로고침 함수를 부모 컴포넌트에 노출
+  const refreshReviews = useCallback(() => {
+    loadReviews(currentPage);
+  }, [loadReviews, currentPage]);
+
+  // 부모 컴포넌트에서 새로고침 함수에 접근할 수 있도록 ref 설정
+  useEffect(() => {
+    if (onRefreshRef) {
+      onRefreshRef.current = refreshReviews;
+    }
+  }, [refreshReviews, onRefreshRef]);
 
   // 초기 로드
   useEffect(() => {
