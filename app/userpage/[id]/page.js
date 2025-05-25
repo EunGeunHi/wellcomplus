@@ -1343,9 +1343,7 @@ const ReviewContent = ({ userData, userId }) => {
             )}
           </div>
           <div className="mt-1 space-y-1">
-            <p className="text-xs text-gray-500">
-              📱 모바일에서도 안정적으로 업로드됩니다. JPG, PNG 파일만 가능합니다.
-            </p>
+            <p className="text-xs text-gray-500">JPG, PNG 파일만 가능합니다.</p>
             {selectedImages.length >= 5 && (
               <p className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
                 ⚠️ 최대 5장까지만 업로드할 수 있습니다.
@@ -1483,7 +1481,7 @@ const ReviewContent = ({ userData, userId }) => {
 
           {(isSubmitting || uploadProgress) && (
             <p className="mt-2 text-xs text-center text-gray-600">
-              📱 모바일에서는 화면을 끄지 마시고 잠시만 기다려주세요.
+              완료될 때까지 화면을 끄지 마시고 잠시만 기다려주세요.
             </p>
           )}
         </div>

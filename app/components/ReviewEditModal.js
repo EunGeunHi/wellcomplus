@@ -446,9 +446,7 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
                   }
                 />
                 <div className="mt-2 space-y-1">
-                  <p className="text-xs text-gray-500">
-                    📱 모바일에서도 안정적으로 업로드됩니다. JPG, PNG 파일만 가능합니다.
-                  </p>
+                  <p className="text-xs text-gray-500">JPG, PNG 파일만 가능합니다.</p>
                   {editForm.existingImages.length -
                     editForm.imagesToDelete.length +
                     editForm.newImages.length >=
@@ -582,7 +580,7 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
 
           {(isSubmitting || uploadProgress) && (
             <p className="text-xs sm:text-sm text-center text-gray-600 px-2">
-              📱 모바일에서는 화면을 끄지 마시고 잠시만 기다려주세요.
+              완료될 때까지 화면을 끄지 마시고 잠시만 기다려주세요.
             </p>
           )}
         </div>

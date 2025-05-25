@@ -53,7 +53,7 @@ const ReviewUploadProgress = ({ progress, onCancel }) => {
           <h3 className="text-xl font-bold text-gray-900 mb-2">이미지 업로드</h3>
           <p className="text-sm text-gray-600">{getStatusText()}</p>
           {progress.status === 'uploading' && (
-            <p className="text-xs text-blue-600 mt-1">📱 모바일에서는 화면을 끄지 마세요</p>
+            <p className="text-xs text-blue-600 mt-1">완료될 때까지 화면을 끄지 마세요</p>
           )}
         </div>
 
