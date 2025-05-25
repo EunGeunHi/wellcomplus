@@ -354,14 +354,22 @@ export const SubmitButton = ({ isSubmitting, onSubmit }) => (
       type="button"
       onClick={onSubmit}
       disabled={isSubmitting}
-      className={`w-full font-[NanumGothic] text-lg sm:text-xl font-bold text-white py-3 sm:py-4 px-4 sm:px-6 rounded-lg transition-all duration-200 ${
+      className={`w-full font-[NanumGothic] text-lg sm:text-xl font-bold text-white py-3 sm:py-4 px-4 sm:px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-3 ${
         isSubmitting
           ? 'bg-blue-400 cursor-not-allowed'
           : 'bg-blue-500 hover:bg-blue-600 hover:shadow-lg'
       }`}
     >
+      {isSubmitting && (
+        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+      )}
       {isSubmitting ? '신청 중...' : '컴퓨터 견적 신청하기'}
     </button>
+    {isSubmitting && (
+      <p className="text-center text-sm text-gray-600 mt-3">
+        📱 모바일에서는 화면을 끄지 마시고 잠시만 기다려주세요.
+      </p>
+    )}
   </div>
 );
 

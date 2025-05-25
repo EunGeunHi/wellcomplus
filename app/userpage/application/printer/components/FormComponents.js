@@ -6,6 +6,7 @@ import {
   FiAlertCircle,
   FiCheckCircle,
   FiAlertTriangle,
+  FiUpload,
 } from 'react-icons/fi';
 import { BUDGET_AMOUNTS, FILE_CONSTRAINTS } from '../constants';
 import { formatFileSize } from '../utils';
@@ -304,6 +305,41 @@ export const FileUpload = ({
   </div>
 );
 
+// 업로드 진행률 컴포넌트
+export const UploadProgress = ({ progress }) => {
+  if (!progress) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+        <div className="text-center">
+          <div className="mb-4">
+            <FiUpload className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+            <h3 className="text-lg font-[BMJUA] text-gray-900">파일 업로드 중</h3>
+          </div>
+
+          <div className="mb-4">
+            <div className="bg-gray-200 rounded-full h-2 mb-2">
+              <div
+                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${(progress.current / progress.total) * 100}%` }}
+              />
+            </div>
+            <p className="text-sm text-gray-600">
+              {progress.current} / {progress.total} 파일 업로드 중...
+            </p>
+            <p className="text-xs text-gray-500 mt-1">{progress.fileName}</p>
+          </div>
+
+          {progress.status === 'error' && (
+            <div className="text-red-600 text-sm">오류: {progress.error}</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // 제출 버튼 컴포넌트
 export const SubmitButton = ({ isSubmitting, onSubmit }) => (
   <div className="mt-6 sm:mt-10">
@@ -311,14 +347,22 @@ export const SubmitButton = ({ isSubmitting, onSubmit }) => (
       type="button"
       onClick={onSubmit}
       disabled={isSubmitting}
-      className={`w-full font-[NanumGothic] text-lg sm:text-xl font-bold text-white py-3 sm:py-4 px-4 sm:px-6 rounded-lg transition-all duration-200 ${
+      className={`w-full font-[NanumGothic] text-lg sm:text-xl font-bold text-white py-3 sm:py-4 px-4 sm:px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-3 ${
         isSubmitting
           ? 'bg-blue-400 cursor-not-allowed'
           : 'bg-blue-500 hover:bg-blue-600 hover:shadow-lg'
       }`}
     >
+      {isSubmitting && (
+        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+      )}
       {isSubmitting ? '신청 중...' : '프린터 견적 신청하기'}
     </button>
+    {isSubmitting && (
+      <p className="text-center text-sm text-gray-600 mt-3">
+        📱 모바일에서는 화면을 끄지 마시고 잠시만 기다려주세요.
+      </p>
+    )}
   </div>
 );
 

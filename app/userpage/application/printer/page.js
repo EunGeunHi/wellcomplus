@@ -17,6 +17,7 @@ import {
   SubmitButton,
   ConfirmModal,
   SuccessModal,
+  UploadProgress,
 } from './components/FormComponents';
 
 export default function PrinterEstimatePage() {
@@ -30,6 +31,7 @@ export default function PrinterEstimatePage() {
     fileInputRef,
     showConfirmModal,
     showSuccessModal,
+    uploadProgress,
 
     // Handlers
     handleChange,
@@ -220,6 +222,9 @@ export default function PrinterEstimatePage() {
 
           {/* 성공 모달 */}
           <SuccessModal isOpen={showSuccessModal} onConfirm={handleSuccessConfirm} />
+
+          {/* 업로드 진행률 모달 */}
+          <UploadProgress progress={uploadProgress} />
         </div>
       </LoggedInOnlySection>
     </div>
