@@ -404,6 +404,7 @@ const ReviewCarousel = () => {
   const [selectedReview, setSelectedReview] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const intervalRef = useRef(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleReviewClick = (review) => {
     setSelectedReview(review);
@@ -414,6 +415,11 @@ const ReviewCarousel = () => {
     setIsModalOpen(false);
     setSelectedReview(null);
   };
+
+  // 리뷰 데이터 새로고침 함수
+  const refreshReviews = useCallback(() => {
+    setRefreshKey((prev) => prev + 1);
+  }, []);
 
   // 자동 슬라이드 시작 함수
   const startAutoSlide = useCallback(() => {
@@ -471,7 +477,13 @@ const ReviewCarousel = () => {
     const fetchReviews = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/reviews/active');
+        const response = await fetch('/api/reviews/active', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            Pragma: 'no-cache',
+          },
+        });
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -491,7 +503,7 @@ const ReviewCarousel = () => {
     };
 
     fetchReviews();
-  }, []);
+  }, [refreshKey]); // refreshKey가 변경될 때마다 데이터 새로고침
 
   // 자동 슬라이드 기능
   useEffect(() => {
@@ -583,6 +595,12 @@ const ReviewCarousel = () => {
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
             웰컴시스템을 경험하신 고객님들의 솔직한 이야기를 만나보세요.
           </p>
+          <button
+            onClick={refreshReviews}
+            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
+          >
+            리뷰 새로고침
+          </button>
         </div>
 
         {/* 리뷰 카드 컨테이너 */}

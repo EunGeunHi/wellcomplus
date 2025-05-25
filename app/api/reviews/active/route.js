@@ -50,7 +50,13 @@ export async function GET(request) {
       return review;
     });
 
-    return NextResponse.json(optimizedReviews);
+    // 캐싱 방지 헤더 추가
+    const response = NextResponse.json(optimizedReviews);
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+
+    return response;
   } catch (error) {
     console.error('Error fetching active reviews:', error);
     return NextResponse.json(
