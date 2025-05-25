@@ -18,6 +18,7 @@ import {
   FiTrash2,
   FiDownload,
   FiAlertCircle,
+  FiAlertTriangle,
 } from 'react-icons/fi';
 import { formatDate } from '@/utils/dateFormat';
 import KingFallback from '@/app/components/kingFallback';
@@ -93,6 +94,8 @@ export default function ServiceManagementPage() {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [fileUploadLoading, setFileUploadLoading] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // 탭 메뉴 정의
   const tabs = [
@@ -365,6 +368,41 @@ export default function ServiceManagementPage() {
       showToast(err.message, 'error');
     } finally {
       setUpdateLoading(false);
+    }
+  };
+
+  // 애플리케이션 완전 삭제 함수
+  const handleApplicationDelete = async () => {
+    if (!selectedApp?.id) return;
+
+    try {
+      setDeleteLoading(true);
+
+      const response = await fetch(`/api/service/delete/${selectedApp.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '삭제에 실패했습니다.');
+      }
+
+      // 성공 메시지 표시
+      showToast('서비스 신청이 완전히 삭제되었습니다.', 'success');
+
+      // 모달 닫기
+      setShowDeleteModal(false);
+
+      // 선택된 앱 초기화
+      setSelectedApp(null);
+
+      // 목록 새로고침
+      await fetchApplications(activeTab);
+    } catch (err) {
+      console.error('애플리케이션 삭제 중 오류:', err);
+      showToast(err.message, 'error');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -866,6 +904,27 @@ export default function ServiceManagementPage() {
                     </h3>
                     {renderStatusChangeButtons(selectedApp)}
                   </div>
+
+                  {/* 완전 삭제 버튼 (취소 상태일 때만 표시) */}
+                  {selectedApp.status === 'cancelled' && (
+                    <div className="bg-red-50 border border-red-200 p-4 rounded-lg mt-4">
+                      <h3 className="text-lg font-medium text-red-900 mb-2">위험 구역</h3>
+                      <p className="text-sm text-red-700 mb-4">
+                        이 작업은 되돌릴 수 없습니다. 신청 데이터와 모든 첨부 파일이 영구적으로
+                        삭제됩니다.
+                      </p>
+                      <button
+                        onClick={() => setShowDeleteModal(true)}
+                        disabled={updateLoading || deleteLoading}
+                        className={`px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center gap-2 ${
+                          updateLoading || deleteLoading ? 'opacity-70 cursor-not-allowed' : ''
+                        }`}
+                      >
+                        <FiTrash2 size={16} />
+                        완전 삭제
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="py-32 text-center">
@@ -877,6 +936,77 @@ export default function ServiceManagementPage() {
           </div>
         </div>
       </div>
+
+      {/* 완전 삭제 확인 모달 */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+            <div className="flex items-center mb-4">
+              <div className="bg-red-100 rounded-full p-2 mr-3">
+                <FiAlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">완전 삭제 확인</h3>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-gray-700 mb-3">
+                <strong>정말로 이 서비스 신청을 완전히 삭제하시겠습니까?</strong>
+              </p>
+              <div className="bg-red-50 border border-red-200 p-3 rounded-md">
+                <p className="text-sm text-red-700 mb-2">
+                  <strong>⚠️ 주의사항:</strong>
+                </p>
+                <ul className="text-sm text-red-700 space-y-1">
+                  <li>• 이 작업은 되돌릴 수 없습니다</li>
+                  <li>• 신청 데이터가 영구적으로 삭제됩니다</li>
+                  <li>• 모든 첨부 파일이 삭제됩니다</li>
+                  <li>• 삭제 후 복구가 불가능합니다</li>
+                </ul>
+              </div>
+              {selectedApp && (
+                <div className="mt-3 p-3 bg-gray-50 rounded-md">
+                  <p className="text-sm text-gray-600">
+                    <strong>삭제 대상:</strong> {serviceTypeInfo[selectedApp.type]?.text} -{' '}
+                    {selectedApp.user.name}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    신청일: {formatDate(selectedApp.createdAt)}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleteLoading}
+                className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleApplicationDelete}
+                disabled={deleteLoading}
+                className={`px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center gap-2 ${
+                  deleteLoading ? 'opacity-70 cursor-not-allowed' : ''
+                }`}
+              >
+                {deleteLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    삭제 중...
+                  </>
+                ) : (
+                  <>
+                    <FiTrash2 size={16} />
+                    완전 삭제
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
