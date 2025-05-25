@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Star, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormat';
+import useReviewsStore from '@/app/components/hooks/useReviewsStore';
 
 const ReviewCard = ({ review, onClick }) => {
   const renderStars = (rating) => {
@@ -395,16 +396,15 @@ const ReviewDetailModal = ({ review, isOpen, onClose }) => {
 };
 
 const ReviewCarousel = () => {
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // useReviewsStore 훅을 사용하여 리뷰 데이터 관리
+  const { reviews, loading, error, fetchReviews } = useReviewsStore();
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cardsPerView, setCardsPerView] = useState(1);
   const [isAnimating, setIsAnimating] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const intervalRef = useRef(null);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleReviewClick = (review) => {
     setSelectedReview(review);
@@ -415,11 +415,6 @@ const ReviewCarousel = () => {
     setIsModalOpen(false);
     setSelectedReview(null);
   };
-
-  // 리뷰 데이터 새로고침 함수
-  const refreshReviews = useCallback(() => {
-    setRefreshKey((prev) => prev + 1);
-  }, []);
 
   // 자동 슬라이드 시작 함수
   const startAutoSlide = useCallback(() => {
@@ -472,38 +467,10 @@ const ReviewCarousel = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, [calculateCardsPerView]);
 
-  // 리뷰 데이터 가져오기
+  // 컴포넌트 마운트 시 리뷰 데이터 가져오기
   useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('/api/reviews/active', {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache',
-            Pragma: 'no-cache',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        // 클라이언트 측에서도 active 상태 확인 (이중 안전장치)
-        const activeReviews = data.filter((review) => review.status === 'active');
-        setReviews(activeReviews);
-      } catch (e) {
-        console.error('Failed to fetch reviews:', e);
-        setError(e.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchReviews();
-  }, [refreshKey]); // refreshKey가 변경될 때마다 데이터 새로고침
+  }, [fetchReviews]);
 
   // 자동 슬라이드 기능
   useEffect(() => {
@@ -595,12 +562,6 @@ const ReviewCarousel = () => {
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
             웰컴시스템을 경험하신 고객님들의 솔직한 이야기를 만나보세요.
           </p>
-          <button
-            onClick={refreshReviews}
-            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
-          >
-            리뷰 새로고침
-          </button>
         </div>
 
         {/* 리뷰 카드 컨테이너 */}

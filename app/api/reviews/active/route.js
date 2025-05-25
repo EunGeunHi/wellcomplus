@@ -3,8 +3,16 @@ import Review from '../../../../models/review';
 import User from '../../../../models/User';
 import { NextResponse } from 'next/server';
 
+// Next.js App Router 캐싱 방지 설정
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request) {
   try {
+    // URL searchParams를 사용하여 dynamic route로 만들기
+    const { searchParams } = new URL(request.url);
+    const timestamp = searchParams.get('t') || Date.now();
+
     await connectDB();
 
     // active 상태의 리뷰만 조회
@@ -50,11 +58,17 @@ export async function GET(request) {
       return review;
     });
 
-    // 캐싱 방지 헤더 추가
+    // 캐싱 방지 헤더 추가 (더 강력한 설정)
     const response = NextResponse.json(optimizedReviews);
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set(
+      'Cache-Control',
+      'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0'
+    );
     response.headers.set('Pragma', 'no-cache');
     response.headers.set('Expires', '0');
+    response.headers.set('Last-Modified', new Date().toUTCString());
+    response.headers.set('ETag', `"${timestamp}"`);
+    response.headers.set('Vary', '*');
 
     return response;
   } catch (error) {
