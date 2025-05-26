@@ -78,6 +78,11 @@ export default function Navigation() {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  // 모바일 메뉴 닫기 함수
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
   // 수동으로 세션 갱신하는 함수
   const refreshUserSession = async () => {
     try {
@@ -233,6 +238,7 @@ export default function Navigation() {
                     <Link
                       href="/manage"
                       className="text-gray-700 hover:text-[#87CEEB] transition-colors duration-200 py-2 border-b border-gray-100"
+                      onClick={closeMenu}
                     >
                       관리자 페이지
                     </Link>
@@ -240,17 +246,22 @@ export default function Navigation() {
                   <Link
                     href="/userpage/application"
                     className="text-gray-700 hover:text-[#87CEEB] transition-colors duration-200 py-2 border-b border-gray-100"
+                    onClick={closeMenu}
                   >
                     서비스신청
                   </Link>
                   <Link
                     href={`/userpage/${session.user.id}`}
                     className="text-gray-700 hover:text-[#87CEEB] transition-colors duration-200 py-2 border-b border-gray-100"
+                    onClick={closeMenu}
                   >
                     마이페이지
                   </Link>
                   <button
-                    onClick={() => signOut({ callbackUrl: '/' })}
+                    onClick={() => {
+                      closeMenu();
+                      signOut({ callbackUrl: '/' });
+                    }}
                     className="text-gray-600 hover:text-[#87CEEB] text-sm font-medium w-full py-2 rounded-full border border-gray-300 hover:border-[#87CEEB] transition-all duration-300"
                   >
                     로그아웃
@@ -262,12 +273,14 @@ export default function Navigation() {
                   <Link
                     href="/signup"
                     className="bg-gradient-to-r from-[#87CEEB] to-[#5F9DF7] text-white px-6 py-2.5 rounded-full hover:shadow-lg hover:translate-y-[-2px] transition-all duration-300 font-medium text-center"
+                    onClick={closeMenu}
                   >
                     회원가입
                   </Link>
                   <Link
                     href="/login"
                     className="text-gray-600 hover:text-[#87CEEB] text-sm font-medium w-full py-2 rounded-full border border-gray-300 hover:border-[#87CEEB] transition-all duration-300 text-center"
+                    onClick={closeMenu}
                   >
                     로그인
                   </Link>
