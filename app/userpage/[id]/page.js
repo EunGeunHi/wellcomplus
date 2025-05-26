@@ -1128,9 +1128,14 @@ const ReviewContent = ({ userData, userId }) => {
         // 임시 리뷰 ID 생성 (파일명에 사용)
         const tempId = Date.now().toString();
 
-        uploadedImages = await uploadMultipleReviewImages(selectedImages, tempId, (progress) => {
-          setUploadProgress(progress);
-        });
+        uploadedImages = await uploadMultipleReviewImages(
+          selectedImages,
+          userId,
+          tempId,
+          (progress) => {
+            setUploadProgress(progress);
+          }
+        );
       }
 
       // 업로드 진행률 초기화

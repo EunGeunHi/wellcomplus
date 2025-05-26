@@ -6,7 +6,7 @@ import { INITIAL_FORM_DATA, INITIAL_SECTIONS_STATE, FILE_CONSTRAINTS } from '../
 import { validateForm, logFormData, formatFileSize } from '../utils';
 import { uploadMultipleFiles, validateFiles } from '@/lib/client-blob-upload-application';
 
-export const useASApplicationForm = () => {
+export const useASApplicationForm = (session) => {
   const router = useRouter();
   const fileInputRef = useRef(null);
 
@@ -141,9 +141,14 @@ export const useASApplicationForm = () => {
         // 임시 신청서 ID 생성 (파일명에 사용)
         const tempId = Date.now().toString();
 
-        uploadedFiles = await uploadMultipleFiles(selectedFiles, tempId, (progress) => {
-          setUploadProgress(progress);
-        });
+        uploadedFiles = await uploadMultipleFiles(
+          selectedFiles,
+          session?.user?.id,
+          tempId,
+          (progress) => {
+            setUploadProgress(progress);
+          }
+        );
       }
 
       // 업로드 진행률 초기화

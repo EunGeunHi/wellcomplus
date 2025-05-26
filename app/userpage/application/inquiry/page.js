@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useSession } from 'next-auth/react';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 import LoginFallback from '@/app/components/LoginFallback';
 
@@ -16,6 +17,8 @@ import {
 } from './components/FormComponents';
 
 export default function InquiryPage() {
+  const { data: session } = useSession();
+
   const {
     // States
     formData,
@@ -37,7 +40,7 @@ export default function InquiryPage() {
     handleConfirmSubmit,
     handleCancelSubmit,
     handleSuccessConfirm,
-  } = useInquiryForm();
+  } = useInquiryForm(session);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 via-sky-100/30 to-white">

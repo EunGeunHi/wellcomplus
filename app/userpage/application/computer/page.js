@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 import LoginFallback from '@/app/components/LoginFallback';
+import { useSession } from 'next-auth/react';
 
 import { useComputerEstimateForm } from './hooks/useComputerEstimateForm';
 import { FORM_OPTIONS } from './constants';
@@ -21,6 +22,7 @@ import {
 } from './components/FormComponents';
 
 export default function ComputerEstimatePage() {
+  const { data: session } = useSession();
   const {
     // States
     formData,
@@ -46,7 +48,7 @@ export default function ComputerEstimatePage() {
     handleConfirmSubmit,
     handleCancelSubmit,
     handleSuccessConfirm,
-  } = useComputerEstimateForm();
+  } = useComputerEstimateForm(session);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 via-sky-100/30 to-white">

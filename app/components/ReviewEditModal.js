@@ -191,6 +191,7 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
 
         const uploadedImages = await uploadMultipleReviewImages(
           editForm.newImages,
+          userId,
           tempId,
           (progress) => {
             setUploadProgress(progress);

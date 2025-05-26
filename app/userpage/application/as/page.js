@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useSession } from 'next-auth/react';
 import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 import LoginFallback from '@/app/components/LoginFallback';
 
@@ -21,6 +22,8 @@ import {
 } from './components/FormComponents';
 
 export default function ASApplicationPage() {
+  const { data: session } = useSession();
+
   const {
     // States
     formData,
@@ -44,7 +47,7 @@ export default function ASApplicationPage() {
     handleConfirmSubmit,
     handleCancelSubmit,
     handleSuccessConfirm,
-  } = useASApplicationForm();
+  } = useASApplicationForm(session);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 via-blue-100/30 to-white">
