@@ -4,7 +4,6 @@ import KingFallback from '../components/kingFallback';
 import { KingOnlySection } from '../components/ProtectedContent';
 import Link from 'next/link';
 import {
-  FiPackage,
   FiClock,
   FiStar,
   FiRefreshCw,
@@ -55,10 +54,10 @@ export default function ManagePage() {
   useEffect(() => {
     fetchCounts();
 
-    // 1분마다 자동으로 카운터 정보 업데이트
+    // 5분마다 자동으로 카운터 정보 업데이트 (1분 → 5분으로 변경)
     const intervalId = setInterval(() => {
       fetchCounts();
-    }, 60000);
+    }, 300000);
 
     return () => clearInterval(intervalId);
   }, []);
