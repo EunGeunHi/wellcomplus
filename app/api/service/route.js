@@ -116,7 +116,7 @@ export const GET = withKingAuthAPI(async (req, { session }) => {
               originalName: file.originalName,
               mimeType: file.mimeType,
               size: file.size,
-              blobId: file.blobId,
+              cloudinaryId: file.cloudinaryId || file.blobId, // fallback for legacy data
               uploadedAt: file.uploadedAt,
             }))
           : [],

@@ -41,7 +41,7 @@ export const GET = withAuthAPI(async (req, { params, session }) => {
           originalName: image.originalName,
           mimeType: image.mimeType,
           size: image.size,
-          blobId: image.blobId,
+          cloudinaryId: image.cloudinaryId || image.blobId, // fallback for legacy data
           uploadedAt: image.uploadedAt,
         }))
       : [];

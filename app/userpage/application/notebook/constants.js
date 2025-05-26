@@ -19,7 +19,8 @@ export const BUDGET_AMOUNTS = [
 // 파일 업로드 제한
 export const FILE_CONSTRAINTS = {
   MAX_FILES: 5, // 최대 5개 파일
-  ACCEPTED_TYPES: 'image/*,.pdf,.doc,.docx,.txt',
+  ACCEPTED_TYPES:
+    '.jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.zip,.rar,.7z',
 };
 
 // 필수 필드들

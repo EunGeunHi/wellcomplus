@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Review from '@/models/review';
 import { withAuthAPI } from '@/app/api/middleware';
-import { deleteReviewImagesFromBlob } from '@/lib/review-blob-storage';
+// 소프트 삭제만 수행하므로 Cloudinary 삭제는 필요하지 않음
 
 /**
  * 리뷰 삭제 API (isDeleted 플래그를 true로 설정)

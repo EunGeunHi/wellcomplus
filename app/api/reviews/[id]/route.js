@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Review from '@/models/review';
 import { withAuthAPI } from '@/app/api/middleware';
-import { deleteReviewImagesFromBlob } from '@/lib/review-blob-storage';
+import { deleteReviewImagesFromCloudinary } from '@/lib/review-storage';
 
 /**
  * 리뷰 수정 API (PATCH)
@@ -74,20 +74,20 @@ export const PATCH = withAuthAPI(async (req, { params, session }) => {
       );
     }
 
-    // 삭제할 기존 이미지들을 Blob Storage에서 실제로 삭제
+    // 삭제할 기존 이미지들을 Cloudinary에서 실제로 삭제
     if (imagesToDelete && imagesToDelete.length > 0) {
       try {
         // 삭제할 이미지들 찾기
-        const imagesToDeleteFromBlob = review.images.filter((img) =>
+        const imagesToDeleteFromCloudinary = review.images.filter((img) =>
           imagesToDelete.includes(img._id.toString())
         );
 
-        if (imagesToDeleteFromBlob.length > 0) {
-          await deleteReviewImagesFromBlob(imagesToDeleteFromBlob);
+        if (imagesToDeleteFromCloudinary.length > 0) {
+          await deleteReviewImagesFromCloudinary(imagesToDeleteFromCloudinary);
         }
       } catch (error) {
-        console.error('Blob Storage 이미지 삭제 오류:', error);
-        // Blob 삭제 실패해도 리뷰 수정은 진행 (로그만 남김)
+        console.error('Cloudinary 이미지 삭제 오류:', error);
+        // Cloudinary 삭제 실패해도 리뷰 수정은 진행 (로그만 남김)
       }
     }
 
@@ -98,7 +98,11 @@ export const PATCH = withAuthAPI(async (req, { params, session }) => {
       originalName: img.originalName || `image_${index + 1}`,
       mimeType: img.mimeType || 'image/jpeg',
       size: img.size || 0,
-      blobId: img.blobId || img.url?.split('/').pop() || `blob_${Date.now()}_${index}`,
+      cloudinaryId:
+        img.cloudinaryId ||
+        img.blobId ||
+        img.url?.split('/').pop() ||
+        `cloudinary_${Date.now()}_${index}`,
       uploadedAt: img.uploadedAt || new Date(),
     }));
 

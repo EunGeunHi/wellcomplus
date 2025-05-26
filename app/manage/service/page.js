@@ -833,7 +833,7 @@ export default function ServiceManagementPage() {
                           <div className="flex flex-col items-center">
                             <FiUpload className="text-indigo-500 mb-2" size={20} />
                             <span className="text-sm text-gray-700">
-                              여기를 클릭해 파일을 업로드하세요 (총 파일 크기 최대 2MB)
+                              여기를 클릭해 파일을 업로드하세요 (최대 5개파일 업로드 가능)
                             </span>
                             <span className="text-xs text-gray-500 mt-1">
                               {selectedFiles.length > 0

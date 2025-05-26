@@ -209,7 +209,11 @@ export default function ManagePage() {
               <FiHardDrive size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-semibold mb-2">자료/기록 데이터</h2>
+              <h2 className="text-xl font-semibold mb-2">
+                자료/기록 데이터
+                <br />
+                <span className="text-gray-500 text-sm">(사용권장X, 로직 비효율ㅠㅠ)</span>
+              </h2>
               <p className="text-gray-600">자료와 기록 데이터를 관리하고 조회합니다.</p>
             </div>
           </Link>

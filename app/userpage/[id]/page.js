@@ -1123,7 +1123,9 @@ const ReviewContent = ({ userData, userId }) => {
 
       // 이미지가 있는 경우 클라이언트에서 직접 업로드
       if (selectedImages.length > 0) {
-        const { uploadMultipleReviewImages } = await import('@/lib/client-blob-upload-review');
+        const { uploadMultipleReviewImages } = await import(
+          '@/lib/client-cloudinary-upload-review'
+        );
 
         // 임시 리뷰 ID 생성 (파일명에 사용)
         const tempId = Date.now().toString();

@@ -1,15 +1,15 @@
 import mongoose from 'mongoose';
 
-// 첨부파일 스키마 (Vercel Blob Storage 사용)
+// 첨부파일 스키마 (Cloudinary 사용)
 const FileSchema = new mongoose.Schema(
   {
     url: {
       type: String,
-      required: true, // Vercel Blob Storage URL
+      required: true, // Cloudinary secure_url
     },
     filename: {
       type: String,
-      required: true, // Blob Storage에서의 파일명
+      required: true, // Cloudinary에서의 파일명
     },
     originalName: {
       type: String,
@@ -23,9 +23,9 @@ const FileSchema = new mongoose.Schema(
       type: Number,
       required: true, // 파일 크기 (바이트)
     },
-    blobId: {
+    cloudinaryId: {
       type: String,
-      required: true, // Blob Storage에서의 고유 식별자
+      required: true, // Cloudinary public_id (삭제시 필요)
     },
     uploadedAt: {
       type: Date,

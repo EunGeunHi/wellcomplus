@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Review from '@/models/review';
 import { withAuthAPI, withKingAuthAPI } from '@/app/api/middleware';
-import { uploadImageToBlob, validateImage, validateImageCount } from '@/lib/review-blob-storage';
+import { deleteMultipleImagesFromCloudinary } from '@/lib/review-storage';
+// Cloudinary 업로드는 클라이언트에서 처리됨
 
 /**
  * 리뷰 등록 API (POST)
@@ -62,8 +63,25 @@ export const POST = withAuthAPI(async (req, { session }) => {
       images: images || [], // 클라이언트에서 업로드된 이미지 정보
     });
 
-    // 리뷰 저장
-    await review.save();
+    // 리뷰 저장 (실패 시 Cloudinary 이미지 롤백)
+    try {
+      await review.save();
+    } catch (saveError) {
+      // MongoDB 저장 실패 시 Cloudinary에서 업로드된 이미지들 삭제
+      if (images && images.length > 0) {
+        try {
+          console.log('MongoDB 저장 실패, Cloudinary 이미지 롤백 시작...');
+          await deleteMultipleImagesFromCloudinary(
+            images.map((img) => img.cloudinaryId).filter((id) => id)
+          );
+          console.log('Cloudinary 이미지 롤백 완료');
+        } catch (rollbackError) {
+          console.error('Cloudinary 롤백 실패:', rollbackError);
+          // 롤백 실패는 로그만 남기고 원본 에러를 던짐
+        }
+      }
+      throw saveError; // 원본 에러를 다시 던져서 클라이언트에 전달
+    }
 
     // 성공 응답
     return NextResponse.json({

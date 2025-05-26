@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Review from '@/models/review';
 import { withKingAuthAPI } from '@/app/api/middleware';
-import { deleteReviewImagesFromBlob } from '@/lib/review-blob-storage';
+import { deleteReviewImagesFromCloudinary } from '@/lib/review-storage';
 
 /**
  * 리뷰 완전 삭제 API
@@ -30,13 +30,13 @@ export const DELETE = withKingAuthAPI(async (req, { params }) => {
       );
     }
 
-    // Blob Storage에서 모든 이미지 삭제
+    // Cloudinary에서 모든 이미지 삭제
     if (review.images && review.images.length > 0) {
       try {
-        await deleteReviewImagesFromBlob(review.images);
+        await deleteReviewImagesFromCloudinary(review.images);
       } catch (error) {
-        console.error('Blob Storage 이미지 삭제 오류:', error);
-        // Blob 삭제 실패해도 DB 삭제는 진행
+        console.error('Cloudinary 이미지 삭제 오류:', error);
+        // Cloudinary 삭제 실패해도 DB 삭제는 진행
       }
     }
 

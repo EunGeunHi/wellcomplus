@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Application from '@/models/Application';
 import { withKingAuthAPI } from '@/app/api/middleware';
-import { uploadFileToBlob, validateFileCount } from '@/lib/application-blob-storage';
+import { uploadFileToCloudinary, validateFileCount } from '@/lib/application-storage';
 
 /**
  * 파일 업로드 API
@@ -51,8 +51,7 @@ export const POST = withKingAuthAPI(async (req, { params }) => {
     const uploadedFiles = [];
     for (let i = 0; i < validFiles.length; i++) {
       const file = validFiles[i];
-      const fileIndex = currentFileCount + i; // 기존 파일 개수에 이어서 인덱스 부여
-      const uploadedFile = await uploadFileToBlob(file, id, fileIndex);
+      const uploadedFile = await uploadFileToCloudinary(file, 'admin', id, file.name);
       uploadedFiles.push(uploadedFile);
     }
 

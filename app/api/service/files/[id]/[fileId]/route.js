@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Application from '@/models/Application';
 import { withKingAuthAPI } from '@/app/api/middleware';
-import { deleteFileFromBlob } from '@/lib/application-blob-storage';
+import { deleteFileFromCloudinary } from '@/lib/application-storage';
 
 /**
  * 파일 다운로드 API
@@ -77,14 +77,14 @@ export const DELETE = withKingAuthAPI(async (req, { params }) => {
       return NextResponse.json({ error: '해당 파일을 찾을 수 없습니다.' }, { status: 404 });
     }
 
-    // Blob Storage에서 파일 삭제
+    // Cloudinary에서 파일 삭제
     const fileToDelete = application.files[fileIndex];
-    if (fileToDelete.url) {
+    if (fileToDelete.cloudinaryId || fileToDelete.blobId) {
       try {
-        await deleteFileFromBlob(fileToDelete.url);
+        await deleteFileFromCloudinary(fileToDelete.cloudinaryId || fileToDelete.blobId);
       } catch (error) {
-        console.error('Blob Storage 파일 삭제 오류:', error);
-        // Blob 삭제 실패해도 DB에서는 제거 진행
+        console.error('Cloudinary 파일 삭제 오류:', error);
+        // Cloudinary 삭제 실패해도 DB에서는 제거 진행
       }
     }
 

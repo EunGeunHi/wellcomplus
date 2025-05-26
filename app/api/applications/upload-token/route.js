@@ -1,65 +1,93 @@
 import { NextResponse } from 'next/server';
-import { handleUpload } from '@vercel/blob/client';
-import { withAuthAPI } from '../../middleware';
+import { uploadFileToCloudinary } from '../../../../lib/application-storage.js';
 
 /**
- * 클라이언트 업로드용 토큰 생성 API
- * 파일을 서버를 거치지 않고 직접 Vercel Blob Storage에 업로드하기 위한 토큰을 생성
+ * 신청서 파일 업로드 API (Cloudinary 사용)
+ * POST /api/applications/upload-token
  */
-async function handler(req, { session }) {
-  if (req.method !== 'POST') {
-    return NextResponse.json({ error: '지원하지 않는 메서드입니다.' }, { status: 405 });
-  }
-
+export async function POST(request) {
   try {
-    const body = await req.json();
+    const formData = await request.formData();
+    const file = formData.get('file');
+    const userId = formData.get('userId');
+    const applicationId = formData.get('applicationId');
 
-    const jsonResponse = await handleUpload({
-      body,
-      request: req,
-      onBeforeGenerateToken: async (pathname, clientPayload) => {
-        // 사용자 인증 확인
-        if (!session?.user?.id) {
-          throw new Error('인증이 필요합니다.');
-        }
+    if (!file || !userId || !applicationId) {
+      return NextResponse.json(
+        { error: '파일, 사용자 ID, 신청서 ID가 필요합니다.' },
+        { status: 400 }
+      );
+    }
 
-        // 파일 타입 및 크기 제한 설정
-        return {
-          allowedContentTypes: [
-            'image/jpeg',
-            'image/png',
-            'image/gif',
-            'image/webp',
-            'application/pdf',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'text/plain',
-          ],
-          maximumSizeInBytes: 50 * 1024 * 1024, // 50MB 제한
-          tokenPayload: JSON.stringify({
-            userId: session.user.id,
-            uploadedAt: new Date().toISOString(),
-          }),
-        };
-      },
-      onUploadCompleted: async ({ blob, tokenPayload }) => {
-        // 업로드 완료 시 로그 기록
-        console.log('파일 업로드 완료:', {
-          url: blob.url,
-          size: blob.size,
-          tokenPayload: JSON.parse(tokenPayload || '{}'),
-        });
-      },
+    // 파일 확장자 검증 (위험한 확장자 차단)
+    const fileName = file.name.toLowerCase();
+    const blockedExtensions = ['.exe', '.bat', '.cmd', '.com', '.scr', '.pif', '.msi', '.dll'];
+    const hasBlockedExtension = blockedExtensions.some((ext) => fileName.endsWith(ext));
+
+    if (hasBlockedExtension) {
+      return NextResponse.json(
+        { error: '보안상 실행 파일(.exe, .bat, .cmd 등)은 업로드할 수 없습니다.' },
+        { status: 400 }
+      );
+    }
+
+    // 허용된 확장자 검증
+    const allowedExtensions = [
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.gif',
+      '.webp', // 이미지
+      '.pdf',
+      '.doc',
+      '.docx',
+      '.xls',
+      '.xlsx',
+      '.ppt',
+      '.pptx', // 문서
+      '.txt',
+      '.rtf', // 텍스트
+      '.zip',
+      '.rar',
+      '.7z', // 압축
+      '.mp4',
+      '.avi',
+      '.mov',
+      '.wmv', // 비디오
+      '.mp3',
+      '.wav',
+      '.flac', // 오디오
+    ];
+
+    const hasAllowedExtension = allowedExtensions.some((ext) => fileName.endsWith(ext));
+
+    if (!hasAllowedExtension) {
+      return NextResponse.json(
+        { error: '지원하지 않는 파일 형식입니다. 이미지, 문서, 압축 파일만 업로드 가능합니다.' },
+        { status: 400 }
+      );
+    }
+
+    // 파일 크기 검증 (10MB 제한)
+    if (file.size > 10 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: '파일 크기는 10MB를 초과할 수 없습니다.' },
+        { status: 400 }
+      );
+    }
+
+    // Cloudinary에 파일 업로드
+    const uploadResult = await uploadFileToCloudinary(file, userId, applicationId, file.name);
+
+    return NextResponse.json({
+      success: true,
+      file: uploadResult,
     });
-
-    return NextResponse.json(jsonResponse);
   } catch (error) {
-    console.error('토큰 생성 오류:', error);
+    console.error('파일 업로드 오류:', error);
     return NextResponse.json(
-      { error: error.message || '토큰 생성 중 오류가 발생했습니다.' },
-      { status: 400 }
+      { error: error.message || '파일 업로드에 실패했습니다.' },
+      { status: 500 }
     );
   }
 }
-
-export const POST = withAuthAPI(handler);

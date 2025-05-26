@@ -177,14 +177,16 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
           originalName: img.originalName,
           mimeType: img.mimeType,
           size: img.size,
-          blobId: img.blobId || img.id, // fallback for legacy data
+          cloudinaryId: img.cloudinaryId || img.blobId || img.id, // fallback for legacy data
           uploadedAt: img.uploadedAt || new Date(),
         }));
       allImages = [...remainingExistingImages];
 
       // 새 이미지가 있는 경우 클라이언트에서 직접 업로드
       if (editForm.newImages.length > 0) {
-        const { uploadMultipleReviewImages } = await import('@/lib/client-blob-upload-review');
+        const { uploadMultipleReviewImages } = await import(
+          '@/lib/client-cloudinary-upload-review'
+        );
 
         // 임시 리뷰 ID 생성 (파일명에 사용)
         const tempId = Date.now().toString();

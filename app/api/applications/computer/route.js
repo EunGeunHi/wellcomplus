@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import Application from '@/models/Application';
 import User from '@/models/User';
 import { withAuthAPI } from '../../middleware';
+import { deleteMultipleFilesFromCloudinary } from '@/lib/application-storage';
 
 async function handler(req, { session }) {
   if (req.method !== 'POST') {
@@ -71,8 +72,26 @@ async function handler(req, { session }) {
       },
     });
 
-    // 신청서 저장
-    await application.save();
+    // 신청서 저장 (실패 시 Cloudinary 파일 롤백)
+    try {
+      await application.save();
+    } catch (saveError) {
+      // MongoDB 저장 실패 시 Cloudinary에서 업로드된 파일들 삭제
+      if (files && files.length > 0) {
+        try {
+          console.log('MongoDB 저장 실패, Cloudinary 파일 롤백 시작...');
+          const cloudinaryIds = files.map((file) => file.cloudinaryId).filter((id) => id);
+          if (cloudinaryIds.length > 0) {
+            await deleteMultipleFilesFromCloudinary(cloudinaryIds);
+          }
+          console.log('Cloudinary 파일 롤백 완료');
+        } catch (rollbackError) {
+          console.error('Cloudinary 롤백 실패:', rollbackError);
+          // 롤백 실패는 로그만 남기고 원본 에러를 던짐
+        }
+      }
+      throw saveError; // 원본 에러를 다시 던져서 클라이언트에 전달
+    }
 
     return NextResponse.json(
       {

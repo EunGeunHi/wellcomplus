@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 /**
  * 사용자 리뷰 정보를 저장하기 위한 MongoDB 스키마
- * Vercel Blob Storage를 사용하여 이미지 저장
+ * Cloudinary를 사용하여 이미지 저장
  *
  * timestamps: true 옵션으로 createdAt, updatedAt 필드가 자동 생성됨
  */
@@ -42,11 +42,11 @@ const reviewSchema = new mongoose.Schema(
       {
         url: {
           type: String,
-          required: true, // Vercel Blob Storage URL
+          required: true, // Cloudinary secure_url
         },
         filename: {
           type: String,
-          required: true, // Blob Storage에서의 파일명
+          required: true, // Cloudinary에서의 파일명
         },
         originalName: {
           type: String,
@@ -55,15 +55,15 @@ const reviewSchema = new mongoose.Schema(
         mimeType: {
           type: String,
           required: true,
-          enum: ['image/jpeg', 'image/png'], // jpg, png만 허용
+          enum: ['image/jpeg', 'image/png', 'image/jpg'], // jpg, jpeg, png 허용
         },
         size: {
           type: Number,
           required: true, // 파일 크기 (바이트)
         },
-        blobId: {
+        cloudinaryId: {
           type: String,
-          required: true, // Blob Storage에서의 고유 식별자
+          required: true, // Cloudinary public_id (삭제시 필요)
         },
         uploadedAt: {
           type: Date,
