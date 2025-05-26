@@ -96,6 +96,8 @@ export default function ServiceManagementPage() {
   const [toastVisible, setToastVisible] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showFileDeleteModal, setShowFileDeleteModal] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState(null);
 
   // 탭 메뉴 정의
   const tabs = [
@@ -338,14 +340,26 @@ export default function ServiceManagementPage() {
     }
   };
 
+  // 파일 삭제 확인 모달 열기
+  const handleFileDeleteClick = (fileId, fileName) => {
+    setFileToDelete({ id: fileId, name: fileName });
+    setShowFileDeleteModal(true);
+  };
+
   // 파일 삭제 함수
-  const handleFileDelete = async (fileId) => {
-    if (!selectedApp?.id || fileId === undefined || fileId === null) return;
+  const handleFileDelete = async () => {
+    if (
+      !selectedApp?.id ||
+      !fileToDelete ||
+      fileToDelete.id === undefined ||
+      fileToDelete.id === null
+    )
+      return;
 
     try {
       setUpdateLoading(true);
 
-      const response = await fetch(`/api/service/files/${selectedApp.id}/${fileId}`, {
+      const response = await fetch(`/api/service/files/${selectedApp.id}/${fileToDelete.id}`, {
         method: 'DELETE',
       });
 
@@ -360,6 +374,10 @@ export default function ServiceManagementPage() {
         ...selectedApp,
         files: data.files,
       });
+
+      // 모달 닫기
+      setShowFileDeleteModal(false);
+      setFileToDelete(null);
 
       // 성공 메시지 표시
       showToast('파일이 성공적으로 삭제되었습니다.', 'success');
@@ -789,7 +807,7 @@ export default function ServiceManagementPage() {
                                   <FiDownload size={18} />
                                 </button>
                                 <button
-                                  onClick={() => handleFileDelete(index)}
+                                  onClick={() => handleFileDeleteClick(index, file.originalName)}
                                   className="p-1.5 text-red-600 hover:bg-red-50 rounded-md"
                                   title="삭제"
                                   disabled={updateLoading}
@@ -936,6 +954,73 @@ export default function ServiceManagementPage() {
           </div>
         </div>
       </div>
+
+      {/* 파일 삭제 확인 모달 */}
+      {showFileDeleteModal && fileToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+            <div className="flex items-center mb-4">
+              <div className="bg-red-100 rounded-full p-2 mr-3">
+                <FiTrash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">파일 삭제 확인</h3>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-gray-700 mb-3">
+                <strong>정말로 이 파일을 삭제하시겠습니까?</strong>
+              </p>
+              <div className="bg-red-50 border border-red-200 p-3 rounded-md">
+                <p className="text-sm text-red-700 mb-2">
+                  <strong>⚠️ 주의사항:</strong>
+                </p>
+                <ul className="text-sm text-red-700 space-y-1">
+                  <li>• 이 작업은 되돌릴 수 없습니다</li>
+                  <li>• 파일이 영구적으로 삭제됩니다</li>
+                  <li>• 삭제 후 복구가 불가능합니다</li>
+                </ul>
+              </div>
+              <div className="mt-3 p-3 bg-gray-50 rounded-md">
+                <p className="text-sm text-gray-600">
+                  <strong>삭제할 파일:</strong> {fileToDelete.name}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowFileDeleteModal(false);
+                  setFileToDelete(null);
+                }}
+                disabled={updateLoading}
+                className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleFileDelete}
+                disabled={updateLoading}
+                className={`px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center gap-2 ${
+                  updateLoading ? 'opacity-70 cursor-not-allowed' : ''
+                }`}
+              >
+                {updateLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    삭제 중...
+                  </>
+                ) : (
+                  <>
+                    <FiTrash2 size={16} />
+                    파일 삭제
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 완전 삭제 확인 모달 */}
       {showDeleteModal && (

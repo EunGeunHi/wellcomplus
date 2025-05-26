@@ -389,6 +389,8 @@ export const ConfirmModal = ({ isOpen, onConfirm, onCancel }) => {
 
         <p className="text-gray-700 mb-6 text-sm sm:text-base">
           해당 견적을 제출하시면 수정 할 수 없습니다.
+          <br />
+          정말로 제출 하시겠습니까?
         </p>
 
         <div className="flex gap-3 justify-end">
