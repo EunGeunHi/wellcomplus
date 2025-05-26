@@ -1,8 +1,6 @@
 import { Inter } from 'next/font/google';
 import './globals.css';
 import Navigation from './components/Navigation';
-import { Analytics } from '@vercel/analytics/next';
-import { SpeedInsights } from '@vercel/speed-insights/next';
 import { AuthProvider } from './components/AuthProvider';
 import { Toaster } from 'react-hot-toast';
 
@@ -31,8 +29,6 @@ export default function RootLayout({ children }) {
           <Navigation />
           <main className="pt-20">{children}</main>
         </AuthProvider>
-        <Analytics />
-        <SpeedInsights />
         <Toaster position="top-center" />
       </body>
     </html>
