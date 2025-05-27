@@ -232,8 +232,8 @@ const ProfileContent = ({ userData }) => {
         [name]: formattedValue,
       }));
     } else if (name === 'name') {
-      // 이름 길이 제한 (12자)
-      if (value.length <= 12) {
+      // 이름 길이 제한 (15자)
+      if (value.length <= 15) {
         setFormData((prev) => ({
           ...prev,
           [name]: value,
@@ -268,8 +268,8 @@ const ProfileContent = ({ userData }) => {
     e.preventDefault();
 
     // 이름 길이 검사
-    if (formData.name.length > 12) {
-      setError('이름은 12자 이하여야 합니다.');
+    if (formData.name.length > 15) {
+      setError('이름은 15자 이하여야 합니다.');
       setIsNameValid(false);
       return;
     }
@@ -374,7 +374,7 @@ const ProfileContent = ({ userData }) => {
             className="flex items-center gap-1.5 py-2 px-3 sm:py-2.5 sm:px-4 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors text-xs sm:text-sm font-medium"
           >
             <FiEdit size={14} className="sm:text-base" />
-            프로필 수정(이름, 전화번호 2가지만 수정가능합니다.)
+            이름, 전화번호 수정
           </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -465,7 +465,7 @@ const ProfileContent = ({ userData }) => {
                       value={formData.name}
                       onChange={handleInputChange}
                       required
-                      maxLength={12}
+                      maxLength={15}
                       className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
                         !isNameValid || (!isNameAvailable && isNameChecked)
                           ? 'border-red-300 bg-red-50'
@@ -487,7 +487,7 @@ const ProfileContent = ({ userData }) => {
                 </div>
                 <div className="mt-1">
                   <p className="text-xs text-gray-500">
-                    최대 12자까지 입력 가능합니다. 현재 {formData.name.length}자
+                    최대 15자까지 입력 가능합니다. 현재 {formData.name.length}자
                   </p>
                   {nameCheckMessage && (
                     <p className={`text-xs ${isNameAvailable ? 'text-green-500' : 'text-red-500'}`}>
@@ -495,7 +495,7 @@ const ProfileContent = ({ userData }) => {
                     </p>
                   )}
                   {!isNameValid && (
-                    <p className="text-xs text-red-500">이름은 12자 이하여야 합니다.</p>
+                    <p className="text-xs text-red-500">이름은 15자 이하여야 합니다.</p>
                   )}
                 </div>
               </div>

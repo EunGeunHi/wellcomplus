@@ -50,7 +50,7 @@ export default function HeroSlider() {
   return (
     <>
       {/* Image column */}
-      <div className="order-1 lg:order-2 relative">
+      <div className="order-2 lg:order-2 relative">
         {totalImages > 0 && (
           <>
             <div className="relative aspect-[4/3] overflow-hidden rounded-2xl shadow-2xl transition-all">

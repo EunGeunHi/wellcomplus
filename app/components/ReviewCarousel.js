@@ -12,7 +12,7 @@ const ReviewCard = ({ review, onClick }) => {
       stars.push(
         <Star
           key={i}
-          className={`w-3.5 h-3.5 ${i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+          className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
           fill={i < rating ? 'currentColor' : 'none'}
         />
       );
@@ -52,39 +52,41 @@ const ReviewCard = ({ review, onClick }) => {
 
   return (
     <div
-      className="group relative bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden border border-gray-100 w-full h-full min-h-[260px] cursor-pointer"
+      className="group relative bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden border border-gray-100 w-full h-full min-h-[220px] sm:min-h-[260px] cursor-pointer"
       onClick={() => onClick(review)}
     >
       {/* 카드 상단 테두리 라인 */}
       <div className="h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
 
-      <div className="p-4 flex flex-col h-full">
+      <div className="p-3 sm:p-4 flex flex-col h-full">
         {/* 사용자 이름 */}
         <div className="mb-1">
-          <p className="font-bold text-gray-800 text-base leading-tight">
+          <p className="font-bold text-gray-800 text-sm sm:text-base leading-tight">
             {review.userId && review.userId.name ? review.userId.name : '익명'} 님
           </p>
         </div>
 
         {/* 서비스 타입과 별점 */}
         <div className="flex items-center justify-between mb-1">
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+          <span className="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
             {getServiceTypeInKorean(review.serviceType)}
           </span>
           <div className="flex items-center space-x-1">
             <div className="flex items-center space-x-0.5">{renderStars(review.rating)}</div>
-            <span className="ml-1.5 text-xs font-semibold text-gray-700">{review.rating}점</span>
+            <span className="ml-1 sm:ml-1.5 text-xs font-semibold text-gray-700">
+              {review.rating}점
+            </span>
           </div>
         </div>
 
         {/* 이미지 섹션 */}
         {review.images && review.images.length > 0 && (
           <div className="mb-1">
-            <div className="flex space-x-1.5 overflow-x-auto scrollbar-hide pb-1">
+            <div className="flex space-x-1 sm:space-x-1.5 overflow-x-auto scrollbar-hide pb-1">
               {review.images.map((image, index) => {
                 return (
                   <div key={image.id || index} className="flex-shrink-0">
-                    <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 relative">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 relative">
                       <img
                         src={image.url}
                         alt={image.originalName || `이미지 ${index + 1}`}
@@ -122,10 +124,12 @@ const ReviewCard = ({ review, onClick }) => {
 
         {/* 리뷰 내용 */}
         <div className="flex-1 mb-1">
-          <div className="bg-gray-50/80 text-gray-700 text-sm leading-snug p-3 rounded-lg border border-gray-100 backdrop-blur-sm">
+          <div className="bg-gray-50/80 text-gray-700 text-xs sm:text-sm leading-snug p-2 sm:p-3 rounded-lg border border-gray-100 backdrop-blur-sm">
             <p
               className={`font-['NanumGothic'] overflow-hidden whitespace-pre-line ${
-                review.images && review.images.length > 0 ? 'line-clamp-5' : 'line-clamp-8'
+                review.images && review.images.length > 0
+                  ? 'line-clamp-4 sm:line-clamp-5'
+                  : 'line-clamp-6 sm:line-clamp-8'
               }`}
             >
               {review.content}
@@ -134,9 +138,14 @@ const ReviewCard = ({ review, onClick }) => {
         </div>
 
         {/* 작성 날짜 - 하단 고정 */}
-        <div className="flex justify-end mt-auto pt-2 border-t border-gray-100">
+        <div className="flex justify-end mt-auto pt-1.5 sm:pt-2 border-t border-gray-100">
           <div className="flex items-center space-x-1 text-xs text-gray-500">
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-2.5 h-2.5 sm:w-3 sm:h-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -144,7 +153,7 @@ const ReviewCard = ({ review, onClick }) => {
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
-            <span>{formatDate(review.createdAt)}</span>
+            <span className="text-xs">{formatDate(review.createdAt)}</span>
           </div>
         </div>
       </div>
@@ -223,36 +232,43 @@ const ReviewDetailModal = ({ review, isOpen, onClose }) => {
         onClick={(e) => e.stopPropagation()}
       >
         {/* 모달 헤더 */}
-        <div className="flex items-center justify-between p-3 border-b border-gray-200 flex-shrink-0">
-          <h3 className="text-xl font-bold text-gray-800">리뷰 상세보기</h3>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-            <X className="w-6 h-6 text-gray-600" />
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 flex-shrink-0">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800">리뷰 상세보기</h3>
+          <button
+            onClick={onClose}
+            className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
           </button>
         </div>
 
         {/* 모달 내용 - 스크롤 영역 */}
-        <div className="p-4 space-y-6 overflow-y-auto flex-1">
+        <div className="p-3 sm:p-4 space-y-4 sm:space-y-6 overflow-y-auto flex-1">
           {/* 사용자 정보 및 서비스 타입 */}
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-lg font-bold text-gray-800 mb-1">
+              <h4 className="text-base sm:text-lg font-bold text-gray-800 mb-1">
                 {review.userId && review.userId.name ? review.userId.name : '익명'} 님
               </h4>
-              <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-200">
+              <span className="inline-flex items-center px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-blue-50 text-blue-700 border border-blue-200">
                 {getServiceTypeInKorean(review.serviceType)}
               </span>
             </div>
             <div className="text-right">
               <div className="flex items-center space-x-1 mb-1">{renderStars(review.rating)}</div>
-              <span className="text-lg font-bold text-gray-700">{review.rating}점</span>
+              <span className="text-base sm:text-lg font-bold text-gray-700">
+                {review.rating}점
+              </span>
             </div>
           </div>
 
           {/* 리뷰 내용 */}
           <div>
-            <h5 className="text-md font-semibold text-gray-800 mb-3">리뷰 내용</h5>
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-              <p className="text-gray-700 leading-relaxed whitespace-pre-line font-['NanumGothic']">
+            <h5 className="text-sm sm:text-base font-semibold text-gray-800 mb-2 sm:mb-3">
+              리뷰 내용
+            </h5>
+            <div className="bg-gray-50 rounded-xl p-3 sm:p-4 border border-gray-200">
+              <p className="text-sm sm:text-base text-gray-700 leading-relaxed whitespace-pre-line font-['NanumGothic']">
                 {review.content}
               </p>
             </div>
@@ -261,7 +277,9 @@ const ReviewDetailModal = ({ review, isOpen, onClose }) => {
           {/* 이미지 갤러리 */}
           {review.images && review.images.length > 0 && (
             <div>
-              <h5 className="text-md font-semibold text-gray-800 mb-3">첨부 이미지</h5>
+              <h5 className="text-sm sm:text-base font-semibold text-gray-800 mb-2 sm:mb-3">
+                첨부 이미지
+              </h5>
               <div className="space-y-4">
                 {/* 메인 이미지 */}
                 <div className="relative flex items-center">
@@ -273,9 +291,9 @@ const ReviewDetailModal = ({ review, isOpen, onClose }) => {
                           prev === 0 ? review.images.length - 1 : prev - 1
                         )
                       }
-                      className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-110 z-10"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 sm:-translate-x-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-1.5 sm:p-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-110 z-10"
                     >
-                      <ChevronLeft className="w-4 h-4" />
+                      <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
                   )}
 
@@ -320,21 +338,21 @@ const ReviewDetailModal = ({ review, isOpen, onClose }) => {
                           prev === review.images.length - 1 ? 0 : prev + 1
                         )
                       }
-                      className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-110 z-10"
+                      className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 sm:translate-x-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-1.5 sm:p-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-110 z-10"
                     >
-                      <ChevronRight className="w-4 h-4" />
+                      <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
                   )}
                 </div>
 
                 {/* 썸네일 */}
                 {review.images.length > 1 && (
-                  <div className="flex space-x-2 overflow-x-auto pb-2">
+                  <div className="flex space-x-1.5 sm:space-x-2 overflow-x-auto pb-2">
                     {review.images.map((image, index) => (
                       <button
                         key={image.id || index}
                         onClick={() => setCurrentImageIndex(index)}
-                        className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all relative ${
+                        className={`flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden border-2 transition-all relative ${
                           currentImageIndex === index
                             ? 'border-blue-500'
                             : 'border-gray-200 hover:border-gray-300'
@@ -376,9 +394,14 @@ const ReviewDetailModal = ({ review, isOpen, onClose }) => {
           )}
 
           {/* 작성 날짜 */}
-          <div className="text-right pt-4 border-t border-gray-200">
-            <div className="flex items-center justify-end space-x-1 text-sm text-gray-500">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-right pt-3 sm:pt-4 border-t border-gray-200">
+            <div className="flex items-center justify-end space-x-1 text-xs sm:text-sm text-gray-500">
+              <svg
+                className="w-3 h-3 sm:w-4 sm:h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -553,13 +576,13 @@ const ReviewCarousel = () => {
   }
 
   return (
-    <section className="py-10 bg-gradient-to-bl from-sky-50 to-blue-200 overflow-hidden font-['NanumGothic']">
-      <div className="max-w-full mx-auto px-4 sm:px-1 lg:px-2">
-        <div className="text-center mb-5">
-          <h2 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-blue-600">
+    <section className="py-6 sm:py-10 bg-gradient-to-bl from-sky-50 to-blue-200 overflow-hidden font-['NanumGothic']">
+      <div className="max-w-full mx-auto px-3 sm:px-4 lg:px-2">
+        <div className="text-center mb-4 sm:mb-6">
+          <h2 className="text-2xl sm:text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-blue-600">
             고객님들의 생생한 후기
           </h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+          <p className="text-gray-600 text-sm sm:text-lg max-w-2xl mx-auto px-4 sm:px-0">
             웰컴시스템을 경험하신 고객님들의 솔직한 이야기를 만나보세요.
           </p>
         </div>
@@ -572,26 +595,26 @@ const ReviewCarousel = () => {
               <button
                 onClick={goToPrevious}
                 disabled={isAnimating}
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-1.5 sm:p-2 hover:bg-gray-50 transition-colors disabled:opacity-50"
                 aria-label="이전 리뷰"
               >
-                <ChevronLeft className="w-6 h-6 text-gray-600" />
+                <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
               </button>
               <button
                 onClick={goToNext}
                 disabled={isAnimating}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-1.5 sm:p-2 hover:bg-gray-50 transition-colors disabled:opacity-50"
                 aria-label="다음 리뷰"
               >
-                <ChevronRight className="w-6 h-6 text-gray-600" />
+                <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
               </button>
             </>
           )}
 
           {/* 리뷰 카드 그리드 */}
-          <div className="mx-8 sm:mx-12 lg:mx-16">
+          <div className="mx-6 sm:mx-8 lg:mx-16">
             <div
-              className={`grid gap-4 sm:gap-6 transition-all duration-300 ease-in-out ${
+              className={`grid gap-3 sm:gap-4 lg:gap-6 transition-all duration-300 ease-in-out ${
                 cardsPerView === 1
                   ? 'grid-cols-1'
                   : cardsPerView === 2
@@ -606,7 +629,10 @@ const ReviewCarousel = () => {
               } ${isAnimating ? 'opacity-0' : 'opacity-100'}`}
             >
               {visibleReviews.map((review) => (
-                <div key={`${review._id}-${currentIndex}`} className="h-auto min-h-[200px]">
+                <div
+                  key={`${review._id}-${currentIndex}`}
+                  className="h-auto min-h-[180px] sm:min-h-[200px]"
+                >
                   <ReviewCard review={review} onClick={handleReviewClick} />
                 </div>
               ))}
@@ -647,9 +673,25 @@ const ReviewCarousel = () => {
         }
 
         /* Line clamp 스타일 */
+        .line-clamp-4 {
+          display: -webkit-box;
+          -webkit-line-clamp: 4;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
         .line-clamp-5 {
           display: -webkit-box;
           -webkit-line-clamp: 5;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .line-clamp-6 {
+          display: -webkit-box;
+          -webkit-line-clamp: 6;
           -webkit-box-orient: vertical;
           overflow: hidden;
           text-overflow: ellipsis;

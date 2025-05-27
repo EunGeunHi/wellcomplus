@@ -104,17 +104,18 @@ export default function AssemblyShowcaseOptimized() {
   }
 
   return (
-    <section className="py-10 bg-gradient-to-b from-white to-gray-50">
-      <div className="max-w-7xl mx-auto px-6 font-['NanumGothic']">
+    <section className="py-6 sm:py-10 bg-gradient-to-b from-white to-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 font-['NanumGothic']">
         {/* 섹션 제목 */}
-        <div className="text-center mb-4">
-          <h2 className="text-4xl font-bold mb-1 bg-clip-text text-transparent bg-gradient-to-r from-[#3661EB] to-[#87CEEB]">
+        <div className="text-center mb-3 sm:mb-4">
+          <h2 className="text-2xl sm:text-4xl font-bold mb-1 bg-clip-text text-transparent bg-gradient-to-r from-[#3661EB] to-[#87CEEB]">
             웰컴시스템 조립PC
           </h2>
 
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+          <p className="text-gray-600 text-sm sm:text-lg max-w-2xl mx-auto px-4 sm:px-0">
             35년 노하우!! 화려한RGB!! 깔끔한 선정리!! 깔끔하고 멋진 디자인!!
-            <br />
+            <br className="hidden sm:block" />
+            <span className="sm:hidden"> </span>
             현재 이미지는 아무거나 넣은 테스트 이미지, 영상입니다.
           </p>
         </div>
@@ -151,11 +152,11 @@ export default function AssemblyShowcaseOptimized() {
 
               {/* 동영상 정보 오버레이 */}
               {videos.length > 0 && (
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-6">
-                  <h3 className="text-white font-bold text-xl mb-1">
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 sm:p-6">
+                  <h3 className="text-white font-bold text-lg sm:text-xl mb-1">
                     {videos[currentVideoIndex].title}
                   </h3>
-                  <p className="text-white/90 text-sm leading-relaxed">
+                  <p className="text-white/90 text-xs sm:text-sm leading-relaxed">
                     {videos[currentVideoIndex].description}
                   </p>
                 </div>
@@ -181,14 +182,14 @@ export default function AssemblyShowcaseOptimized() {
 
                     {/* 이미지 정보 오버레이 */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/0 via-black/0 to-black/0 group-hover:from-black/70 group-hover:via-black/20 group-hover:to-transparent transition-all duration-500">
-                      <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out">
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="w-1.5 h-1.5 bg-[#3661EB] rounded-full"></div>
+                      <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out">
+                        <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+                          <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-[#3661EB] rounded-full"></div>
                           <span className="text-white/80 text-xs font-medium uppercase tracking-wide">
                             {displayImage.category}
                           </span>
                         </div>
-                        <h4 className="text-white font-bold text-sm leading-tight">
+                        <h4 className="text-white font-bold text-xs sm:text-sm leading-tight">
                           {displayImage.title}
                         </h4>
                       </div>
@@ -202,7 +203,7 @@ export default function AssemblyShowcaseOptimized() {
           {/* 모바일 레이아웃 */}
           <div className="md:hidden flex flex-col gap-0.5">
             {/* 상단: 동영상 */}
-            <div className="relative bg-black h-[260px]">
+            <div className="relative bg-black h-[200px] sm:h-[260px]">
               {videos.length > 0 ? (
                 <video
                   ref={videoRefMobile}
@@ -229,8 +230,8 @@ export default function AssemblyShowcaseOptimized() {
 
               {/* 동영상 정보 오버레이 */}
               {videos.length > 0 && (
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4">
-                  <h3 className="text-white font-bold text-lg mb-1">
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 sm:p-4">
+                  <h3 className="text-white font-bold text-sm sm:text-lg mb-1">
                     {videos[currentVideoIndex].title}
                   </h3>
                   <p className="text-white/90 text-xs leading-relaxed">
@@ -241,7 +242,7 @@ export default function AssemblyShowcaseOptimized() {
             </div>
 
             {/* 하단: 이미지 그리드 (2x2) */}
-            <div className="grid grid-cols-2 grid-rows-2 h-[260px] gap-0.5">
+            <div className="grid grid-cols-2 grid-rows-2 h-[200px] sm:h-[260px] gap-0.5">
               {images.slice(0, 4).map((image, index) => {
                 const displayIndex = (currentImageIndex + index) % images.length;
                 const displayImage = images[displayIndex];
@@ -262,9 +263,9 @@ export default function AssemblyShowcaseOptimized() {
 
                     {/* 이미지 정보 오버레이 */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/0 via-black/0 to-black/0 group-active:from-black/70 group-active:via-black/20 group-active:to-transparent transition-all duration-300">
-                      <div className="absolute bottom-0 left-0 right-0 p-3 transform translate-y-full group-active:translate-y-0 transition-transform duration-300 ease-out">
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <div className="w-1 h-1 bg-[#3661EB] rounded-full"></div>
+                      <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 transform translate-y-full group-active:translate-y-0 transition-transform duration-300 ease-out">
+                        <div className="flex items-center gap-1 sm:gap-1.5 mb-1">
+                          <div className="w-0.5 h-0.5 sm:w-1 sm:h-1 bg-[#3661EB] rounded-full"></div>
                           <span className="text-white/80 text-xs font-medium uppercase tracking-wide">
                             {displayImage.category}
                           </span>

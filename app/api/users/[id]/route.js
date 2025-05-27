@@ -45,25 +45,25 @@ export const PATCH = withAuthAPI(async (req, { params, session }) => {
     const { name, phoneNumber } = body;
 
     // 필수 필드 확인
-    if (!name || !phoneNumber) {
-      return NextResponse.json(
-        { error: '이름과 전화번호는 필수 입력사항입니다.' },
-        { status: 400 }
-      );
+    if (!name) {
+      return NextResponse.json({ error: '이름은 필수 입력사항입니다.' }, { status: 400 });
     }
 
     await connectDB();
 
-    // 전화번호 중복 확인 (현재 사용자 제외)
-    if (phoneNumber) {
-      const existingUser = await User.findOne({
-        phoneNumber,
-        _id: { $ne: id },
-      });
+    // 전화번호 필수 확인
+    if (!phoneNumber || phoneNumber.trim() === '') {
+      return NextResponse.json({ error: '전화번호는 필수 입력사항입니다.' }, { status: 400 });
+    }
 
-      if (existingUser) {
-        return NextResponse.json({ error: '이미 사용 중인 전화번호입니다.' }, { status: 400 });
-      }
+    // 전화번호 중복 확인 (현재 사용자 제외)
+    const existingUser = await User.findOne({
+      phoneNumber,
+      _id: { $ne: id },
+    });
+
+    if (existingUser) {
+      return NextResponse.json({ error: '이미 사용 중인 전화번호입니다.' }, { status: 400 });
     }
 
     // 사용자 정보 업데이트
