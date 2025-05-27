@@ -79,7 +79,7 @@ const UserPage = () => {
 
     switch (activeMenu) {
       case 'profile':
-        return <ProfileContent userData={userData} />;
+        return <ProfileContent userData={userData} onUserUpdate={setUserData} />;
       case 'estimate':
         return <EstimateContent userData={userData} userId={params.id} />;
       case 'as':
@@ -87,7 +87,7 @@ const UserPage = () => {
       case 'review':
         return <ReviewContent userData={userData} userId={params.id} />;
       default:
-        return <ProfileContent userData={userData} />;
+        return <ProfileContent userData={userData} onUserUpdate={setUserData} />;
     }
   };
 
@@ -142,7 +142,7 @@ const UserPage = () => {
   );
 };
 
-const ProfileContent = ({ userData }) => {
+const ProfileContent = ({ userData, onUserUpdate }) => {
   const router = useRouter();
   const { data: session, update: updateSession } = useSession();
   const user = userData?.user || [];
@@ -320,10 +320,32 @@ const ProfileContent = ({ userData }) => {
       // 세션 갱신 API 호출
       await refreshSession();
 
-      // 1초 후 모달 닫기 및 페이지 새로고침
+      // 로컬 상태 업데이트 (페이지 새로고침 대신)
+      const updatedUserData = {
+        ...userData,
+        user: {
+          ...userData.user,
+          name: formData.name,
+          phoneNumber: formData.phoneNumber,
+        },
+      };
+
+      // 부모 컴포넌트의 상태 업데이트
+      if (onUserUpdate) {
+        onUserUpdate(updatedUserData);
+      }
+
+      // 1초 후 모달 닫기 (페이지 새로고침 제거)
       setTimeout(() => {
         setIsModalOpen(false);
-        window.location.reload();
+        // 성공 메시지 초기화
+        setSuccess('');
+        setError('');
+        // 이름 변경 상태 초기화
+        setIsNameChanged(false);
+        setIsNameChecked(true);
+        setIsNameAvailable(true);
+        setNameCheckMessage('');
       }, 1000);
     } catch (err) {
       setError(err.message);
