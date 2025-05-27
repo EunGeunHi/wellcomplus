@@ -533,7 +533,7 @@ export default function BusinessQuotePage({ params }) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ width: '200px', paddingBottom: '10px' }}>
               <Image
-                src="/textlogo2.png"
+                src="/textlogo2.webp"
                 alt="웰컴 시스템 로고"
                 width={200}
                 height={80}
@@ -675,7 +675,7 @@ export default function BusinessQuotePage({ params }) {
                             }}
                           >
                             <Image
-                              src="/stamp.png"
+                              src="/stamp.webp"
                               alt="인감도장"
                               width={60}
                               height={60}

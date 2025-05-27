@@ -2,17 +2,19 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
+import Image from 'next/image';
 
 export default function HeroSlider() {
   const [currentImage, setCurrentImage] = useState(0);
+  const [imageLoadErrors, setImageLoadErrors] = useState(new Set());
   const intervalRef = useRef(null);
 
   const images = [
-    '/mainpageimg/1.jpg',
-    '/mainpageimg/2.jpg',
-    '/mainpageimg/3.jpg',
-    '/mainpageimg/4.jpg',
-    '/mainpageimg/5.jpg',
+    '/mainpageimg/1.webp',
+    '/mainpageimg/2.webp',
+    '/mainpageimg/3.webp',
+    '/mainpageimg/4.webp',
+    '/mainpageimg/5.webp',
   ];
 
   const totalImages = images.length;
@@ -57,18 +59,47 @@ export default function HeroSlider() {
               <div className="absolute inset-0 bg-gradient-to-tr from-blue-900/30 to-transparent z-10"></div>
 
               {images.map((image, index) => (
-                <img
+                <div
                   key={index}
-                  src={image}
-                  alt={`컴퓨터 시스템 이미지 ${index + 1}`}
-                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+                  className={`absolute inset-0 transition-opacity duration-1000 ${
                     index === currentImage ? 'opacity-100' : 'opacity-0'
                   }`}
-                  onError={(e) => {
-                    console.error(`이미지 로드 실패: ${image}`);
-                    e.target.src = '/mainpageimg/fallback.jpg'; // 대체 이미지 설정
-                  }}
-                />
+                >
+                  {!imageLoadErrors.has(image) ? (
+                    <Image
+                      src={image}
+                      alt={`컴퓨터 시스템 이미지 ${index + 1}`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      priority={index === 0} // 첫 번째 이미지만 우선 로드
+                      onError={() => {
+                        console.error(`이미지 로드 실패: ${image}`);
+                        setImageLoadErrors((prev) => new Set([...prev, image]));
+                      }}
+                    />
+                  ) : (
+                    // 이미지 로드 실패 시 플레이스홀더
+                    <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                      <div className="text-center text-gray-500">
+                        <svg
+                          className="w-16 h-16 mx-auto mb-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <p className="text-sm">이미지를 불러올 수 없습니다</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               ))}
 
               {/* 이미지가 2개 이상일 때만 네비게이션 버튼 표시 */}

@@ -113,7 +113,7 @@ export default function Navigation() {
         <Link href="/" className="flex items-center gap-1 group">
           <div className="relative w-[110px] h-[45px] transition-all duration-300 group-hover:scale-110">
             <Image
-              src="/textlogo1.png"
+              src="/textlogo1.webp"
               alt="Text Logo"
               fill
               style={{ objectFit: 'contain' }}

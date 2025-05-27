@@ -392,7 +392,7 @@ export default function Statement() {
                           </span>
                           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
                             <img
-                              src="/stamp.png"
+                              src="/stamp.webp"
                               alt="도장"
                               style={{
                                 maxWidth: '40px',
@@ -732,7 +732,7 @@ export default function Statement() {
                           </span>
                           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
                             <img
-                              src="/stamp.png"
+                              src="/stamp.webp"
                               alt="도장"
                               style={{
                                 maxWidth: '40px',
