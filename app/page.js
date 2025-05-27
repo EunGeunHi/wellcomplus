@@ -4,6 +4,7 @@ import HeroButton from './components/HeroButton';
 import Link from 'next/link';
 import TestAlert from './components/TestAlert';
 import ReviewCarousel from './components/ReviewCarousel';
+import AssemblyShowcaseOptimized from './components/AssemblyShowcaseOptimized';
 
 export default function Home() {
   return (
@@ -41,8 +42,10 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 리뷰 컴포넌트 부분  */}
+      {/* 조립 컴퓨터 갤러리 */}
+      <AssemblyShowcaseOptimized />
 
+      {/* 리뷰 컴포넌트 부분  */}
       <ReviewCarousel />
 
       {/* Features Section */}

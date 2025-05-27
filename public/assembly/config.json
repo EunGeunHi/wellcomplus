@@ -1,0 +1,96 @@
+{
+  "images": [
+    {
+      "filename": "photo-1.webp",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 쿨링 시스템 수정함",
+      "title": "고성능 게이밍 PC 수정함",
+      "category": "gaming"
+    },
+    {
+      "filename": "photo-10.webp",
+      "alt": "부산 웰컴시스템 울트라 게이밍 PC 조립 - 최고사양 컴퓨터 완성품",
+      "title": "울트라 게이밍 PC",
+      "category": "gaming"
+    },
+    {
+      "filename": "photo-2.webp",
+      "alt": "부산 컴퓨터 조립 전문점 웰컴시스템 사무용 PC 완성품",
+      "title": "사무용 PC",
+      "category": "office"
+    },
+    {
+      "filename": "photo-3.webp",
+      "alt": "웰컴시스템 워크스테이션 PC 조립 - 전문 작업용 고사양 컴퓨터",
+      "title": "워크스테이션 PC",
+      "category": "workstation"
+    },
+    {
+      "filename": "photo-4.webp",
+      "alt": "부산 PC 조립 맞춤 제작 - 웰컴시스템 미니 ITX 소형 컴퓨터",
+      "title": "미니 ITX PC",
+      "category": "mini"
+    },
+    {
+      "filename": "photo-5.webp",
+      "alt": "웰컴시스템 RGB 게이밍 PC 조립 완성품 - 부산 컴퓨터 전문점",
+      "title": "RGB 게이밍 PC",
+      "category": "gaming"
+    },
+    {
+      "filename": "photo-6.webp",
+      "alt": "부산 웰컴시스템 고급형 사무용 PC 조립 - 업무용 컴퓨터 맞춤 제작",
+      "title": "고급형 사무용 PC",
+      "category": "office"
+    },
+    {
+      "filename": "photo-7.webp",
+      "alt": "웰컴시스템 크리에이터 PC 조립 - 영상편집 그래픽 작업용 고사양",
+      "title": "크리에이터 PC",
+      "category": "creator"
+    },
+    {
+      "filename": "photo-8.webp",
+      "alt": "부산 컴퓨터 조립 전문 웰컴시스템 - 화이트 테마 게이밍 PC",
+      "title": "화이트 게이밍 PC",
+      "category": "gaming"
+    },
+    {
+      "filename": "photo-9.webp",
+      "alt": "웰컴시스템 서버용 PC 조립 - 부산 기업용 컴퓨터 맞춤 제작",
+      "title": "서버용 PC",
+      "category": "server"
+    },
+    {
+      "filename": "한글명이미지.webp",
+      "title": "빌드로 추가해봄",
+      "category": "gaming",
+      "alt": "웰컴-타닥타닥"
+    }
+  ],
+  "videos": [
+    {
+      "filename": "video-1.mp4",
+      "title": "동영상 첫번쨰 수정함",
+      "description": "전문가의 PC 조립 과정을 보여주는 영상!",
+      "alt": "타가"
+    },
+    {
+      "filename": "video-2.mp4",
+      "alt": "부산 웰컴시스템 게이밍 PC 성능 테스트 영상 - 조립 완성품 시연",
+      "title": "게이밍 PC 성능 테스트",
+      "description": "조립된 게이밍 PC의 성능을 테스트하는 영상"
+    },
+    {
+      "filename": "video-3.mp4",
+      "alt": "웰컴시스템 컴퓨터 조립 완성품 소개 영상 - 부산 PC 전문점",
+      "title": "조립 완성품 소개",
+      "description": "다양한 조립 완성품들을 소개하는 영상"
+    }
+  ],
+  "settings": {
+    "imageRotationInterval": 3000,
+    "autoplay": true,
+    "muted": true,
+    "loop": true
+  }
+}
