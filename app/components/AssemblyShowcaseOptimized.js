@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { Computer } from 'lucide-react';
 
 // 설정 파일을 import (빌드 시 정적으로 로드됨)
 import assemblyConfig from '../../public/assembly/config.json';
@@ -71,164 +72,215 @@ export default function AssemblyShowcaseOptimized() {
 
   if (isLoading) {
     return (
-      <div className="w-full h-96 bg-gray-100 animate-pulse rounded-lg flex items-center justify-center">
-        <div className="text-gray-500">갤러리를 불러오는 중...</div>
-      </div>
+      <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 h-96 flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-gradient-to-r from-[#3661EB] to-[#87CEEB] rounded-full animate-spin mx-auto mb-4 flex items-center justify-center">
+                <div className="w-6 h-6 bg-white rounded-full"></div>
+              </div>
+              <p className="text-gray-600 font-medium">갤러리를 불러오는 중...</p>
+            </div>
+          </div>
+        </div>
+      </section>
     );
   }
 
   if (images.length === 0 && videos.length === 0) {
     return (
-      <div className="w-full h-96 bg-gray-50 rounded-lg flex items-center justify-center">
-        <div className="text-gray-500">표시할 콘텐츠가 없습니다.</div>
-      </div>
+      <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 h-96 flex items-center justify-center">
+            <div className="text-center">
+              <Computer className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 font-medium">표시할 콘텐츠가 없습니다.</p>
+              <p className="text-gray-400 text-sm mt-2">조립 완성품 사진과 영상을 준비 중입니다.</p>
+            </div>
+          </div>
+        </div>
+      </section>
     );
   }
 
   return (
-    <div className="w-full bg-white rounded-lg shadow-lg overflow-hidden">
-      {/* PC 레이아웃 */}
-      <div className="hidden md:flex h-96">
-        {/* 왼쪽: 동영상 */}
-        <div className="w-1/2 relative bg-black">
-          {videos.length > 0 ? (
-            <video
-              ref={videoRefDesktop}
-              className="w-full h-full object-cover"
-              autoPlay
-              muted={settings.muted}
-              loop={false}
-              playsInline
-              preload="auto"
-              onEnded={handleVideoEnded}
-              onError={(e) => console.error('데스크톱 동영상 오류:', e)}
-            >
-              <source
-                src={`/assembly/videos/${videos[currentVideoIndex].filename}`}
-                type="video/mp4"
-              />
-              동영상을 지원하지 않는 브라우저입니다.
-            </video>
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-white">
-              동영상 없음
-            </div>
-          )}
+    <section className="py-10 bg-gradient-to-b from-white to-gray-50">
+      <div className="max-w-7xl mx-auto px-6 font-['NanumGothic']">
+        {/* 섹션 제목 */}
+        <div className="text-center mb-4">
+          <h2 className="text-4xl font-bold mb-1 bg-clip-text text-transparent bg-gradient-to-r from-[#3661EB] to-[#87CEEB]">
+            웰컴시스템 조립PC
+          </h2>
 
-          {/* 동영상 정보 오버레이 */}
-          {videos.length > 0 && (
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-              <h3 className="text-white font-semibold text-lg">
-                {videos[currentVideoIndex].title}
-              </h3>
-              <p className="text-white/80 text-sm">{videos[currentVideoIndex].description}</p>
-            </div>
-          )}
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            35년 노하우!! 화려한RGB!! 깔끔한 선정리!! 깔끔하고 멋진 디자인!!
+            <br />
+            현재 이미지는 아무거나 넣은 테스트 이미지, 영상입니다.
+          </p>
         </div>
 
-        {/* 오른쪽: 이미지 그리드 (2x2) */}
-        <div className="w-1/2 grid grid-cols-2 grid-rows-2">
-          {images.slice(0, 4).map((image, index) => {
-            const displayIndex = (currentImageIndex + index) % images.length;
-            const displayImage = images[displayIndex];
-
-            return (
-              <div key={`${displayIndex}-${index}`} className="relative group overflow-hidden">
-                <Image
-                  src={`/assembly/photos/${displayImage.filename}`}
-                  alt={displayImage.alt}
-                  fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  sizes="(min-width: 768px) 25vw, 50vw"
-                  priority={index < 2}
-                />
-
-                {/* 이미지 정보 오버레이 */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors duration-300">
-                  <div className="absolute bottom-0 left-0 right-0 p-3 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <h4 className="text-white font-medium text-sm">{displayImage.title}</h4>
-                    <span className="text-white/80 text-xs capitalize">
-                      {displayImage.category}
-                    </span>
-                  </div>
+        {/* 갤러리 컨테이너 */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          {/* PC 레이아웃 */}
+          <div className="hidden md:flex h-[650px] gap-0.5">
+            {/* 왼쪽: 동영상 */}
+            <div className="w-1/2 relative bg-black">
+              {videos.length > 0 ? (
+                <video
+                  ref={videoRefDesktop}
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  muted={settings.muted}
+                  loop={false}
+                  playsInline
+                  preload="auto"
+                  onEnded={handleVideoEnded}
+                  onError={(e) => console.error('데스크톱 동영상 오류:', e)}
+                >
+                  <source
+                    src={`/assembly/videos/${videos[currentVideoIndex].filename}`}
+                    type="video/mp4"
+                  />
+                  동영상을 지원하지 않는 브라우저입니다.
+                </video>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white">
+                  동영상 없음
                 </div>
-              </div>
-            );
-          })}
+              )}
+
+              {/* 동영상 정보 오버레이 */}
+              {videos.length > 0 && (
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-6">
+                  <h3 className="text-white font-bold text-xl mb-1">
+                    {videos[currentVideoIndex].title}
+                  </h3>
+                  <p className="text-white/90 text-sm leading-relaxed">
+                    {videos[currentVideoIndex].description}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* 오른쪽: 이미지 그리드 (2x2) */}
+            <div className="w-1/2 grid grid-cols-2 grid-rows-2 gap-0.5">
+              {images.slice(0, 4).map((image, index) => {
+                const displayIndex = (currentImageIndex + index) % images.length;
+                const displayImage = images[displayIndex];
+
+                return (
+                  <div key={`${displayIndex}-${index}`} className="relative group overflow-hidden">
+                    <Image
+                      src={`/assembly/photos/${displayImage.filename}`}
+                      alt={displayImage.alt}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      sizes="(min-width: 768px) 25vw, 50vw"
+                      priority={index < 2}
+                    />
+
+                    {/* 이미지 정보 오버레이 */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/0 via-black/0 to-black/0 group-hover:from-black/70 group-hover:via-black/20 group-hover:to-transparent transition-all duration-500">
+                      <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-1.5 h-1.5 bg-[#3661EB] rounded-full"></div>
+                          <span className="text-white/80 text-xs font-medium uppercase tracking-wide">
+                            {displayImage.category}
+                          </span>
+                        </div>
+                        <h4 className="text-white font-bold text-sm leading-tight">
+                          {displayImage.title}
+                        </h4>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 모바일 레이아웃 */}
+          <div className="md:hidden flex flex-col gap-0.5">
+            {/* 상단: 동영상 */}
+            <div className="relative bg-black h-[260px]">
+              {videos.length > 0 ? (
+                <video
+                  ref={videoRefMobile}
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  muted={settings.muted}
+                  loop={false}
+                  playsInline
+                  preload="auto"
+                  onEnded={handleVideoEnded}
+                  onError={(e) => console.error('모바일 동영상 오류:', e)}
+                >
+                  <source
+                    src={`/assembly/videos/${videos[currentVideoIndex].filename}`}
+                    type="video/mp4"
+                  />
+                  동영상을 지원하지 않는 브라우저입니다.
+                </video>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white">
+                  동영상 없음
+                </div>
+              )}
+
+              {/* 동영상 정보 오버레이 */}
+              {videos.length > 0 && (
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4">
+                  <h3 className="text-white font-bold text-lg mb-1">
+                    {videos[currentVideoIndex].title}
+                  </h3>
+                  <p className="text-white/90 text-xs leading-relaxed">
+                    {videos[currentVideoIndex].description}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* 하단: 이미지 그리드 (2x2) */}
+            <div className="grid grid-cols-2 grid-rows-2 h-[260px] gap-0.5">
+              {images.slice(0, 4).map((image, index) => {
+                const displayIndex = (currentImageIndex + index) % images.length;
+                const displayImage = images[displayIndex];
+
+                return (
+                  <div
+                    key={`mobile-${displayIndex}-${index}`}
+                    className="relative group overflow-hidden"
+                  >
+                    <Image
+                      src={`/assembly/photos/${displayImage.filename}`}
+                      alt={displayImage.alt}
+                      fill
+                      className="object-cover transition-transform duration-300 group-active:scale-105"
+                      sizes="50vw"
+                      priority={index < 2}
+                    />
+
+                    {/* 이미지 정보 오버레이 */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/0 via-black/0 to-black/0 group-active:from-black/70 group-active:via-black/20 group-active:to-transparent transition-all duration-300">
+                      <div className="absolute bottom-0 left-0 right-0 p-3 transform translate-y-full group-active:translate-y-0 transition-transform duration-300 ease-out">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <div className="w-1 h-1 bg-[#3661EB] rounded-full"></div>
+                          <span className="text-white/80 text-xs font-medium uppercase tracking-wide">
+                            {displayImage.category}
+                          </span>
+                        </div>
+                        <h4 className="text-white font-bold text-xs leading-tight">
+                          {displayImage.title}
+                        </h4>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* 모바일 레이아웃 */}
-      <div className="md:hidden">
-        {/* 상단: 동영상 */}
-        <div className="relative bg-black h-48">
-          {videos.length > 0 ? (
-            <video
-              ref={videoRefMobile}
-              className="w-full h-full object-cover"
-              autoPlay
-              muted={settings.muted}
-              loop={false}
-              playsInline
-              preload="auto"
-              onEnded={handleVideoEnded}
-              onError={(e) => console.error('모바일 동영상 오류:', e)}
-            >
-              <source
-                src={`/assembly/videos/${videos[currentVideoIndex].filename}`}
-                type="video/mp4"
-              />
-              동영상을 지원하지 않는 브라우저입니다.
-            </video>
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-white">
-              동영상 없음
-            </div>
-          )}
-
-          {/* 동영상 정보 오버레이 */}
-          {videos.length > 0 && (
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-              <h3 className="text-white font-semibold">{videos[currentVideoIndex].title}</h3>
-              <p className="text-white/80 text-sm">{videos[currentVideoIndex].description}</p>
-            </div>
-          )}
-        </div>
-
-        {/* 하단: 이미지 그리드 (2x2) */}
-        <div className="grid grid-cols-2 grid-rows-2 h-48">
-          {images.slice(0, 4).map((image, index) => {
-            const displayIndex = (currentImageIndex + index) % images.length;
-            const displayImage = images[displayIndex];
-
-            return (
-              <div
-                key={`mobile-${displayIndex}-${index}`}
-                className="relative group overflow-hidden"
-              >
-                <Image
-                  src={`/assembly/photos/${displayImage.filename}`}
-                  alt={displayImage.alt}
-                  fill
-                  className="object-cover transition-transform duration-300 group-active:scale-105"
-                  sizes="50vw"
-                  priority={index < 2}
-                />
-
-                {/* 이미지 정보 오버레이 */}
-                <div className="absolute inset-0 bg-black/0 group-active:bg-black/50 transition-colors duration-300">
-                  <div className="absolute bottom-0 left-0 right-0 p-2 transform translate-y-full group-active:translate-y-0 transition-transform duration-300">
-                    <h4 className="text-white font-medium text-xs">{displayImage.title}</h4>
-                    <span className="text-white/80 text-xs capitalize">
-                      {displayImage.category}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
+    </section>
   );
 }
