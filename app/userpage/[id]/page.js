@@ -156,12 +156,7 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
   const [success, setSuccess] = useState('');
   const [isPhoneValid, setIsPhoneValid] = useState(true);
   const [isNameValid, setIsNameValid] = useState(true);
-  const [isCheckingName, setIsCheckingName] = useState(false);
-  const [nameCheckMessage, setNameCheckMessage] = useState('');
-  const [isNameAvailable, setIsNameAvailable] = useState(true);
-  const [isNameChecked, setIsNameChecked] = useState(false);
   const [isNameChanged, setIsNameChanged] = useState(false);
-  const nameCheckTimeout = useRef(null);
 
   // 폼 초기화
   useEffect(() => {
@@ -171,51 +166,10 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
         phoneNumber: user.phoneNumber || '',
       });
       setIsNameChanged(false);
-      setIsNameChecked(true);
-      setIsNameAvailable(true);
     }
   }, [user]);
 
-  // 이름 중복 체크 함수
-  const checkNameAvailability = async () => {
-    if (!formData.name || formData.name.length === 0) {
-      setIsNameAvailable(false);
-      setNameCheckMessage('이름을 입력해주세요.');
-      setIsNameChecked(false);
-      return;
-    }
-
-    try {
-      setIsCheckingName(true);
-      const response = await fetch('/api/users/check-name', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          userId: user._id,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setIsNameAvailable(data.isAvailable);
-        setNameCheckMessage(data.message);
-        setIsNameChecked(true);
-      } else {
-        throw new Error(data.error || '이름 중복 체크 중 오류가 발생했습니다.');
-      }
-    } catch (error) {
-      console.error('이름 중복 체크 중 오류:', error);
-      setIsNameAvailable(false);
-      setNameCheckMessage('이름 중복 체크 중 오류가 발생했습니다.');
-      setIsNameChecked(false);
-    } finally {
-      setIsCheckingName(false);
-    }
-  };
+  // 이름 중복 체크 함수 (제거 - 서버에서 통합 처리)
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -244,15 +198,7 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
         const isChanged = value !== user.name;
         setIsNameChanged(isChanged);
 
-        // 이름이 변경되지 않았다면 중복확인 상태 초기화
-        if (!isChanged) {
-          setIsNameChecked(true);
-          setIsNameAvailable(true);
-          setNameCheckMessage('');
-        } else {
-          setIsNameChecked(false);
-          setNameCheckMessage('');
-        }
+        // 상태 초기화 (서버에서 검증하므로 클라이언트 검증 제거)
       } else {
         setIsNameValid(false);
       }
@@ -274,17 +220,7 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
       return;
     }
 
-    // 이름이 변경된 경우에만 중복 검사 확인
-    if (isNameChanged && !isNameChecked) {
-      setError('이름 중복 확인이 필요합니다.');
-      return;
-    }
-
-    // 이름이 변경된 경우에만 중복 검사
-    if (isNameChanged && !isNameAvailable) {
-      setError('이미 사용 중인 이름입니다.');
-      return;
-    }
+    // 중복 확인 로직 제거 (서버에서 통합 처리)
 
     // 전화번호 유효성 검사
     if (!isValidPhoneNumber(formData.phoneNumber)) {
@@ -317,8 +253,24 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
 
       setSuccess('정보가 성공적으로 업데이트되었습니다.');
 
-      // 세션 갱신 API 호출
-      await refreshSession();
+      // 통합된 API 응답에서 세션 정보 사용하여 세션 갱신
+      if (data.sessionUser) {
+        await updateSession({
+          ...session,
+          user: {
+            ...session.user,
+            ...data.sessionUser,
+          },
+        });
+
+        // 세션 변경을 다른 컴포넌트(Navigation)에 알리기 위한 이벤트 발생
+        const event = new StorageEvent('storage', {
+          key: 'next-auth.session-token',
+          newValue: 'updated',
+          url: window.location.href,
+        });
+        window.dispatchEvent(event);
+      }
 
       // 로컬 상태 업데이트 (페이지 새로고침 대신)
       const updatedUserData = {
@@ -343,9 +295,6 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
         setError('');
         // 이름 변경 상태 초기화
         setIsNameChanged(false);
-        setIsNameChecked(true);
-        setIsNameAvailable(true);
-        setNameCheckMessage('');
       }, 1000);
     } catch (err) {
       setError(err.message);
@@ -354,33 +303,7 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
     }
   };
 
-  // 세션 갱신 함수
-  const refreshSession = async () => {
-    try {
-      // 세션 갱신 API 호출
-      const response = await fetch('/api/auth/session/refresh', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        // next-auth의 세션 업데이트 기능 사용
-        await updateSession();
-
-        // 세션 변경을 다른 컴포넌트(Navigation)에 알리기 위한 이벤트 발생
-        const event = new StorageEvent('storage', {
-          key: 'next-auth.session-token',
-          newValue: 'updated',
-          url: window.location.href,
-        });
-        window.dispatchEvent(event);
-      }
-    } catch (error) {
-      console.error('세션 갱신 중 오류:', error);
-    }
-  };
+  // 세션 갱신 함수 제거 (통합된 API에서 처리)
 
   if (!user) return <div>로딩중...</div>;
 
@@ -478,46 +401,30 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                   이름
                 </label>
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      required
-                      maxLength={15}
-                      className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
-                        !isNameValid || (!isNameAvailable && isNameChecked)
-                          ? 'border-red-300 bg-red-50'
-                          : 'border-gray-300'
-                      }`}
-                      placeholder="이름을 입력하세요"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={checkNameAvailability}
-                    disabled={isCheckingName || !formData.name || formData.name.length === 0}
-                    className={`px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium whitespace-nowrap
-                      ${isCheckingName || !formData.name || formData.name.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
-                    `}
-                  >
-                    {isCheckingName ? '확인 중...' : '중복확인'}
-                  </button>
-                </div>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                  maxLength={15}
+                  className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                    !isNameValid ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                  }`}
+                  placeholder="이름을 입력하세요"
+                />
                 <div className="mt-1">
                   <p className="text-xs text-gray-500">
                     최대 15자까지 입력 가능합니다. 현재 {formData.name.length}자
                   </p>
-                  {nameCheckMessage && (
-                    <p className={`text-xs ${isNameAvailable ? 'text-green-500' : 'text-red-500'}`}>
-                      {nameCheckMessage}
-                    </p>
-                  )}
                   {!isNameValid && (
                     <p className="text-xs text-red-500">이름은 15자 이하여야 합니다.</p>
+                  )}
+                  {isNameChanged && (
+                    <p className="text-xs text-blue-600">
+                      💡 이름 중복 확인은 저장 시 자동으로 처리됩니다.
+                    </p>
                   )}
                 </div>
               </div>
@@ -559,18 +466,10 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
                 </button>
                 <button
                   type="submit"
-                  disabled={
-                    isLoading ||
-                    !isPhoneValid ||
-                    !isNameValid ||
-                    (isNameChanged && (!isNameAvailable || !isNameChecked))
-                  }
+                  disabled={isLoading || !isPhoneValid || !isNameValid}
                   className={`flex-1 py-2.5 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium flex items-center justify-center
                     ${
-                      isLoading ||
-                      !isPhoneValid ||
-                      !isNameValid ||
-                      (isNameChanged && (!isNameAvailable || !isNameChecked))
+                      isLoading || !isPhoneValid || !isNameValid
                         ? 'opacity-70 cursor-not-allowed'
                         : ''
                     }
