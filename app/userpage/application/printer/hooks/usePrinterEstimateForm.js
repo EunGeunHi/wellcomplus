@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { formatKoreanPhoneNumber } from '@/utils/phoneFormatter';
+import { formatNumberInput, removeCommas } from '@/utils/numberUtils';
 import { INITIAL_FORM_DATA, INITIAL_SECTIONS_STATE, FILE_CONSTRAINTS } from '../constants';
 import { validateForm, logFormData, formatFileSize } from '../utils';
 import { uploadMultipleFiles, validateFiles } from '@/lib/client-cloudinary-upload-application';
@@ -30,6 +31,12 @@ export const usePrinterEstimateForm = (session) => {
         ...prev,
         [name]: formatKoreanPhoneNumber(value),
       }));
+    } else if (name === 'budget') {
+      // 예산 필드인 경우 숫자 포맷팅 적용
+      setFormData((prev) => ({
+        ...prev,
+        [name]: formatNumberInput(value),
+      }));
     } else {
       setFormData((prev) => ({
         ...prev,
@@ -56,7 +63,7 @@ export const usePrinterEstimateForm = (session) => {
 
   // Budget handlers
   const addBudget = (amount) => {
-    const currentBudget = formData.budget.replace(/[^0-9]/g, '');
+    const currentBudget = removeCommas(formData.budget);
     const newBudget = (parseInt(currentBudget || '0') + amount).toLocaleString();
     setFormData((prev) => ({
       ...prev,

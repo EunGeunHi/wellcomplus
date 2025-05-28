@@ -73,7 +73,7 @@ export default function NotebookEstimatePage() {
           >
             <form onSubmit={(e) => e.preventDefault()} className="space-y-4 sm:space-y-6">
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-8">
-                <div className="space-y-4 sm:space-y-8">
+                <div className="space-y-2 sm:space-y-4">
                   {/* 필수 입력 사항들 */}
                   <TextArea
                     id="purpose"

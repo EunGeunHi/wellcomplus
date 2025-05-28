@@ -343,13 +343,35 @@ export const FileUpload = ({
 // 제출 버튼 컴포넌트
 export const SubmitButton = ({ isSubmitting, onSubmit }) => (
   <div className="mt-6 sm:mt-10">
-    <p className="text-gray-500 text-xs sm:text-sm text-center mb-4 sm:mb-6 bg-yellow-50/50 py-2 sm:py-3 px-3 sm:px-4 rounded-lg border border-yellow-100">
-      ⚠️ 부품 수급상황에 따라 요구사항이 모두 수용되지 않을 수 있습니다.
-      <br />
-      💰 예산 가이드 입력하신 예산 범위 내에서 최적의 성능을 구성해드립니다.
-      <br />더 높은 성능이 필요하시다면 예산 조정이나 단계별 업그레이드 방안도 함께 제안해드릴 수
-      있어요!
-    </p>
+    <div className="bg-amber-50 border border-amber-200 rounded-xl p-1 sm:p-2 mb-6 sm:mb-8">
+      <div className="flex items-start gap-1 mb-1">
+        <div className="flex-shrink-0 mt-0.5">
+          <FiAlertTriangle className="w-5 h-5 text-amber-600" />
+        </div>
+        <div>
+          <h4 className="text-sm sm:text-base font-bold text-amber-800 mb-1">
+            견적 신청 전 안내사항
+          </h4>
+          <div className="space-y-1 text-xs sm:text-sm text-amber-700 leading-relaxed">
+            <p className="flex items-start gap-1">
+              <span className="text-amber-600 font-medium">•</span>
+              <span>부품 수급상황에 따라 요구사항이 모두 수용되지 않을 수 있습니다.</span>
+            </p>
+            <p className="flex items-start gap-1">
+              <span className="text-amber-600 font-medium">•</span>
+              <span>
+                고객님의 예산에 맞춰 가능한 한 최고의 성능을 제공해드리기 위해 최선을 다하고
+                있습니다.
+              </span>
+            </p>
+            <p className="flex items-start gap-1">
+              <span className="text-amber-600 font-medium">•</span>
+              <span>예산을 초과하는 성능을 원하실 경우 일부 조정이 필요할 수 있습니다.</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
     <button
       type="button"
       onClick={onSubmit}

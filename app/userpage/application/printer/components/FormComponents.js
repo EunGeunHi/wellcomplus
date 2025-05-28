@@ -343,6 +343,32 @@ export const UploadProgress = ({ progress }) => {
 // 제출 버튼 컴포넌트
 export const SubmitButton = ({ isSubmitting, onSubmit }) => (
   <div className="mt-6 sm:mt-10">
+    <div className="bg-amber-50 border border-amber-200 rounded-xl p-1 sm:p-2 mb-6 sm:mb-8">
+      <div className="flex items-start gap-1 mb-1">
+        <div className="flex-shrink-0 mt-0.5">
+          <FiAlertTriangle className="w-5 h-5 text-amber-600" />
+        </div>
+        <div>
+          <h4 className="text-sm sm:text-base font-bold text-amber-800 mb-1">
+            견적 신청 전 안내사항
+          </h4>
+          <div className="space-y-1 text-xs sm:text-sm text-amber-700 leading-relaxed">
+            <p className="flex items-start gap-1">
+              <span className="text-amber-600 font-medium">•</span>
+              <span>제품 수급상황에 따라 요구사항이 모두 수용되지 않을 수 있습니다.</span>
+            </p>
+            <p className="flex items-start gap-1">
+              <span className="text-amber-600 font-medium">•</span>
+              <span>고객님의 예산에 맞춰 가능한 한 최적의 프린터를 제안해드립니다.</span>
+            </p>
+            <p className="flex items-start gap-1">
+              <span className="text-amber-600 font-medium">•</span>
+              <span>사용 목적에 따라 더 적합한 대안 제품을 추천해드릴 수 있습니다.</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
     <button
       type="button"
       onClick={onSubmit}

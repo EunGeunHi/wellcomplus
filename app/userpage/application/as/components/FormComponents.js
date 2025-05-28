@@ -329,6 +329,34 @@ export const UploadProgress = ({ progress }) => {
 // 제출 버튼 컴포넌트
 export const SubmitButton = ({ isSubmitting, onSubmit }) => (
   <div className="mt-6 sm:mt-10">
+    <div className="bg-amber-50 border border-amber-200 rounded-xl p-1 sm:p-2 mb-6 sm:mb-8">
+      <div className="flex items-start gap-1 mb-1">
+        <div className="flex-shrink-0 mt-0.5">
+          <FiAlertTriangle className="w-5 h-5 text-amber-600" />
+        </div>
+        <div>
+          <h4 className="text-sm sm:text-base font-bold text-amber-800 mb-1">
+            A/S 신청 전 안내사항
+          </h4>
+          <div className="space-y-1 text-xs sm:text-sm text-amber-700 leading-relaxed">
+            <p className="flex items-start gap-1">
+              <span className="text-amber-600 font-medium">•</span>
+              <span>
+                A/S로 발생하는 비용은 실제 물건을 받아서 확인해본 다음 알려드릴 수 있습니다.
+              </span>
+            </p>
+            <p className="flex items-start gap-1">
+              <span className="text-amber-600 font-medium">•</span>
+              <span>정확한 진단을 위해 고장 증상을 상세히 작성해주시기 바랍니다.</span>
+            </p>
+            <p className="flex items-start gap-1">
+              <span className="text-amber-600 font-medium">•</span>
+              <span>A/S 진행 상황은 등록하신 연락처로 개별 안내해드립니다.</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
     <button
       type="button"
       onClick={onSubmit}

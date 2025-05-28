@@ -1,6 +1,6 @@
 // 폼 필드 옵션들
 export const FORM_OPTIONS = {
-  printType: ['잉크젯', '레이저'],
+  printerType: ['잉크젯', '레이저'],
   infiniteInk: ['정품무한', '개조무한'],
   outputColor: ['흑백(모노)출력', '컬러출력'],
   deliveryMethod: ['직접방문', '택배'],
@@ -26,7 +26,7 @@ export const REQUIRED_FIELDS = ['purpose', 'budget', 'phoneNumber'];
 export const INITIAL_FORM_DATA = {
   purpose: '',
   budget: '',
-  printType: '',
+  printerType: '',
   infiniteInk: '',
   outputColor: '',
   additionalRequests: '',
@@ -37,7 +37,7 @@ export const INITIAL_FORM_DATA = {
 
 // 기본 섹션 상태 (모두 닫힘)
 export const INITIAL_SECTIONS_STATE = {
-  printType: false,
+  printerType: false,
   infiniteInk: false,
   outputColor: false,
   additionalRequests: false,
