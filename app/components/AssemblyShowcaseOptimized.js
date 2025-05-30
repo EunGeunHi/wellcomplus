@@ -16,6 +16,8 @@ export default function AssemblyShowcaseOptimized() {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [settings, setSettings] = useState({ muted: true, autoplay: true });
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
+  const [isRotationActive, setIsRotationActive] = useState(false);
 
   const videoRefDesktop = useRef(null);
   const videoRefMobile = useRef(null);
@@ -38,19 +40,68 @@ export default function AssemblyShowcaseOptimized() {
 
   const { images: configImages, videos: configVideos, settings: configSettings } = assemblyConfig;
 
+  // 초기 이미지들 완전 프리로딩 함수
+  const preloadInitialImages = useCallback(async () => {
+    if (configImages.length === 0) return;
+
+    try {
+      // 첫 8개 이미지를 완전히 프리로딩 (2바퀴 분량)
+      const initialLoadCount = Math.min(8, configImages.length);
+
+      await smartPreload(0, configImages, 'image', initialLoadCount - 1);
+
+      // 모든 초기 이미지가 프리로딩될 때까지 대기
+      let allLoaded = false;
+      let attempts = 0;
+      const maxAttempts = 50; // 5초 타임아웃
+
+      while (!allLoaded && attempts < maxAttempts) {
+        allLoaded = true;
+
+        for (let i = 0; i < initialLoadCount; i++) {
+          const imageSrc = `/assembly/photos/${configImages[i].filename}`;
+          if (!isImagePreloaded(imageSrc)) {
+            allLoaded = false;
+            break;
+          }
+        }
+
+        if (!allLoaded) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          attempts++;
+        }
+      }
+
+      setIsInitialLoadComplete(true);
+
+      // 프리로딩 완료 후 0.5초 뒤에 자동 순환 시작
+      setTimeout(() => {
+        setIsRotationActive(true);
+      }, 500);
+    } catch (error) {
+      console.error('초기 프리로딩 실패:', error);
+      // 실패해도 3초 후 자동 순환 시작
+      setTimeout(() => {
+        setIsInitialLoadComplete(true);
+        setIsRotationActive(true);
+      }, 3000);
+    }
+  }, [configImages, smartPreload, isImagePreloaded]);
+
   // 적극적 초기 프리로딩 실행
   useEffect(() => {
     setImages(configImages);
     setVideos(configVideos);
     setSettings(configSettings);
 
-    // 컴포넌트 마운트 시 더 많은 리소스 프리로딩
     if (configImages.length > 0) {
-      smartPreload(0, configImages, 'image', 5); // 처음 6개 이미지 프리로딩
-      // 백그라운드에서 모든 이미지 예측 프리로딩
+      // 초기 이미지 완전 프리로딩
+      preloadInitialImages();
+
+      // 백그라운드에서 나머지 이미지들도 예측 프리로딩
       setTimeout(() => {
         predictivePreload(0, configImages, 'image');
-      }, 500);
+      }, 2000);
     }
 
     if (configVideos.length > 0) {
@@ -58,40 +109,74 @@ export default function AssemblyShowcaseOptimized() {
       // 백그라운드에서 다음 비디오들 예측 프리로딩
       setTimeout(() => {
         predictivePreload(0, configVideos, 'video');
-      }, 1000);
+      }, 3000);
     }
-  }, [configImages, configVideos, configSettings, smartPreload, predictivePreload]);
+  }, [
+    configImages,
+    configVideos,
+    configSettings,
+    preloadInitialImages,
+    smartPreload,
+    predictivePreload,
+  ]);
+
+  // 다음 이미지 준비 상태 확인 함수
+  const isNextImageReady = useCallback(
+    (nextIndex) => {
+      if (images.length === 0) return false;
+
+      // 다음 4개 이미지가 모두 프리로딩되었는지 확인
+      for (let i = 0; i < 4; i++) {
+        const checkIndex = (nextIndex + i) % images.length;
+        const imageSrc = `/assembly/photos/${images[checkIndex].filename}`;
+        if (!isImagePreloaded(imageSrc)) {
+          return false;
+        }
+      }
+      return true;
+    },
+    [images, isImagePreloaded]
+  );
 
   // 사전 예측 프리로딩 (이미지 변경 전에 미리 준비)
   const preloadNextResources = useCallback(
-    (currentImgIndex, currentVidIndex) => {
-      // 다음 이미지들 프리로딩 (현재 + 다음 3개)
-      smartPreload(currentImgIndex, images, 'image', 3);
+    async (currentImgIndex, currentVidIndex) => {
+      // 다음 이미지들 적극적 프리로딩 (현재 + 다음 5개)
+      await smartPreload(currentImgIndex, images, 'image', 5);
 
       // 다음 비디오 프리로딩 (현재 + 다음 1개)
       smartPreload(currentVidIndex, videos, 'video', 1);
 
       // 백그라운드 예측 프리로딩
-      predictivePreload(currentImgIndex, images, 'image');
+      setTimeout(() => {
+        predictivePreload(currentImgIndex, images, 'image');
+      }, 100);
     },
     [images, videos, smartPreload, predictivePreload]
   );
 
-  // 개선된 이미지 자동 순환
+  // 개선된 이미지 자동 순환 (프리로딩 완료 확인 후 변경)
   useEffect(() => {
-    if (images.length === 0) return;
+    if (images.length === 0 || !isRotationActive) return;
 
     const interval = setInterval(() => {
-      setIsTransitioning(true);
-
       setCurrentImageIndex((prev) => {
         const nextIndex = (prev + 1) % images.length;
 
-        // 이미지 변경 전에 다음 리소스들 미리 프리로딩
+        // 다음 이미지가 준비되었는지 확인
+        if (!isNextImageReady(nextIndex)) {
+          // 준비되지 않았으면 강제로 프리로딩하고 잠시 대기
+          preloadNextResources(nextIndex, currentVideoIndex);
+          return prev; // 이번 변경은 건너뛰기
+        }
+
+        setIsTransitioning(true);
+
+        // 이미지 변경 후 다음 리소스들 미리 프리로딩
         preloadNextResources(nextIndex, currentVideoIndex);
 
         // 전환 애니메이션 완료 후 상태 초기화
-        setTimeout(() => setIsTransitioning(false), 100);
+        setTimeout(() => setIsTransitioning(false), 150);
 
         return nextIndex;
       });
@@ -103,7 +188,14 @@ export default function AssemblyShowcaseOptimized() {
         clearInterval(intervalRef.current);
       }
     };
-  }, [images.length, settings.imageRotationInterval, preloadNextResources, currentVideoIndex]);
+  }, [
+    images.length,
+    settings.imageRotationInterval,
+    isRotationActive,
+    isNextImageReady,
+    preloadNextResources,
+    currentVideoIndex,
+  ]);
 
   // 향상된 동영상 처리 함수
   const playVideoSmoothly = useCallback(
@@ -111,6 +203,21 @@ export default function AssemblyShowcaseOptimized() {
       if (!videoElement) return;
 
       try {
+        // 현재 비디오 상태 확인
+        const isCurrentSrc = videoElement.querySelector('source')?.src === videoSrc;
+        const isPlaying =
+          !videoElement.paused && !videoElement.ended && videoElement.readyState > 2;
+
+        // 이미 같은 소스가 재생 중이면 스킵
+        if (isCurrentSrc && isPlaying) {
+          return;
+        }
+
+        // 현재 재생 중인 비디오가 있으면 일시정지
+        if (!videoElement.paused) {
+          videoElement.pause();
+        }
+
         // 프리로딩된 비디오가 있는지 확인
         const preloadedVideo = getPreloadedVideo(videoSrc);
 
@@ -119,13 +226,70 @@ export default function AssemblyShowcaseOptimized() {
           const source = videoElement.querySelector('source');
           if (source && source.src !== videoSrc) {
             source.src = videoSrc;
+
+            // load() 후 충분한 대기 시간
             videoElement.load();
+
+            // loadstart 이벤트를 기다려서 안전하게 재생
+            await new Promise((resolve, reject) => {
+              let resolved = false;
+
+              const handleLoadStart = () => {
+                if (resolved) return;
+                resolved = true;
+                videoElement.removeEventListener('loadstart', handleLoadStart);
+                videoElement.removeEventListener('error', handleError);
+                resolve();
+              };
+
+              const handleError = (e) => {
+                if (resolved) return;
+                resolved = true;
+                videoElement.removeEventListener('loadstart', handleLoadStart);
+                videoElement.removeEventListener('error', handleError);
+                reject(e);
+              };
+
+              videoElement.addEventListener('loadstart', handleLoadStart);
+              videoElement.addEventListener('error', handleError);
+
+              // 1초 타임아웃 (충분한 시간)
+              setTimeout(() => {
+                if (!resolved) {
+                  resolved = true;
+                  videoElement.removeEventListener('loadstart', handleLoadStart);
+                  videoElement.removeEventListener('error', handleError);
+                  resolve(); // 타임아웃이어도 계속 진행
+                }
+              }, 1000);
+            });
           }
 
-          // 즉시 재생 시도
-          await videoElement.play();
+          // 재생 전 상태 재확인
+          if (videoElement.readyState >= 3) {
+            // 재생 시도 (AbortError 방지)
+            try {
+              await videoElement.play();
+            } catch (playError) {
+              // AbortError는 무시 (정상적인 전환 과정)
+              if (playError.name === 'AbortError') {
+                // console.log('이전 재생이 중단됨 (정상)');
+                return;
+              }
+              // 다른 에러는 재시도
+              setTimeout(async () => {
+                try {
+                  await videoElement.play();
+                } catch (retryError) {
+                  if (retryError.name !== 'AbortError') {
+                    console.warn('비디오 재생 재시도 실패:', retryError.message);
+                  }
+                }
+              }, 100);
+            }
+          }
         } else {
-          // 프리로딩되지 않은 경우 기존 방식
+          // 프리로딩되지 않은 경우 기존 방식 (개선됨)
           const source = videoElement.querySelector('source');
           if (source) {
             source.src = videoSrc;
@@ -133,32 +297,64 @@ export default function AssemblyShowcaseOptimized() {
 
             // canplay 이벤트 대기 후 재생
             await new Promise((resolve, reject) => {
+              let resolved = false;
+
               const handleCanPlay = () => {
-                videoElement.removeEventListener('canplay', handleCanPlay);
+                if (resolved) return;
+                resolved = true;
+                cleanup();
                 resolve();
               };
 
-              const handleError = () => {
+              const handleError = (e) => {
+                if (resolved) return;
+                resolved = true;
+                cleanup();
+                reject(new Error(`Video load failed: ${e.message || 'Unknown error'}`));
+              };
+
+              const cleanup = () => {
+                videoElement.removeEventListener('canplay', handleCanPlay);
+                videoElement.removeEventListener('loadeddata', handleCanPlay);
                 videoElement.removeEventListener('error', handleError);
-                reject(new Error('Video load failed'));
               };
 
               videoElement.addEventListener('canplay', handleCanPlay);
+              videoElement.addEventListener('loadeddata', handleCanPlay);
               videoElement.addEventListener('error', handleError);
 
-              // 5초 타임아웃
+              // 3초 타임아웃 (더 짧게)
               setTimeout(() => {
-                videoElement.removeEventListener('canplay', handleCanPlay);
-                videoElement.removeEventListener('error', handleError);
-                reject(new Error('Video load timeout'));
-              }, 5000);
+                if (!resolved) {
+                  resolved = true;
+                  cleanup();
+                  reject(new Error('Video load timeout'));
+                }
+              }, 3000);
             });
 
-            await videoElement.play();
+            // 안전한 재생 시도
+            try {
+              await videoElement.play();
+            } catch (playError) {
+              if (playError.name === 'AbortError') {
+                // AbortError는 정상적인 전환 과정
+                return;
+              }
+              throw playError;
+            }
           }
         }
       } catch (error) {
-        console.error('비디오 재생 실패:', error);
+        // AbortError는 정상적인 상황이므로 로그 출력 안함
+        if (error.name === 'AbortError') {
+          return;
+        }
+
+        // 실제 에러만 로그 출력
+        if (error.message && !error.message.includes('interrupted')) {
+          console.warn('비디오 재생 문제:', error.message);
+        }
       }
     },
     [getPreloadedVideo]
@@ -231,8 +427,8 @@ export default function AssemblyShowcaseOptimized() {
   // 주기적 메모리 정리 (성능 최적화)
   useEffect(() => {
     const cleanupInterval = setInterval(() => {
-      cleanupOldCache(15); // 더 관대한 캐시 정책
-    }, 60000); // 1분마다 정리
+      cleanupOldCache(20); // 더욱 관대한 캐시 정책 (첫 로딩 성능 우선)
+    }, 90000); // 1.5분마다 정리
 
     return () => clearInterval(cleanupInterval);
   }, [cleanupOldCache]);
@@ -270,12 +466,14 @@ export default function AssemblyShowcaseOptimized() {
           </p>
 
           {/* 개발 모드에서만 상태 표시 */}
-          {process.env.NODE_ENV === 'development' && (
+          {/* {process.env.NODE_ENV === 'development' && (
             <div className="text-xs text-gray-500 mt-1 space-x-2">
+              {!isInitialLoadComplete && <span>📦 초기 로딩 중...</span>}
               {isPreloading && <span>🔄 프리로딩 중...</span>}
               {isTransitioning && <span>✨ 전환 중...</span>}
+              {isRotationActive && <span>🎯 순환 활성</span>}
             </div>
-          )}
+          )} */}
         </div>
 
         {/* 갤러리 컨테이너 */}
@@ -354,7 +552,7 @@ export default function AssemblyShowcaseOptimized() {
 
                       {/* 이미지 */}
                       <div
-                        className={`absolute inset-0 transition-all duration-500 ease-in-out ${
+                        className={`absolute inset-0 transition-all duration-300 ease-in-out ${
                           isTransitioning ? 'opacity-95' : 'opacity-100'
                         }`}
                       >
@@ -368,10 +566,10 @@ export default function AssemblyShowcaseOptimized() {
                           placeholder="blur"
                           blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAAAAAAAAAAAAAAAAAAAACv/EAB8QAAEEAwEBAQEAAAAAAAAAAAABAgMEBQYHCBESE//EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+SlPoABYxSM0GYAW7qNR7LWNR8YGNsaLvE4sFllYPWvEZGWvqXZjUyNOYO4VJlKhKB1WGKJK4IjDFxwqFGgMAB7jTcCRpGMFQQKZGOsrCgBTrWVu3G+nqUFdJyKNdI="
                           onLoad={() => {
-                            // 이미지 로드 완료 시 다음 이미지들 프리로딩
+                            // 이미지 로드 완료 시 다음 이미지들 적극적 프리로딩
                             if (gridIndex === 0) {
                               const nextIndex = (currentImageIndex + 4) % images.length;
-                              smartPreload(nextIndex, images, 'image', 2);
+                              smartPreload(nextIndex, images, 'image', 4);
                             }
                           }}
                         />
@@ -476,7 +674,7 @@ export default function AssemblyShowcaseOptimized() {
 
                       {/* 이미지 */}
                       <div
-                        className={`absolute inset-0 transition-all duration-500 ease-in-out ${
+                        className={`absolute inset-0 transition-all duration-300 ease-in-out ${
                           isTransitioning ? 'opacity-95' : 'opacity-100'
                         }`}
                       >
@@ -490,10 +688,10 @@ export default function AssemblyShowcaseOptimized() {
                           placeholder="blur"
                           blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAAAAAAAAAAAAAAAAAAAACv/EAB8QAAEEAwEBAQEAAAAAAAAAAAABAgMEBQYHCBESE//EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+SlPoABYxSM0GYAW7qNR7LWNR8YGNsaLvE4sFllYPWvEZGWvqXZjUyNOYO4VJlKhKB1WGKJK4IjDFxwqFGgMAB7jTcCRpGMFQQKZGOsrCgBTrWVu3G+nqUFdJyKNdI="
                           onLoad={() => {
-                            // 이미지 로드 완료 시 다음 이미지들 프리로딩
+                            // 이미지 로드 완료 시 다음 이미지들 적극적 프리로딩
                             if (gridIndex === 0) {
                               const nextIndex = (currentImageIndex + 4) % images.length;
-                              smartPreload(nextIndex, images, 'image', 2);
+                              smartPreload(nextIndex, images, 'image', 4);
                             }
                           }}
                         />
