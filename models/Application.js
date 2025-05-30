@@ -154,6 +154,16 @@ const applicationSchema = new mongoose.Schema({
   },
 });
 
+// 성능 최적화를 위한 데이터베이스 인덱스 추가
+applicationSchema.index({ userId: 1, createdAt: -1 });
+applicationSchema.index({ type: 1, status: 1 });
+applicationSchema.index({ status: 1, createdAt: -1 });
+applicationSchema.index({ createdAt: -1 });
+
+// 상세페이지 조회 최적화를 위한 추가 인덱스
+applicationSchema.index({ _id: 1, userId: 1 }); // 권한 확인과 함께 조회
+applicationSchema.index({ type: 1, userId: 1 }); // 타입별 사용자 조회
+
 const Application = mongoose.models.Application || mongoose.model('Application', applicationSchema);
 
 export default Application;

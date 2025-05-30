@@ -10,20 +10,43 @@ export const GET = withAuthAPI(async (req, { params, session }) => {
 
   try {
     await connectDB();
-    const user = await User.findById(id);
+
+    // URL 파라미터에서 페이지네이션 정보 추출
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10'); // 기본 10개
+    const skip = (page - 1) * limit;
+
+    // 사용자 기본 정보 조회 (필수 필드만)
+    const user = await User.findById(id).select('name email phoneNumber createdAt authority image');
 
     if (!user) {
       return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
     }
 
-    // 사용자의 견적 신청 내역 조회
+    // 사용자의 견적 신청 내역 조회 (요약 정보만, 페이지네이션 적용)
     const applications = await Application.find({ userId: id })
       .sort({ createdAt: -1 })
-      .select('type status createdAt');
+      .select('type status createdAt updatedAt') // 필요한 필드만 선택
+      .skip(skip)
+      .limit(limit)
+      .lean(); // 성능 최적화
+
+    // 전체 신청 내역 개수 조회 (페이지네이션 정보용)
+    const totalApplications = await Application.countDocuments({ userId: id });
+    const totalPages = Math.ceil(totalApplications / limit);
 
     return NextResponse.json({
       user,
       applications,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalApplications,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+        limit,
+      },
     });
   } catch (error) {
     console.error('사용자 조회 중 에러:', error);
