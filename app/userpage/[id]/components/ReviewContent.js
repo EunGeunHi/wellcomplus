@@ -299,7 +299,7 @@ const ReviewContent = ({ userData, userId }) => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="space-y-4 md:space-y-8">
       {/* 토스트 메시지 */}
       {toast.visible && toast.message && (
         <div
@@ -307,7 +307,7 @@ const ReviewContent = ({ userData, userId }) => {
           ${toast.visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}
         >
           <div
-            className={`py-2 px-4 rounded-lg shadow-lg flex items-center gap-2 text-sm font-medium
+            className={`py-3 px-5 rounded-lg shadow-lg flex items-center gap-2 text-sm font-medium
             ${toast.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}
           >
             {toast.type === 'error' ? (
@@ -342,248 +342,281 @@ const ReviewContent = ({ userData, userId }) => {
         </div>
       )}
 
-      <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-4 sm:mb-6 relative pb-2 sm:pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-8 sm:after:w-10 after:h-0.75 after:bg-gradient-to-r after:from-indigo-600 after:to-purple-600 after:rounded-md">
-        리뷰 작성
-      </h2>
-      <form onSubmit={handleSubmit} className="space-y-6 mb-10">
-        <div>
-          <label htmlFor="serviceType" className="block text-sm font-medium text-gray-700 mb-1">
-            서비스 유형
-          </label>
-          <select
-            id="serviceType"
-            value={serviceType}
-            onChange={(e) => setServiceType(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            required
-          >
-            <option value="" disabled>
-              서비스 유형을 선택하세요
-            </option>
-            <option value="computer">컴퓨터</option>
-            <option value="printer">프린터</option>
-            <option value="notebook">노트북</option>
-            <option value="as">AS 서비스</option>
-            <option value="other">기타 서비스</option>
-          </select>
-        </div>
+      {/* 리뷰 작성 섹션 */}
+      <div>
+        <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-3 md:mb-6 relative pb-2 md:pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-8 md:after:w-12 after:h-0.5 after:bg-indigo-600 after:rounded-full">
+          리뷰 작성
+        </h2>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">별점</label>
-          <div className="flex items-center gap-1">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                type="button"
-                onClick={() => setRating(star)}
-                onMouseEnter={() => setHoveredRating(star)}
-                onMouseLeave={() => setHoveredRating(0)}
-                className="text-2xl sm:text-3xl focus:outline-none"
-              >
-                <FiStar
-                  className={`${
-                    (hoveredRating ? hoveredRating >= star : rating >= star)
-                      ? 'fill-yellow-400 text-yellow-400'
-                      : 'text-gray-300'
-                  } transition-colors`}
-                />
-              </button>
-            ))}
-            <span className="ml-2 text-sm text-gray-500">
-              {rating > 0 ? `${rating}점` : '별점을 선택해주세요'}
-            </span>
+        <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
+          <div>
+            <label
+              htmlFor="serviceType"
+              className="block text-xs md:text-sm font-medium text-gray-900 mb-1 md:mb-2"
+            >
+              서비스 유형
+            </label>
+            <select
+              id="serviceType"
+              value={serviceType}
+              onChange={(e) => setServiceType(e.target.value)}
+              className="w-full p-2 md:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-sm md:text-base"
+              required
+            >
+              <option value="" disabled>
+                서비스 유형을 선택하세요
+              </option>
+              <option value="computer">컴퓨터</option>
+              <option value="printer">프린터</option>
+              <option value="notebook">노트북</option>
+              <option value="as">AS 서비스</option>
+              <option value="other">기타 서비스</option>
+            </select>
           </div>
-        </div>
 
-        <div>
-          <label htmlFor="reviewText" className="block text-sm font-medium text-gray-700 mb-1">
-            리뷰 내용
-          </label>
-          <textarea
-            id="reviewText"
-            value={reviewText}
-            onChange={(e) => setReviewText(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[120px]"
-            placeholder="서비스에 대한 경험을 자세히 알려주세요"
-            rows={5}
-            required
-          />
-          <p className="mt-1 text-xs text-gray-500">
-            최소 10자 이상 작성해주세요. 현재 {reviewText.length}자
-          </p>
-        </div>
-
-        {/* 이미지 업로드 섹션 */}
-        <div>
-          <label htmlFor="imageInput" className="block text-sm font-medium text-gray-700 mb-1">
-            이미지 업로드 (최대 5장, 각 10MB 이하)
-          </label>
-          <div className="relative">
-            <input
-              type="file"
-              id="imageInput"
-              multiple
-              accept="image/jpeg,image/png,.jpg,.png"
-              onChange={handleImageSelect}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-              disabled={isSubmitting}
-            />
-            {selectedImages.length > 0 && (
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  {selectedImages.length}/5
-                </span>
-              </div>
-            )}
-          </div>
-          <div className="mt-1 space-y-1">
-            <p className="text-xs text-gray-500">JPG, PNG 파일만 가능합니다.</p>
-            {selectedImages.length >= 5 && (
-              <p className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
-                ⚠️ 최대 5장까지만 업로드할 수 있습니다.
-              </p>
-            )}
-          </div>
-          {imageError && (
-            <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-xs text-red-700">{imageError}</p>
-            </div>
-          )}
-        </div>
-
-        {/* 이미지 미리보기 */}
-        {selectedImages.length > 0 && (
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-medium text-gray-700">
-                선택된 이미지 ({selectedImages.length}/5)
-              </h4>
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedImages([]);
-                  setImagePreviewUrls([]);
-                  setImageError('');
-                  const fileInput = document.getElementById('imageInput');
-                  if (fileInput) fileInput.value = '';
-                }}
-                className="text-xs text-red-600 hover:text-red-800 font-medium"
-                disabled={isSubmitting}
-              >
-                전체 삭제
-              </button>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {selectedImages.map((image, index) => (
-                <div key={index} className="relative group">
-                  <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-indigo-300 transition-colors">
-                    <img
-                      src={imagePreviewUrls[index]}
-                      alt={`미리보기 ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                    {/* 로딩 오버레이 */}
-                    {isSubmitting && (
-                      <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-                        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleImageRemove(index)}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm hover:bg-red-600 active:bg-red-700 transition-colors shadow-lg border-2 border-white"
-                    disabled={isSubmitting}
-                    title="이미지 삭제"
-                  >
-                    <FiX />
-                  </button>
-                  <div className="mt-2 space-y-1">
-                    <div className="text-xs text-gray-600 truncate font-medium" title={image.name}>
-                      {image.name}
-                    </div>
-                    <div className="text-xs text-gray-500">{formatFileSize(image.size)}</div>
-                  </div>
-                </div>
+          <div>
+            <label className="block text-xs md:text-sm font-medium text-gray-900 mb-1 md:mb-2">
+              별점
+            </label>
+            <div className="flex items-center gap-1 p-2 md:p-3 bg-gray-50 rounded-lg">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setRating(star)}
+                  onMouseEnter={() => setHoveredRating(star)}
+                  onMouseLeave={() => setHoveredRating(0)}
+                  className="text-xl md:text-2xl focus:outline-none transition-all duration-200 hover:scale-110"
+                >
+                  <FiStar
+                    className={`${
+                      (hoveredRating ? hoveredRating >= star : rating >= star)
+                        ? 'fill-yellow-400 text-yellow-400'
+                        : 'text-gray-300 hover:text-yellow-200'
+                    } transition-colors`}
+                  />
+                </button>
               ))}
-            </div>
-            <div className="mt-3 p-2 bg-blue-50 rounded-lg">
-              <p className="text-xs text-blue-700">
-                💡 <strong>팁:</strong> 이미지를 터치하여 삭제할 수 있습니다. 업로드 중에는 수정할
-                수 없습니다.
-              </p>
-            </div>
-          </div>
-        )}
-
-        <div className="bg-gray-50 rounded-lg p-4">
-          <div className="mb-3">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">진행 상황:</span>
-              <span className="font-medium text-gray-800">
-                {[
-                  serviceType ? '✅' : '❌',
-                  rating > 0 ? '✅' : '❌',
-                  reviewText.trim().length >= 10 ? '✅' : '❌',
-                ].join(' ')}{' '}
-                ({[serviceType, rating > 0, reviewText.trim().length >= 10].filter(Boolean).length}
-                /3)
+              <span className="ml-2 md:ml-3 text-xs md:text-sm text-gray-600">
+                {rating > 0 ? `${rating}점` : '별점을 선택해주세요'}
               </span>
             </div>
-            <div className="mt-2 text-xs text-gray-500 space-y-1">
-              <div className={serviceType ? 'text-green-600' : 'text-gray-500'}>
-                • 서비스 유형 선택 {serviceType ? '✅' : ''}
-              </div>
-              <div className={rating > 0 ? 'text-green-600' : 'text-gray-500'}>
-                • 별점 선택 {rating > 0 ? '✅' : ''}
-              </div>
-              <div className={reviewText.trim().length >= 10 ? 'text-green-600' : 'text-gray-500'}>
-                • 리뷰 내용 작성 (최소 10자){' '}
-                {reviewText.trim().length >= 10 ? '✅' : `(${reviewText.length}/10)`}
-              </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="reviewText"
+              className="block text-xs md:text-sm font-medium text-gray-900 mb-1 md:mb-2"
+            >
+              리뷰 내용
+            </label>
+            <textarea
+              id="reviewText"
+              value={reviewText}
+              onChange={(e) => setReviewText(e.target.value)}
+              className="w-full p-2 md:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[80px] md:min-h-[120px] transition-colors resize-none text-sm md:text-base"
+              placeholder="서비스에 대한 경험을 자세히 알려주세요"
+              rows={4}
+              required
+            />
+            <div className="mt-0 md:mt-0 flex justify-between items-center">
+              <p className="text-xs text-gray-500">최소 10자 이상 작성해주세요</p>
+              <span
+                className={`text-xs px-2 rounded ${
+                  reviewText.length >= 10
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-gray-100 text-gray-500'
+                }`}
+              >
+                {reviewText.length}자
+              </span>
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting || !serviceType || rating === 0 || reviewText.trim().length < 10}
-            className={`w-full py-4 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-200 text-base
-              ${
-                isSubmitting || !serviceType || rating === 0 || reviewText.trim().length < 10
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800 shadow-lg hover:shadow-xl'
-              }
-            `}
-          >
-            {isSubmitting ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                리뷰 등록 중...
-              </>
-            ) : uploadProgress ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                이미지 업로드 중...
-              </>
-            ) : (
-              <>
-                <FiSend size={18} />
-                리뷰 등록하기
-              </>
+          {/* 이미지 업로드 섹션 */}
+          <div>
+            <label
+              htmlFor="imageInput"
+              className="block text-xs md:text-sm font-medium text-gray-900 mb-1 md:mb-2"
+            >
+              이미지 업로드
+              <span className="text-xs text-gray-500 ml-1 md:ml-2">(최대 5장)</span>
+            </label>
+            <div className="relative">
+              <input
+                type="file"
+                id="imageInput"
+                multiple
+                accept="image/jpeg,image/png,.jpg,.png"
+                onChange={handleImageSelect}
+                className="w-full p-2 md:p-3 border border-dashed border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors file:mr-2 md:file:mr-4 file:py-1 md:file:py-2 file:px-2 md:file:px-4 file:rounded-lg file:border-0 file:text-xs md:file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                disabled={isSubmitting}
+              />
+              {selectedImages.length > 0 && (
+                <div className="absolute right-2 md:right-3 top-1/2 transform -translate-y-1/2">
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700">
+                    {selectedImages.length}/5
+                  </span>
+                </div>
+              )}
+            </div>
+            <div className="mt-1 md:mt-2">
+              <p className="text-xs text-gray-500">JPG, PNG 파일만 가능합니다</p>
+              {selectedImages.length >= 5 && (
+                <p className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded mt-1">
+                  ⚠️ 최대 5장까지만 업로드할 수 있습니다.
+                </p>
+              )}
+            </div>
+            {imageError && (
+              <div className="mt-1 md:mt-2 p-2 md:p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-xs md:text-sm text-red-700">{imageError}</p>
+              </div>
             )}
-          </button>
+          </div>
 
-          {(isSubmitting || uploadProgress) && (
-            <p className="mt-2 text-xs text-center text-gray-600">
-              완료될 때까지 화면을 끄지 마시고 잠시만 기다려주세요.
-            </p>
+          {/* 이미지 미리보기 */}
+          {selectedImages.length > 0 && (
+            <div className="bg-gray-50 rounded-lg p-2 md:p-4">
+              <div className="flex items-center justify-between mb-2 md:mb-3">
+                <h4 className="text-xs md:text-sm font-medium text-gray-700">
+                  선택된 이미지 ({selectedImages.length}/5)
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedImages([]);
+                    setImagePreviewUrls([]);
+                    setImageError('');
+                    const fileInput = document.getElementById('imageInput');
+                    if (fileInput) fileInput.value = '';
+                  }}
+                  className="text-xs text-red-600 hover:text-red-800 font-medium"
+                  disabled={isSubmitting}
+                >
+                  전체 삭제
+                </button>
+              </div>
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 gap-2 md:gap-3">
+                {selectedImages.map((image, index) => (
+                  <div key={index} className="relative group">
+                    <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200 hover:border-indigo-300 transition-colors">
+                      <img
+                        src={imagePreviewUrls[index]}
+                        alt={`미리보기 ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      {/* 로딩 오버레이 */}
+                      {isSubmitting && (
+                        <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                          <div className="w-4 md:w-6 h-4 md:h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleImageRemove(index)}
+                      className="absolute -top-1 md:-top-2 -right-1 md:-right-2 bg-red-500 text-white rounded-full w-5 md:w-6 h-5 md:h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors shadow-lg border-2 border-white"
+                      disabled={isSubmitting}
+                      title="이미지 삭제"
+                    >
+                      <FiX />
+                    </button>
+                    <div className="mt-1 md:mt-2 space-y-1">
+                      <div
+                        className="text-xs text-gray-600 truncate font-medium"
+                        title={image.name}
+                      >
+                        {image.name}
+                      </div>
+                      <div className="text-xs text-gray-500">{formatFileSize(image.size)}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
-        </div>
-      </form>
+
+          <div className="bg-gray-50 rounded-lg p-2 md:p-4">
+            <div className="mb-2 md:mb-4">
+              <div className="flex items-center justify-between text-xs md:text-sm mb-2 md:mb-3">
+                <span className="text-gray-600 font-medium">진행 상황</span>
+                <span className="font-medium text-gray-800">
+                  (
+                  {[serviceType, rating > 0, reviewText.trim().length >= 10].filter(Boolean).length}
+                  /3)
+                </span>
+              </div>
+              <div className="space-y-1 md:space-y-2 text-xs md:text-sm">
+                <div
+                  className={`flex items-center gap-2 ${serviceType ? 'text-green-600' : 'text-gray-500'}`}
+                >
+                  <span>{serviceType ? '✓' : '○'}</span>
+                  서비스 유형 선택
+                </div>
+                <div
+                  className={`flex items-center gap-2 ${rating > 0 ? 'text-green-600' : 'text-gray-500'}`}
+                >
+                  <span>{rating > 0 ? '✓' : '○'}</span>
+                  별점 선택
+                </div>
+                <div
+                  className={`flex items-center justify-between ${reviewText.trim().length >= 10 ? 'text-green-600' : 'text-gray-500'}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span>{reviewText.trim().length >= 10 ? '✓' : '○'}</span>
+                    리뷰 내용 작성 (최소 10자)
+                  </div>
+                  {reviewText.trim().length < 10 && (
+                    <span className="text-xs text-gray-400">{reviewText.length}/10</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={
+                isSubmitting || !serviceType || rating === 0 || reviewText.trim().length < 10
+              }
+              className={`w-full py-2 md:py-3 px-3 md:px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-200 text-sm md:text-base
+                ${
+                  isSubmitting || !serviceType || rating === 0 || reviewText.trim().length < 10
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg hover:shadow-xl'
+                }
+              `}
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 md:w-5 h-4 md:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  리뷰 등록 중...
+                </>
+              ) : uploadProgress ? (
+                <>
+                  <div className="w-4 md:w-5 h-4 md:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  이미지 업로드 중...
+                </>
+              ) : (
+                <>
+                  <FiSend size={16} className="md:w-[18px] md:h-[18px]" />
+                  리뷰 등록하기
+                </>
+              )}
+            </button>
+
+            {(isSubmitting || uploadProgress) && (
+              <p className="mt-1 md:mt-2 text-xs text-center text-gray-600">
+                완료될 때까지 화면을 끄지 마시고 잠시만 기다려주세요.
+              </p>
+            )}
+          </div>
+        </form>
+      </div>
 
       {/* 내가 작성한 리뷰 목록 */}
-      <div className="mt-12">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
+      <div className="border-t border-gray-200 pt-4 md:pt-8">
+        <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2 md:mb-4 pb-1 md:pb-2 border-b border-gray-200">
           내가 작성한 리뷰
         </h3>
 

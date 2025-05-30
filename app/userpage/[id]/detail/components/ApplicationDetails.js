@@ -34,23 +34,23 @@ const MotionCard = memo(({ children, className, delay = 0 }) => (
 
 const InfoCard = memo(({ icon: Icon, title, value, className = '' }) => (
   <motion.div
-    className={`bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 border border-slate-200 shadow-sm ${className}`}
+    className={`bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 sm:p-2 border border-slate-200 shadow-sm ${className}`}
     whileHover={{
       scale: 1.02,
       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
     }}
     transition={{ duration: 0.2 }}
   >
-    <div className="flex items-center gap-1.5 mb-1">
+    <div className="flex items-center gap-1.5 sm:gap-1.5 mb-1 sm:mb-1">
       <Icon className="text-slate-500" size={14} />
-      <h3 className="font-semibold text-gray-800 text-sm">{title}</h3>
+      <h3 className="font-semibold text-gray-800 text-sm sm:text-sm">{title}</h3>
     </div>
-    <p className="text-gray-700 text-sm whitespace-pre-wrap">{value || '-'}</p>
+    <p className="text-gray-700 text-sm sm:text-sm whitespace-pre-wrap">{value || '-'}</p>
   </motion.div>
 ));
 
 const ComputerDetails = memo(({ information }) => (
-  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-2">
     <InfoCard icon={FaUserPen} title="용도" value={information.purpose} />
     <InfoCard icon={FiDollarSign} title="예산" value={information.budget} />
     <InfoCard icon={FiCpu} title="CPU" value={information.cpu} />
@@ -67,7 +67,7 @@ const ComputerDetails = memo(({ information }) => (
         icon={FiHome}
         title="주소"
         value={information.address}
-        className="col-span-2 md:col-span-3"
+        className="col-span-1 sm:col-span-2 md:col-span-3"
       />
     )}
 
@@ -76,14 +76,14 @@ const ComputerDetails = memo(({ information }) => (
         icon={LuClipboardPlus}
         title="추가 요청사항"
         value={information.additionalRequests}
-        className="col-span-2 md:col-span-3"
+        className="col-span-1 sm:col-span-2 md:col-span-3"
       />
     )}
   </div>
 ));
 
 const PrinterDetails = memo(({ information }) => (
-  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-2">
     <InfoCard icon={FaUserPen} title="용도" value={information.purpose} />
     <InfoCard icon={FiDollarSign} title="예산" value={information.budget} />
     <InfoCard icon={AiFillPrinter} title="프린터 종류" value={information.printerType} />
@@ -97,7 +97,7 @@ const PrinterDetails = memo(({ information }) => (
         icon={FiHome}
         title="주소"
         value={information.address}
-        className="col-span-2 md:col-span-3"
+        className="col-span-1 sm:col-span-2 md:col-span-3"
       />
     )}
 
@@ -106,14 +106,14 @@ const PrinterDetails = memo(({ information }) => (
         icon={LuClipboardPlus}
         title="추가 요청사항"
         value={information.additionalRequests}
-        className="col-span-2 md:col-span-3"
+        className="col-span-1 sm:col-span-2 md:col-span-3"
       />
     )}
   </div>
 ));
 
 const NotebookDetails = memo(({ information }) => (
-  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-2">
     <InfoCard icon={FaUserPen} title="용도" value={information.purpose} />
     <InfoCard icon={FiDollarSign} title="예산" value={information.budget} />
     <InfoCard icon={FiCpu} title="CPU" value={information.cpu} />
@@ -130,7 +130,7 @@ const NotebookDetails = memo(({ information }) => (
         icon={FiHome}
         title="주소"
         value={information.address}
-        className="col-span-2 md:col-span-3"
+        className="col-span-1 sm:col-span-2 md:col-span-3"
       />
     )}
 
@@ -139,14 +139,14 @@ const NotebookDetails = memo(({ information }) => (
         icon={LuClipboardPlus}
         title="추가 요청사항"
         value={information.additionalRequests}
-        className="col-span-2 md:col-span-3"
+        className="col-span-1 sm:col-span-2 md:col-span-3"
       />
     )}
   </div>
 ));
 
 const AsDetails = memo(({ information }) => (
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-2">
     <InfoCard icon={MdClass} title="A/S 분류" value={information.asCategory} />
 
     {information.userName && (
@@ -190,7 +190,7 @@ const AsDetails = memo(({ information }) => (
 ));
 
 const InquiryDetails = memo(({ information }) => (
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-2">
     <InfoCard icon={MdOutlineSubtitles} title="제목" value={information.title} />
     <InfoCard icon={FiPhone} title="연락처" value={information.phoneNumber} />
     <InfoCard
@@ -232,17 +232,17 @@ const ApplicationDetails = memo(({ application, delay = 0.3 }) => {
 
   return (
     <MotionCard
-      className="bg-white rounded-xl shadow-md p-4 border-l-4 border-indigo-500"
+      className="bg-white rounded-lg sm:rounded-xl shadow-md p-3 sm:p-4 border-l-4 border-indigo-500"
       delay={delay}
     >
-      <div className="flex items-center gap-2 mb-3">
-        <div className="p-1.5 bg-indigo-100 rounded-lg">
+      <div className="flex items-center gap-2 mb-2 sm:mb-3">
+        <div className="p-1.5 sm:p-1.5 bg-indigo-100 rounded-lg">
           <FiInfo className="text-indigo-600" size={16} />
         </div>
-        <h2 className="text-lg font-bold text-gray-900">상세 내용</h2>
+        <h2 className="text-lg sm:text-lg font-bold text-gray-900">상세 내용</h2>
       </div>
 
-      <div className="space-y-4">{renderDetails()}</div>
+      <div className="space-y-3 sm:space-y-4">{renderDetails()}</div>
     </MotionCard>
   );
 });

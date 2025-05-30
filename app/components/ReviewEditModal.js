@@ -254,27 +254,32 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
   if (!isOpen || !review) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-2 sm:p-4">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] flex flex-col shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-2 sm:p-4 pb-20 md:pb-4">
+      <div className="bg-white rounded-lg max-w-3xl w-full max-h-[calc(100vh-120px)] md:max-h-[calc(100vh-80px)] flex flex-col shadow-xl">
         {/* 헤더 - 고정 */}
-        <div className="p-4 border-b flex justify-between items-center flex-shrink-0">
-          <h3 className="text-lg font-semibold">리뷰 수정</h3>
-          <button onClick={handleClose} className="text-gray-500 hover:text-gray-700">
+        <div className="p-3 md:p-4 border-b flex justify-between items-center flex-shrink-0">
+          <h3 className="text-lg md:text-xl font-semibold text-gray-900">리뷰 수정</h3>
+          <button
+            onClick={handleClose}
+            className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100 transition-colors"
+          >
             <FiX size={20} />
           </button>
         </div>
 
         {/* 스크롤 가능한 콘텐츠 영역 */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-4" style={{ minHeight: 0 }}>
-          <div className="space-y-4">
+        <div className="flex-1 overflow-y-auto p-3 md:p-4" style={{ minHeight: 0 }}>
+          <div className="space-y-3 md:space-y-4">
             {/* 서비스 타입 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">서비스 타입</label>
+              <label className="block text-xs md:text-sm font-medium text-gray-900 mb-1 md:mb-2">
+                서비스 타입
+              </label>
               <select
                 name="serviceType"
                 value={editForm.serviceType}
                 onChange={handleEditFormChange}
-                className="w-full py-2 px-3 border border-gray-300 rounded-lg"
+                className="w-full p-2 md:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-sm md:text-base"
               >
                 <option value="computer">컴퓨터</option>
                 <option value="printer">프린터</option>
@@ -286,25 +291,27 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
 
             {/* 별점 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">별점</label>
-              <div className="flex items-center gap-1 mb-2">
+              <label className="block text-xs md:text-sm font-medium text-gray-900 mb-1 md:mb-2">
+                별점
+              </label>
+              <div className="flex items-center gap-1 p-2 md:p-3 bg-gray-50 rounded-lg">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
                     type="button"
                     onClick={() => handleRatingChange(star)}
-                    className="text-2xl focus:outline-none"
+                    className="text-xl md:text-2xl focus:outline-none transition-all duration-200 hover:scale-110"
                   >
                     <FiStar
                       className={`${
                         editForm.rating >= star
                           ? 'fill-yellow-400 text-yellow-400'
-                          : 'text-gray-300'
+                          : 'text-gray-300 hover:text-yellow-200'
                       } transition-colors`}
                     />
                   </button>
                 ))}
-                <span className="ml-2 text-sm text-gray-500">
+                <span className="ml-2 md:ml-3 text-xs md:text-sm text-gray-600">
                   {editForm.rating > 0 ? `${editForm.rating}점` : '별점을 선택해주세요'}
                 </span>
               </div>
@@ -312,27 +319,38 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
 
             {/* 리뷰 내용 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">리뷰 내용</label>
+              <label className="block text-xs md:text-sm font-medium text-gray-900 mb-1 md:mb-2">
+                리뷰 내용
+              </label>
               <textarea
                 name="content"
                 value={editForm.content}
                 onChange={handleEditFormChange}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[120px]"
-                rows={6}
+                className="w-full p-2 md:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[80px] md:min-h-[120px] transition-colors resize-none text-sm md:text-base"
+                rows={4}
                 placeholder="리뷰 내용을 입력하세요"
               />
-              <p className="mt-1 text-xs text-gray-500">
-                최소 10자 이상 작성해주세요. 현재 {editForm.content.length}자
-              </p>
+              <div className="mt-1 md:mt-2 flex justify-between items-center">
+                <p className="text-xs text-gray-500">최소 10자 이상 작성해주세요</p>
+                <span
+                  className={`text-xs px-2 py-1 rounded ${
+                    editForm.content.length >= 10
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-gray-100 text-gray-500'
+                  }`}
+                >
+                  {editForm.content.length}자
+                </span>
+              </div>
             </div>
 
             {/* 이미지 관리 */}
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {/* 기존 이미지들 */}
               {editForm.existingImages && editForm.existingImages.length > 0 && (
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h5 className="text-sm font-medium text-gray-700">
+                  <div className="flex items-center justify-between mb-2 md:mb-3">
+                    <h5 className="text-xs md:text-sm font-medium text-gray-900">
                       기존 이미지 ({editForm.existingImages.length - editForm.imagesToDelete.length}
                       /{editForm.existingImages.length})
                     </h5>
@@ -342,19 +360,16 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
                           {editForm.imagesToDelete.length}개 삭제 예정
                         </span>
                       )}
-                      <span className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded">
-                        클릭/터치로 삭제
-                      </span>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 gap-2 md:gap-3">
                     {editForm.existingImages.map((image, index) => (
                       <div key={image.id || index} className="relative">
                         <div
-                          className={`aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 transition-all ${
+                          className={`aspect-square bg-gray-100 rounded-lg overflow-hidden border transition-all ${
                             editForm.imagesToDelete.includes(image.id)
                               ? 'opacity-50 grayscale border-red-300'
-                              : 'border-gray-200 hover:border-indigo-300 active:border-indigo-400'
+                              : 'border-gray-200 hover:border-indigo-300'
                           }`}
                         >
                           <img
@@ -366,19 +381,19 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
                           {/* 삭제 상태 오버레이 */}
                           {editForm.imagesToDelete.includes(image.id) && (
                             <div className="absolute inset-0 bg-red-500 bg-opacity-20 flex items-center justify-center">
-                              <span className="text-red-700 font-semibold text-sm bg-white px-2 py-1 rounded">
+                              <span className="text-red-700 font-semibold text-xs bg-white px-2 py-1 rounded">
                                 삭제됨
                               </span>
                             </div>
                           )}
                         </div>
 
-                        {/* 삭제/복원 버튼 - 모바일 친화적으로 항상 표시 */}
+                        {/* 삭제/복원 버튼 */}
                         {editForm.imagesToDelete.includes(image.id) ? (
                           <button
                             type="button"
                             onClick={() => handleExistingImageRestore(image.id)}
-                            className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm hover:bg-green-600 active:bg-green-700 transition-colors shadow-lg border-2 border-white"
+                            className="absolute -top-1 md:-top-2 -right-1 md:-right-2 bg-green-500 text-white rounded-full w-5 md:w-6 h-5 md:h-6 flex items-center justify-center text-xs hover:bg-green-600 transition-colors shadow-lg border-2 border-white"
                             title="이미지 복원"
                           >
                             ↶
@@ -387,7 +402,7 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
                           <button
                             type="button"
                             onClick={() => handleExistingImageRemove(image.id)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm hover:bg-red-600 active:bg-red-700 transition-colors shadow-lg border-2 border-white"
+                            className="absolute -top-1 md:-top-2 -right-1 md:-right-2 bg-red-500 text-white rounded-full w-5 md:w-6 h-5 md:h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors shadow-lg border-2 border-white"
                             title="이미지 삭제"
                           >
                             <FiX />
@@ -395,9 +410,11 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
                         )}
 
                         {/* 이미지 정보 */}
-                        <div className="mt-2 space-y-1">
-                          <div className="text-xs text-gray-500 truncate">{image.originalName}</div>
-                          <div className="text-xs text-gray-400">{formatFileSize(image.size)}</div>
+                        <div className="mt-1 md:mt-2 space-y-1">
+                          <div className="text-xs text-gray-600 truncate font-medium">
+                            {image.originalName}
+                          </div>
+                          <div className="text-xs text-gray-500">{formatFileSize(image.size)}</div>
                           {editForm.imagesToDelete.includes(image.id) && (
                             <div className="text-xs text-red-600 font-medium">삭제 예정</div>
                           )}
@@ -405,26 +422,15 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
                       </div>
                     ))}
                   </div>
-
-                  {/* 도움말 텍스트 */}
-                  <div className="mt-2 p-3 bg-blue-50 rounded-lg">
-                    <p className="text-xs text-blue-700">
-                      💡 <strong>이미지 관리 방법:</strong>
-                    </p>
-                    <ul className="text-xs text-blue-600 mt-1 space-y-1">
-                      <li>• 이미지 우측 상단의 삭제 버튼(×)을 터치하여 삭제할 수 있습니다</li>
-                      <li>• 삭제된 이미지는 복원 버튼(↶)으로 되돌릴 수 있습니다</li>
-                      <li>• 저장 시 삭제 예정 이미지들이 실제로 제거됩니다</li>
-                    </ul>
-                  </div>
                 </div>
               )}
 
               {/* 새 이미지 추가 */}
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    새 이미지 추가 (각 10MB 이하)
+                <div className="flex items-center justify-between mb-1 md:mb-2">
+                  <label className="text-xs md:text-sm font-medium text-gray-900">
+                    새 이미지 추가
+                    <span className="text-xs text-gray-500 ml-1 md:ml-2">(최대 5장)</span>
                   </label>
                   <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
                     현재 총{' '}
@@ -439,7 +445,7 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
                   multiple
                   accept="image/jpeg,image/png,.jpg,.png"
                   onChange={handleNewImageSelect}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                  className="w-full p-2 md:p-3 border border-dashed border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors file:mr-2 md:file:mr-4 file:py-1 md:file:py-2 file:px-2 md:file:px-4 file:rounded-lg file:border-0 file:text-xs md:file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                   disabled={
                     isSubmitting ||
                     editForm.existingImages.length -
@@ -448,15 +454,14 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
                       5
                   }
                 />
-                <div className="mt-2 space-y-1">
+                <div className="mt-1 md:mt-2">
                   <p className="text-xs text-gray-500">JPG, PNG 파일만 가능합니다.</p>
                   {editForm.existingImages.length -
                     editForm.imagesToDelete.length +
                     editForm.newImages.length >=
                     5 && (
-                    <p className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
-                      ⚠️ 최대 5장까지만 업로드할 수 있습니다. 기존 이미지를 삭제하거나 새 이미지를
-                      제거해주세요.
+                    <p className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded mt-1">
+                      ⚠️ 최대 5장까지만 업로드할 수 있습니다.
                     </p>
                   )}
                 </div>
@@ -465,18 +470,18 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
               {/* 새로 추가된 이미지들 */}
               {editForm.newImages.length > 0 && (
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h5 className="text-sm font-medium text-gray-700">
+                  <div className="flex items-center justify-between mb-2 md:mb-3">
+                    <h5 className="text-xs md:text-sm font-medium text-gray-900">
                       새로 추가된 이미지 ({editForm.newImages.length}개)
                     </h5>
                     <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
                       새로 추가됨
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 gap-2 md:gap-3">
                     {editForm.newImages.map((image, index) => (
                       <div key={index} className="relative">
-                        <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 border-green-200 hover:border-green-300 active:border-green-400 transition-all">
+                        <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border border-green-200 hover:border-green-300 transition-colors">
                           <img
                             src={editForm.newImagePreviewUrls[index]}
                             alt={`새 이미지 ${index + 1}`}
@@ -492,14 +497,16 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
                         <button
                           type="button"
                           onClick={() => handleNewImageRemove(index)}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm hover:bg-red-600 active:bg-red-700 transition-colors shadow-lg border-2 border-white"
+                          className="absolute -top-1 md:-top-2 -right-1 md:-right-2 bg-red-500 text-white rounded-full w-5 md:w-6 h-5 md:h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors shadow-lg border-2 border-white"
                           title="새 이미지 제거"
                         >
                           <FiX />
                         </button>
-                        <div className="mt-2 space-y-1">
-                          <div className="text-xs text-gray-500 truncate">{image.name}</div>
-                          <div className="text-xs text-gray-400">{formatFileSize(image.size)}</div>
+                        <div className="mt-1 md:mt-2 space-y-1">
+                          <div className="text-xs text-gray-600 truncate font-medium">
+                            {image.name}
+                          </div>
+                          <div className="text-xs text-gray-500">{formatFileSize(image.size)}</div>
                         </div>
                       </div>
                     ))}
@@ -511,20 +518,12 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
         </div>
 
         {/* 하단 버튼 영역 - 고정 */}
-        <div
-          className="p-3 sm:p-4 border-t space-y-3 flex-shrink-0 bg-white rounded-b-lg shadow-lg"
-          style={{ boxShadow: '0 -4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-        >
+        <div className="p-3 md:p-4 border-t bg-white rounded-b-lg flex-shrink-0">
           {/* 진행 상황 표시 */}
-          <div className="bg-gray-50 rounded-lg p-3">
-            <div className="flex items-center justify-between text-sm mb-2">
-              <span className="text-gray-600">수정 진행 상황:</span>
+          <div className="bg-gray-50 rounded-lg p-2 md:p-3 mb-3">
+            <div className="flex items-center justify-between text-xs md:text-sm mb-2 md:mb-3">
+              <span className="text-gray-600 font-medium">수정 진행 상황</span>
               <span className="font-medium text-gray-800">
-                {[
-                  editForm.serviceType ? '✅' : '❌',
-                  editForm.rating > 0 ? '✅' : '❌',
-                  editForm.content.trim().length >= 10 ? '✅' : '❌',
-                ].join(' ')}{' '}
                 (
                 {
                   [
@@ -536,43 +535,58 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
                 /3)
               </span>
             </div>
-            <div className="text-xs text-gray-500 space-y-1">
+            <div className="space-y-1 md:space-y-2 text-xs md:text-sm">
               <div
-                className={
-                  editForm.content.trim().length >= 10 ? 'text-green-600' : 'text-gray-500'
-                }
+                className={`flex items-center gap-2 ${editForm.serviceType ? 'text-green-600' : 'text-gray-500'}`}
               >
-                • 리뷰 내용 (최소 10자){' '}
-                {editForm.content.trim().length >= 10 ? '✅' : `(${editForm.content.length}/10)`}
+                <span>{editForm.serviceType ? '✓' : '○'}</span>
+                서비스 유형 선택
+              </div>
+              <div
+                className={`flex items-center gap-2 ${editForm.rating > 0 ? 'text-green-600' : 'text-gray-500'}`}
+              >
+                <span>{editForm.rating > 0 ? '✓' : '○'}</span>
+                별점 선택
+              </div>
+              <div
+                className={`flex items-center justify-between ${editForm.content.trim().length >= 10 ? 'text-green-600' : 'text-gray-500'}`}
+              >
+                <div className="flex items-center gap-2">
+                  <span>{editForm.content.trim().length >= 10 ? '✓' : '○'}</span>
+                  리뷰 내용 작성 (최소 10자)
+                </div>
+                {editForm.content.trim().length < 10 && (
+                  <span className="text-xs text-gray-400">{editForm.content.length}/10</span>
+                )}
               </div>
             </div>
           </div>
 
-          <div className="flex space-x-3 sm:space-x-4">
+          <div className="flex space-x-3">
             <button
               onClick={handleClose}
               disabled={isSubmitting || uploadProgress}
-              className="flex-1 px-4 sm:px-5 py-3 sm:py-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+              className="flex-1 py-2 md:py-3 px-3 md:px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
             >
               취소
             </button>
             <button
               onClick={handleSave}
               disabled={isSubmitting || uploadProgress || editForm.content.trim().length < 10}
-              className={`flex-[2] px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base ${
+              className={`flex-1 py-2 md:py-3 px-3 md:px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base ${
                 isSubmitting || uploadProgress || editForm.content.trim().length < 10
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800 shadow-lg hover:shadow-xl'
+                  : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg hover:shadow-xl'
               }`}
             >
               {isSubmitting ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-4 md:w-5 h-4 md:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   저장 중...
                 </>
               ) : uploadProgress ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-4 md:w-5 h-4 md:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   업로드 중...
                 </>
               ) : (
@@ -582,7 +596,7 @@ const ReviewEditModal = ({ isOpen, onClose, review, onSave, showToast, userId })
           </div>
 
           {(isSubmitting || uploadProgress) && (
-            <p className="text-xs sm:text-sm text-center text-gray-600 px-2">
+            <p className="mt-1 md:mt-2 text-xs text-center text-gray-600">
               완료될 때까지 화면을 끄지 마시고 잠시만 기다려주세요.
             </p>
           )}

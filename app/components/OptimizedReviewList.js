@@ -38,7 +38,7 @@ const ReviewCard = ({ review, onEdit, onDelete, onViewImages }) => {
   };
 
   return (
-    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+    <div className="bg-gray-50 rounded-lg p-2 md:p-3 border border-gray-200">
       <div className="flex justify-between items-start mb-2">
         <div className="flex items-center">
           <span className="inline-block px-2 py-1 bg-indigo-100 text-indigo-700 text-xs rounded-md mr-2">
@@ -65,7 +65,7 @@ const ReviewCard = ({ review, onEdit, onDelete, onViewImages }) => {
       </p>
 
       {/* 이미지 정보 및 액션 버튼 */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-0">
         {/* 왼쪽: 이미지 보기 버튼 (이미지가 있을 때만) */}
         <div className="flex items-center gap-2">
           {review.imageCount > 0 && (

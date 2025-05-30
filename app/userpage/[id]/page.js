@@ -5,7 +5,6 @@ import {
   FiMail,
   FiPhone,
   FiCalendar,
-  FiLogOut,
   FiChevronRight,
   FiFileText,
   FiHelpCircle,
@@ -150,61 +149,114 @@ const UserPage = () => {
 
   return (
     <LoggedInOnlySection fallback={<LoginFallback />}>
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 font-['NanumGothic'] p-4 sm:p-8">
-        <div className="max-w-7xl mx-auto flex gap-4 sm:gap-8 flex-col md:flex-row">
-          <div className="w-full md:w-80 flex flex-col gap-4 sm:gap-6">
-            <nav className="bg-white rounded-xl sm:rounded-2xl p-2 sm:p-4 shadow-lg flex flex-col gap-1 sm:gap-2">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 font-['NanumGothic']">
+        {/* 데스크톱 레이아웃 */}
+        <div className="hidden md:block p-4 sm:p-8">
+          <div className="max-w-7xl mx-auto flex gap-4 sm:gap-8 flex-col md:flex-row">
+            <div className="w-full md:w-80 flex flex-col gap-4 sm:gap-6">
+              <nav className="bg-white rounded-xl sm:rounded-2xl p-2 sm:p-4 shadow-lg flex flex-col gap-1 sm:gap-2">
+                {loading ? (
+                  // 네비게이션 스켈레톤
+                  <div className="animate-pulse space-y-2">
+                    {[...Array(4)].map((_, index) => (
+                      <div key={index} className="h-12 bg-gray-200 rounded-lg"></div>
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                    {menuItems.map((item) => (
+                      <button
+                        key={item.id}
+                        className={`flex items-center justify-between p-3 sm:p-4 w-full border-none rounded-lg text-sm sm:text-base cursor-pointer transition-all duration-200 
+                        ${
+                          activeMenu === item.id
+                            ? 'bg-indigo-50 text-indigo-600'
+                            : 'bg-transparent text-gray-600 hover:bg-gray-50'
+                        }`}
+                        onClick={() => setActiveMenu(item.id)}
+                      >
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <span className="text-base sm:text-lg">{item.icon}</span>
+                          {item.label}
+                        </div>
+                        <FiChevronRight
+                          size={16}
+                          className={`transition-all duration-200 
+                          ${
+                            activeMenu === item.id
+                              ? 'opacity-100 transform-none'
+                              : 'opacity-0 -translate-x-2'
+                          }
+                        `}
+                        />
+                      </button>
+                    ))}
+                  </>
+                )}
+              </nav>
+            </div>
+
+            <div className="flex-1 flex flex-col gap-4 sm:gap-6">
+              <main className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-lg">
+                {renderContent()}
+              </main>
+            </div>
+          </div>
+        </div>
+
+        {/* 모바일 레이아웃 */}
+        <div className="md:hidden flex flex-col min-h-screen">
+          {/* 메인 콘텐츠 */}
+          <div className="flex-1 p-4 pb-20">
+            <main className="bg-white rounded-xl p-4 shadow-lg">{renderContent()}</main>
+          </div>
+
+          {/* 하단 탭 네비게이션 */}
+          <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
+            <div className="flex justify-around items-center py-2">
               {loading ? (
-                // 네비게이션 스켈레톤
-                <div className="animate-pulse space-y-2">
+                // 모바일 네비게이션 스켈레톤
+                <>
                   {[...Array(4)].map((_, index) => (
-                    <div key={index} className="h-12 bg-gray-200 rounded-lg"></div>
+                    <div key={index} className="flex flex-col items-center p-2">
+                      <div className="w-6 h-6 bg-gray-200 rounded mb-1 animate-pulse"></div>
+                      <div className="w-8 h-2 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
                   ))}
-                  <div className="h-12 bg-red-100 rounded-lg mt-4"></div>
-                </div>
+                </>
               ) : (
                 <>
                   {menuItems.map((item) => (
                     <button
                       key={item.id}
-                      className={`flex items-center justify-between p-3 sm:p-4 w-full border-none rounded-lg text-sm sm:text-base cursor-pointer transition-all duration-200 
-                      ${
-                        activeMenu === item.id
-                          ? 'bg-indigo-50 text-indigo-600'
-                          : 'bg-transparent text-gray-600 hover:bg-gray-50'
+                      className={`flex flex-col items-center p-2 min-w-0 flex-1 transition-all duration-200 ${
+                        activeMenu === item.id ? 'text-indigo-600' : 'text-gray-500'
                       }`}
                       onClick={() => setActiveMenu(item.id)}
                     >
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        <span className="text-base sm:text-lg">{item.icon}</span>
-                        {item.label}
-                      </div>
-                      <FiChevronRight
-                        size={16}
-                        className={`transition-all duration-200 
-                        ${
-                          activeMenu === item.id
-                            ? 'opacity-100 transform-none'
-                            : 'opacity-0 -translate-x-2'
-                        }
-                      `}
-                      />
+                      <span
+                        className={`text-xl mb-1 ${
+                          activeMenu === item.id ? 'scale-110' : 'scale-100'
+                        } transition-transform duration-200`}
+                      >
+                        {item.icon}
+                      </span>
+                      <span
+                        className={`text-xs font-medium truncate ${
+                          activeMenu === item.id ? 'font-semibold' : ''
+                        }`}
+                      >
+                        {item.label
+                          .replace('견적 신청 내역', '견적')
+                          .replace(' 내역', '')
+                          .replace('신청 ', '')}
+                      </span>
                     </button>
                   ))}
-                  <button className="flex items-center justify-center gap-2 sm:gap-3 mt-2 sm:mt-4 p-3 sm:p-4 bg-white text-red-500 border border-red-100 rounded-lg text-sm sm:text-base cursor-pointer transition-all duration-200 hover:bg-red-50">
-                    <FiLogOut size={16} className="sm:text-lg" />
-                    로그아웃
-                  </button>
                 </>
               )}
-            </nav>
-          </div>
-
-          <div className="flex-1 flex flex-col gap-4 sm:gap-6">
-            <main className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-lg">
-              {renderContent()}
-            </main>
-          </div>
+            </div>
+          </nav>
         </div>
       </div>
     </LoggedInOnlySection>
@@ -497,13 +549,13 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
 
       {/* 정보 수정 모달 */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 pb-20 md:pb-4">
           <div
             className="absolute inset-0 bg-black bg-opacity-50"
             onClick={() => !isLoading && setIsModalOpen(false)}
           ></div>
 
-          <div className="bg-white rounded-2xl p-6 sm:p-8 w-full max-w-md z-10 relative">
+          <div className="bg-white rounded-2xl p-4 md:p-6 lg:p-8 w-full max-w-md z-10 relative max-h-[calc(100vh-120px)] md:max-h-[calc(100vh-80px)] overflow-y-auto">
             {/* 로딩 오버레이 */}
             {isLoading && (
               <div className="absolute inset-0 bg-white bg-opacity-90 rounded-2xl flex items-center justify-center z-20">
@@ -518,29 +570,29 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
             <button
               onClick={() => !isLoading && setIsModalOpen(false)}
               disabled={isLoading}
-              className="absolute top-4 right-4 p-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="absolute top-3 md:top-4 right-3 md:right-4 p-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label="닫기"
             >
               <FiX size={20} />
             </button>
 
-            <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6">
+            <h3 className="text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 mb-3 md:mb-4 lg:mb-6">
               프로필 정보 수정
             </h3>
 
             {error && (
-              <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm border border-red-200">
+              <div className="mb-3 md:mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm border border-red-200">
                 {error}
               </div>
             )}
 
             {success && (
-              <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm border border-green-200">
+              <div className="mb-3 md:mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm border border-green-200">
                 {success}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4 lg:space-y-6">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                   이름
@@ -553,7 +605,7 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
                   onChange={handleInputChange}
                   required
                   maxLength={15}
-                  className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                  className={`w-full px-3 md:px-4 py-2 md:py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-sm md:text-base ${
                     !isNameValid ? 'border-red-300 bg-red-50' : 'border-gray-300'
                   }`}
                   placeholder="이름을 입력하세요"
@@ -587,7 +639,7 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
                   value={formData.phoneNumber}
                   onChange={handleInputChange}
                   required
-                  className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                  className={`w-full px-3 md:px-4 py-2 md:py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-sm md:text-base ${
                     !isPhoneValid ? 'border-red-300 bg-red-50' : 'border-gray-300'
                   }`}
                   placeholder="전화번호를 입력하세요"
@@ -600,19 +652,19 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
                 )}
               </div>
 
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-3 pt-2 sticky bottom-0 bg-white">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
                   disabled={isLoading}
-                  className="flex-1 py-2.5 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 py-2 md:py-2.5 px-3 md:px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   취소
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading || !isPhoneValid || !isNameValid}
-                  className={`flex-1 py-2.5 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium flex items-center justify-center gap-2
+                  className={`flex-1 py-2 md:py-2.5 px-3 md:px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium flex items-center justify-center gap-2
                     ${
                       isLoading || !isPhoneValid || !isNameValid
                         ? 'opacity-70 cursor-not-allowed'
