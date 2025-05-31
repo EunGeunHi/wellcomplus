@@ -43,7 +43,7 @@ export default function Home() {
       </div>
 
       {/* 조립 컴퓨터 갤러리 */}
-      {/* <AssemblyShowcaseOptimized /> */}
+      <AssemblyShowcaseOptimized />
 
       {/* 리뷰 컴포넌트 부분  */}
       <ReviewCarousel />
