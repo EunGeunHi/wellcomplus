@@ -47,11 +47,19 @@ export const GET = withAuthAPI(async (req, { params, session }) => {
       : [];
 
     // 성공 응답
-    return NextResponse.json({
-      success: true,
-      reviewId,
-      images,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        reviewId,
+        images,
+      },
+      {
+        headers: {
+          'Cache-Control': 'private, max-age=300, must-revalidate', // 5분 캐시
+          Vary: 'Authorization',
+        },
+      }
+    );
   } catch (error) {
     console.error('리뷰 이미지 조회 중 오류 발생:', error);
     return NextResponse.json(

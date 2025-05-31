@@ -596,7 +596,7 @@ const ReviewCarousel = () => {
     });
   }, []);
 
-  // 이미지 프리로딩 함수
+  // 이미지 프리로딩 함수 (HTTP 캐시 감지 포함)
   const preloadImage = useCallback((imageUrl) => {
     if (!imageUrl || preloadedImages.current.has(imageUrl) || loadingImages.current.has(imageUrl)) {
       return Promise.resolve();
@@ -607,19 +607,34 @@ const ReviewCarousel = () => {
 
     return new Promise((resolve, reject) => {
       const img = new Image();
+
+      // 캐시 상태 감지를 위한 시작 시간 기록
+      const startTime = performance.now();
+
       img.onload = () => {
+        const loadTime = performance.now() - startTime;
         imageCache.current.set(imageUrl, img);
         preloadedImages.current.add(imageUrl);
         loadingImages.current.delete(imageUrl); // 로딩 완료
+
         if (process.env.NODE_ENV === 'development') {
-          console.log(`📷 이미지 캐시에 저장: ${imageUrl.substring(0, 50)}...`);
+          // 로딩 시간으로 캐시 상태 추정
+          const cacheStatus = loadTime < 50 ? '(HTTP 캐시)' : '(네트워크)';
+          console.log(
+            `📷 이미지 로드 완료: ${imageUrl.substring(0, 50)}... ${cacheStatus} ${Math.round(loadTime)}ms`
+          );
         }
         resolve(img);
       };
+
       img.onerror = (error) => {
         loadingImages.current.delete(imageUrl); // 로딩 실패
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`🚫 이미지 로드 실패: ${imageUrl.substring(0, 50)}...`);
+        }
         reject(error);
       };
+
       img.src = imageUrl;
     });
   }, []);

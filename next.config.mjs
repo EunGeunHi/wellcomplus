@@ -28,6 +28,32 @@ const nextConfig = {
         ],
       },
       {
+        source: '/api/reviews/images/:reviewId/:imageId',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+          {
+            key: 'Vary',
+            value: 'Accept-Encoding',
+          },
+        ],
+      },
+      {
+        source: '/api/reviews/user/:id/:reviewId/images',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'private, max-age=300, must-revalidate',
+          },
+          {
+            key: 'Vary',
+            value: 'Authorization',
+          },
+        ],
+      },
+      {
         source: '/:path*.(jpg|jpeg|png|gif|webp|avif|ico|svg)',
         headers: [
           {
