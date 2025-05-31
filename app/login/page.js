@@ -127,24 +127,28 @@ function LoginContent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center py-20 px-4 bg-gray-50">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-md overflow-hidden p-8">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">로그인</h2>
+    <div className="min-h-screen flex flex-col justify-start sm:justify-center items-center py-8 sm:py-20 px-4 bg-gray-50">
+      <div className="max-w-md w-full bg-white rounded-xl shadow-md overflow-hidden p-4 sm:p-8">
+        <h2 className="text-xl sm:text-2xl font-bold text-center text-gray-800 mb-4 sm:mb-6">
+          로그인
+        </h2>
 
         {/* 오류 메시지 표시 */}
         {formError && (
-          <div className="mb-4 p-3 bg-red-100 text-red-600 rounded-lg text-sm">{formError}</div>
+          <div className="mb-3 sm:mb-4 p-2.5 sm:p-3 bg-red-100 text-red-600 rounded-lg text-sm">
+            {formError}
+          </div>
         )}
 
         {/* 성공 메시지 표시 */}
         {successMessage && (
-          <div className="mb-4 p-3 bg-green-100 text-green-600 rounded-lg text-sm">
+          <div className="mb-3 sm:mb-4 p-2.5 sm:p-3 bg-green-100 text-green-600 rounded-lg text-sm">
             {successMessage}
           </div>
         )}
 
         {/* 로그인 폼 */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           {/* 이메일 입력 필드 */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
@@ -157,7 +161,7 @@ function LoginContent() {
               required
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               placeholder="이메일을 입력하세요"
             />
           </div>
@@ -174,36 +178,16 @@ function LoginContent() {
               required
               value={formData.password}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               placeholder="비밀번호를 입력하세요"
             />
-          </div>
-
-          {/* 로그인 옵션 */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember"
-                name="remember"
-                type="checkbox"
-                className="h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <label htmlFor="remember" className="ml-2 block text-sm text-gray-700">
-                로그인 상태 유지
-              </label>
-            </div>
-            <div className="text-sm">
-              <Link href="#" className="text-[#5F9DF7] hover:underline font-medium">
-                비밀번호 찾기
-              </Link>
-            </div>
           </div>
 
           {/* 로그인 버튼 */}
           <button
             type="submit"
             disabled={loading}
-            className={`w-full bg-gradient-to-r from-[#87CEEB] to-[#5F9DF7] text-white py-2.5 rounded-lg hover:shadow-lg transition-all duration-300 font-medium ${
+            className={`w-full bg-gradient-to-r from-[#87CEEB] to-[#5F9DF7] text-white py-2 sm:py-2.5 rounded-lg hover:shadow-lg transition-all duration-300 font-medium text-sm sm:text-base ${
               loading ? 'opacity-70 cursor-not-allowed' : ''
             }`}
           >
@@ -212,7 +196,7 @@ function LoginContent() {
         </form>
 
         {/* 소셜 로그인 구분선 */}
-        <div className="mt-4 relative">
+        <div className="mt-3 sm:mt-4 relative">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-300"></div>
           </div>
@@ -221,29 +205,20 @@ function LoginContent() {
           </div>
         </div>
 
-        {/* 네이버 로그인 버튼 */}
-        {/* <div className="mt-4">
-          <button
-            type="button"
-            onClick={handleNaverSignIn}
-            disabled={loading}
-            className="w-full flex justify-center items-center py-2.5 px-4 bg-[#03C75A] rounded-lg hover:bg-[#02B350] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#03C75A] transition-all duration-300"
-          >
-            <SiNaver className="w-4 h-4 mr-2 text-white" />
-            <span className="text-white font-medium">네이버로 계속하기</span>
-          </button>
-        </div> */}
-
         {/* 구글 로그인 버튼 */}
         <div className="mt-2">
           <button
             type="button"
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full flex justify-center items-center py-2.5 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5F9DF7] transition-all duration-300"
+            className={`w-full flex justify-center items-center py-2 sm:py-2.5 px-3 sm:px-4 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5F9DF7] transition-all duration-300 ${
+              loading ? 'opacity-70 cursor-not-allowed' : ''
+            }`}
           >
-            <FcGoogle className="w-5 h-5 mr-2" />
-            <span className="text-gray-700 font-medium">Google로 계속하기</span>
+            <FcGoogle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+            <span className="text-gray-700 font-medium text-sm sm:text-base">
+              Google로 계속하기
+            </span>
           </button>
         </div>
 
@@ -253,16 +228,20 @@ function LoginContent() {
             type="button"
             onClick={handleKakaoSignIn}
             disabled={loading}
-            className="w-full flex justify-center items-center py-2.5 px-4 bg-[#FEE500] rounded-lg hover:bg-[#FDD835] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FEE500] transition-all duration-300"
+            className={`w-full flex justify-center items-center py-2 sm:py-2.5 px-3 sm:px-4 bg-[#FEE500] rounded-lg hover:bg-[#FDD835] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FEE500] transition-all duration-300 ${
+              loading ? 'opacity-70 cursor-not-allowed' : ''
+            }`}
           >
-            <RiKakaoTalkFill className="w-5 h-5 mr-2 text-[#391B1B]" />
-            <span className="text-[#391B1B] font-medium">카카오로 계속하기</span>
+            <RiKakaoTalkFill className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-[#391B1B]" />
+            <span className="text-[#391B1B] font-medium text-sm sm:text-base">
+              카카오로 계속하기
+            </span>
           </button>
         </div>
 
         {/* 회원가입 페이지 링크 */}
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
+        <div className="mt-4 sm:mt-6 text-center">
+          <p className="text-xs sm:text-sm text-gray-600">
             계정이 없으신가요?{' '}
             <Link href="/signup" className="text-[#5F9DF7] hover:underline font-medium">
               회원가입하기
@@ -270,6 +249,21 @@ function LoginContent() {
           </p>
         </div>
       </div>
+
+      {/* 로딩 모달 */}
+      {loading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-sm w-full p-6 shadow-xl">
+            <div className="text-center">
+              <div className="mb-4">
+                <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mx-auto"></div>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">로그인 중입니다</h3>
+              <p className="text-sm text-gray-600">잠시만 기다려주세요...</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

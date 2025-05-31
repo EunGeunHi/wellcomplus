@@ -576,11 +576,11 @@ export default function AssemblyShowcaseOptimized() {
                       </div>
 
                       {/* 프리로딩 상태 표시 (개발 모드) */}
-                      {process.env.NODE_ENV === 'development' && isPreloaded && (
+                      {/* {process.env.NODE_ENV === 'development' && isPreloaded && (
                         <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-1 py-0.5 rounded z-10">
                           ✓
                         </div>
-                      )}
+                      )} */}
 
                       {/* 이미지 정보 오버레이 */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/0 via-black/0 to-black/0 group-hover:from-black/70 group-hover:via-black/20 group-hover:to-transparent transition-all duration-500 z-10">
@@ -698,11 +698,11 @@ export default function AssemblyShowcaseOptimized() {
                       </div>
 
                       {/* 프리로딩 상태 표시 (개발 모드) */}
-                      {process.env.NODE_ENV === 'development' && isPreloaded && (
+                      {/* {process.env.NODE_ENV === 'development' && isPreloaded && (
                         <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-1 py-0.5 rounded z-10">
                           ✓
                         </div>
-                      )}
+                      )} */}
 
                       {/* 이미지 정보 오버레이 */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/0 via-black/0 to-black/0 group-active:from-black/70 group-active:via-black/20 group-active:to-transparent transition-all duration-300 z-10">
