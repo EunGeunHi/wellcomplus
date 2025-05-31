@@ -70,9 +70,9 @@ export default function ASApplicationPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-4 sm:space-y-6">
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-8">
-                <div className="space-y-2 sm:space-y-4">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-3 sm:space-y-6">
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-3 sm:p-8">
+                <div className="space-y-3 sm:space-y-4">
                   {/* 필수 입력 사항들 */}
                   <SelectField
                     id="asCategory"
@@ -91,7 +91,7 @@ export default function ASApplicationPage() {
                       isOpen={openSections.additionalInfo}
                       onToggle={() => toggleSection('additionalInfo')}
                     >
-                      <div className="mt-2 sm:mt-3 space-y-3 sm:space-y-4">
+                      <div className="mt-1.5 sm:mt-3 space-y-1.5 sm:space-y-4">
                         {(formData.asCategory === '컴퓨터' || formData.asCategory === '노트북') && (
                           <>
                             <InputField

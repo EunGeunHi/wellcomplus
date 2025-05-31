@@ -63,9 +63,9 @@ export default function InquiryPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-4 sm:space-y-6">
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-8">
-                <div className="space-y-2 sm:space-y-4">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-3 sm:space-y-6">
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-3 sm:p-8">
+                <div className="space-y-3 sm:space-y-4">
                   {/* 필수 입력 사항들 */}
                   <InputField
                     id="title"

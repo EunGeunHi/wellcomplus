@@ -186,24 +186,54 @@ export const UploadProgress = ({ progress }) => {
 
 // 제출 버튼 컴포넌트
 export const SubmitButton = ({ isSubmitting, onSubmit }) => (
-  <div className="mt-6 sm:mt-10">
+  <div className="mt-4 sm:mt-10">
+    <div className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 sm:p-2 mb-4 sm:mb-8">
+      <div className="flex items-start gap-1.5 sm:gap-1">
+        <div className="flex-shrink-0 mt-0.5">
+          <FiAlertTriangle className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-amber-600" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h4 className="text-xs sm:text-base font-bold text-amber-800 mb-1.5 sm:mb-1">
+            문의 제출 전 안내사항
+          </h4>
+          <div className="space-y-1 sm:space-y-1 text-amber-700">
+            <p className="flex items-start gap-1 leading-snug">
+              <span className="text-amber-600 font-medium text-xs sm:text-sm mt-0.5 flex-shrink-0">
+                •
+              </span>
+              <span className="text-xs sm:text-sm leading-relaxed">
+                문의해주신 내용은 확인 후 개별적으로 연락드리겠습니다.
+              </span>
+            </p>
+            <p className="flex items-start gap-1 leading-snug">
+              <span className="text-amber-600 font-medium text-xs sm:text-sm mt-0.5 flex-shrink-0">
+                •
+              </span>
+              <span className="text-xs sm:text-sm leading-relaxed">
+                빠른 답변을 위해 정확한 연락처를 입력해주세요.
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
     <button
       type="button"
       onClick={onSubmit}
       disabled={isSubmitting}
-      className={`w-full font-[NanumGothic] text-lg sm:text-xl font-bold text-white py-3 sm:py-4 px-4 sm:px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-3 ${
+      className={`w-full font-[NanumGothic] text-base sm:text-xl font-bold text-white py-2.5 sm:py-4 px-3 sm:px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 sm:gap-3 ${
         isSubmitting
           ? 'bg-blue-400 cursor-not-allowed'
           : 'bg-blue-500 hover:bg-blue-600 hover:shadow-lg'
       }`}
     >
       {isSubmitting && (
-        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
       )}
-      {isSubmitting ? '등록 중...' : '문의하기'}
+      {isSubmitting ? '제출 중...' : '문의하기'}
     </button>
     {isSubmitting && (
-      <p className="text-center text-sm text-gray-600 mt-3">
+      <p className="text-center text-xs sm:text-sm text-gray-600 mt-2 sm:mt-3">
         📱 모바일에서는 화면을 끄지 마시고 잠시만 기다려주세요.
       </p>
     )}

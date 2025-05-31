@@ -71,9 +71,9 @@ export default function ComputerEstimatePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-4 sm:space-y-6">
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-8">
-                <div className="space-y-2 sm:space-y-4">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-3 sm:space-y-6">
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-3 sm:p-8">
+                <div className="space-y-3 sm:space-y-4">
                   {/* 필수 입력 사항들 */}
                   <TextArea
                     id="purpose"
@@ -122,7 +122,7 @@ export default function ComputerEstimatePage() {
                     isOpen={openSections.cpu}
                     onToggle={() => toggleSection('cpu')}
                   >
-                    <div className="mt-2 sm:mt-3">
+                    <div className="mt-1.5 sm:mt-3">
                       <RadioGroup
                         name="cpu"
                         label=""
@@ -139,7 +139,7 @@ export default function ComputerEstimatePage() {
                     isOpen={openSections.gpu}
                     onToggle={() => toggleSection('gpu')}
                   >
-                    <div className="mt-2 sm:mt-3">
+                    <div className="mt-1.5 sm:mt-3">
                       <RadioGroup
                         name="gpu"
                         label=""
@@ -156,7 +156,7 @@ export default function ComputerEstimatePage() {
                     isOpen={openSections.memory}
                     onToggle={() => toggleSection('memory')}
                   >
-                    <div className="mt-2 sm:mt-3">
+                    <div className="mt-1.5 sm:mt-3">
                       <RadioGroup
                         name="memory"
                         label=""
@@ -173,7 +173,7 @@ export default function ComputerEstimatePage() {
                     isOpen={openSections.storage}
                     onToggle={() => toggleSection('storage')}
                   >
-                    <div className="mt-2 sm:mt-3">
+                    <div className="mt-1.5 sm:mt-3">
                       <RadioGroup
                         name="storage"
                         label=""
@@ -190,7 +190,7 @@ export default function ComputerEstimatePage() {
                     isOpen={openSections.cooling}
                     onToggle={() => toggleSection('cooling')}
                   >
-                    <div className="mt-2 sm:mt-3">
+                    <div className="mt-1.5 sm:mt-3">
                       <RadioGroup
                         name="cooling"
                         label=""
@@ -207,7 +207,7 @@ export default function ComputerEstimatePage() {
                     isOpen={openSections.deliveryMethod}
                     onToggle={() => toggleSection('deliveryMethod')}
                   >
-                    <div className="mt-2 sm:mt-3 space-y-3 sm:space-y-4">
+                    <div className="mt-1.5 sm:mt-3 space-y-2 sm:space-y-4">
                       <RadioGroup
                         name="deliveryMethod"
                         label=""
@@ -229,7 +229,7 @@ export default function ComputerEstimatePage() {
                     isOpen={openSections.additionalRequests}
                     onToggle={() => toggleSection('additionalRequests')}
                   >
-                    <div className="mt-2 sm:mt-3">
+                    <div className="mt-1.5 sm:mt-3">
                       <TextArea
                         id="additionalRequests"
                         name="additionalRequests"

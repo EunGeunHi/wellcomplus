@@ -59,7 +59,7 @@ export const InputField = ({
   <div>
     <label
       htmlFor={id}
-      className="block text-base sm:text-lg font-[BMJUA] text-gray-900 mb-2 sm:mb-3"
+      className="block text-sm sm:text-lg font-[BMJUA] text-gray-900 mb-1.5 sm:mb-3"
     >
       {label} {required && <span className="text-red-500">*</span>}
     </label>
@@ -125,22 +125,22 @@ export const RadioGroup = ({
   const getGridClass = () => {
     switch (columns) {
       case 1:
-        return 'grid grid-cols-1 gap-2 sm:gap-3';
+        return 'grid grid-cols-1 gap-1.5 sm:gap-3';
       case 2:
-        return 'grid grid-cols-2 gap-2 sm:gap-3';
+        return 'grid grid-cols-2 gap-1.5 sm:gap-3';
       case 3:
-        return 'grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3';
+        return 'grid grid-cols-2 md:grid-cols-3 gap-1.5 sm:gap-3';
       case 4:
-        return 'grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3';
+        return 'grid grid-cols-2 md:grid-cols-4 gap-1.5 sm:gap-3';
       default:
-        return 'grid grid-cols-2 gap-2 sm:gap-3';
+        return 'grid grid-cols-2 gap-1.5 sm:gap-3';
     }
   };
 
   return (
     <div>
       {label && (
-        <label className="block text-base sm:text-lg font-[BMJUA] text-gray-900 mb-2 sm:mb-3">
+        <label className="block text-sm sm:text-lg font-[BMJUA] text-gray-900 mb-1.5 sm:mb-3">
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
@@ -148,7 +148,7 @@ export const RadioGroup = ({
         {options.map((option) => (
           <label
             key={option}
-            className={`flex items-center justify-center p-2 sm:p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+            className={`flex items-center justify-center p-1.5 sm:p-4 border-2 rounded-lg cursor-pointer transition-colors ${
               value === option
                 ? 'border-blue-500 bg-blue-50 text-blue-700'
                 : 'border-gray-200 hover:border-gray-300'
@@ -167,7 +167,9 @@ export const RadioGroup = ({
               className="sr-only"
               tabIndex={-1}
             />
-            <span className="font-medium text-xs sm:text-sm text-center">{option}</span>
+            <span className="font-medium text-xs sm:text-sm text-center leading-tight">
+              {option}
+            </span>
           </label>
         ))}
       </div>
@@ -185,17 +187,19 @@ export const OptionalSection = ({ title, isOpen, onToggle, children }) => (
         e.stopPropagation();
         onToggle();
       }}
-      className="w-full flex items-center justify-between p-3 sm:p-4 text-left hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
+      className="w-full flex items-center justify-between p-2.5 sm:p-4 text-left hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
       tabIndex={0}
     >
-      <span className="text-base sm:text-lg font-[BMJUA] text-gray-900">{title}</span>
+      <span className="text-sm sm:text-lg font-[BMJUA] text-gray-900">{title}</span>
       {isOpen ? (
         <FiChevronUp className="w-4 h-4 sm:w-5 sm:h-5" />
       ) : (
         <FiChevronDown className="w-4 h-4 sm:w-5 sm:h-5" />
       )}
     </button>
-    {isOpen && <div className="px-3 sm:px-4 pb-3 sm:pb-4 border-t border-gray-200">{children}</div>}
+    {isOpen && (
+      <div className="px-2.5 sm:px-4 pb-2.5 sm:pb-4 border-t border-gray-200">{children}</div>
+    )}
   </div>
 );
 
@@ -328,30 +332,40 @@ export const UploadProgress = ({ progress }) => {
 
 // 제출 버튼 컴포넌트
 export const SubmitButton = ({ isSubmitting, onSubmit }) => (
-  <div className="mt-6 sm:mt-10">
-    <div className="bg-amber-50 border border-amber-200 rounded-xl p-1 sm:p-2 mb-6 sm:mb-8">
-      <div className="flex items-start gap-1 mb-1">
+  <div className="mt-4 sm:mt-10">
+    <div className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 sm:p-2 mb-4 sm:mb-8">
+      <div className="flex items-start gap-1.5 sm:gap-1">
         <div className="flex-shrink-0 mt-0.5">
-          <FiAlertTriangle className="w-5 h-5 text-amber-600" />
+          <FiAlertTriangle className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-amber-600" />
         </div>
-        <div>
-          <h4 className="text-sm sm:text-base font-bold text-amber-800 mb-1">
+        <div className="flex-1 min-w-0">
+          <h4 className="text-xs sm:text-base font-bold text-amber-800 mb-1.5 sm:mb-1">
             A/S 신청 전 안내사항
           </h4>
-          <div className="space-y-1 text-xs sm:text-sm text-amber-700 leading-relaxed">
-            <p className="flex items-start gap-1">
-              <span className="text-amber-600 font-medium">•</span>
-              <span>
+          <div className="space-y-1 sm:space-y-1 text-amber-700">
+            <p className="flex items-start gap-1 leading-snug">
+              <span className="text-amber-600 font-medium text-xs sm:text-sm mt-0.5 flex-shrink-0">
+                •
+              </span>
+              <span className="text-xs sm:text-sm leading-relaxed">
                 A/S로 발생하는 비용은 실제 물건을 받아서 확인해본 다음 알려드릴 수 있습니다.
               </span>
             </p>
-            <p className="flex items-start gap-1">
-              <span className="text-amber-600 font-medium">•</span>
-              <span>정확한 진단을 위해 고장 증상을 상세히 작성해주시기 바랍니다.</span>
+            <p className="flex items-start gap-1 leading-snug">
+              <span className="text-amber-600 font-medium text-xs sm:text-sm mt-0.5 flex-shrink-0">
+                •
+              </span>
+              <span className="text-xs sm:text-sm leading-relaxed">
+                정확한 진단을 위해 고장 증상을 상세히 작성해주시기 바랍니다.
+              </span>
             </p>
-            <p className="flex items-start gap-1">
-              <span className="text-amber-600 font-medium">•</span>
-              <span>A/S 진행 상황은 등록하신 연락처로 개별 안내해드립니다.</span>
+            <p className="flex items-start gap-1 leading-snug">
+              <span className="text-amber-600 font-medium text-xs sm:text-sm mt-0.5 flex-shrink-0">
+                •
+              </span>
+              <span className="text-xs sm:text-sm leading-relaxed">
+                A/S 진행 상황은 등록하신 연락처로 개별 안내해드립니다.
+              </span>
             </p>
           </div>
         </div>
@@ -361,19 +375,19 @@ export const SubmitButton = ({ isSubmitting, onSubmit }) => (
       type="button"
       onClick={onSubmit}
       disabled={isSubmitting}
-      className={`w-full font-[NanumGothic] text-lg sm:text-xl font-bold text-white py-3 sm:py-4 px-4 sm:px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-3 ${
+      className={`w-full font-[NanumGothic] text-base sm:text-xl font-bold text-white py-2.5 sm:py-4 px-3 sm:px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 sm:gap-3 ${
         isSubmitting
           ? 'bg-blue-400 cursor-not-allowed'
           : 'bg-blue-500 hover:bg-blue-600 hover:shadow-lg'
       }`}
     >
       {isSubmitting && (
-        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
       )}
       {isSubmitting ? '신청 중...' : 'A/S 신청하기'}
     </button>
     {isSubmitting && (
-      <p className="text-center text-sm text-gray-600 mt-3">
+      <p className="text-center text-xs sm:text-sm text-gray-600 mt-2 sm:mt-3">
         📱 모바일에서는 화면을 끄지 마시고 잠시만 기다려주세요.
       </p>
     )}

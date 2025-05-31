@@ -72,9 +72,9 @@ export default function PrinterEstimatePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-4 sm:space-y-6">
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-8">
-                <div className="space-y-2 sm:space-y-4">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-3 sm:space-y-6">
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-3 sm:p-8">
+                <div className="space-y-3 sm:space-y-4">
                   {/* 필수 입력 사항들 */}
                   <TextArea
                     id="purpose"
@@ -113,7 +113,7 @@ export default function PrinterEstimatePage() {
                     isOpen={openSections.printerType}
                     onToggle={() => toggleSection('printerType')}
                   >
-                    <div className="mt-2 sm:mt-3">
+                    <div className="mt-1.5 sm:mt-3">
                       <RadioGroup
                         name="printerType"
                         label=""
@@ -130,7 +130,7 @@ export default function PrinterEstimatePage() {
                     isOpen={openSections.infiniteInk}
                     onToggle={() => toggleSection('infiniteInk')}
                   >
-                    <div className="mt-2 sm:mt-3">
+                    <div className="mt-1.5 sm:mt-3">
                       <RadioGroup
                         name="infiniteInk"
                         label=""
@@ -147,7 +147,7 @@ export default function PrinterEstimatePage() {
                     isOpen={openSections.outputColor}
                     onToggle={() => toggleSection('outputColor')}
                   >
-                    <div className="mt-2 sm:mt-3">
+                    <div className="mt-1.5 sm:mt-3">
                       <RadioGroup
                         name="outputColor"
                         label=""
@@ -164,7 +164,7 @@ export default function PrinterEstimatePage() {
                     isOpen={openSections.deliveryMethod}
                     onToggle={() => toggleSection('deliveryMethod')}
                   >
-                    <div className="mt-2 sm:mt-3 space-y-3 sm:space-y-4">
+                    <div className="mt-1.5 sm:mt-3 space-y-2 sm:space-y-4">
                       <RadioGroup
                         name="deliveryMethod"
                         label=""
@@ -186,7 +186,7 @@ export default function PrinterEstimatePage() {
                     isOpen={openSections.additionalRequests}
                     onToggle={() => toggleSection('additionalRequests')}
                   >
-                    <div className="mt-2 sm:mt-3">
+                    <div className="mt-1.5 sm:mt-3">
                       <TextArea
                         id="additionalRequests"
                         name="additionalRequests"
