@@ -1,11 +1,17 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Star, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormat';
 import useReviewsStore from '@/app/components/hooks/useReviewsStore';
 
-const ReviewCard = ({ review, onClick, isVisible = true }) => {
+const ReviewCard = ({
+  review,
+  onClick,
+  isVisible = true,
+  imageCache = null,
+  cacheStats = null,
+}) => {
   const renderStars = (rating) => {
     const stars = [];
     for (let i = 0; i < 5; i++) {
@@ -29,6 +35,31 @@ const ReviewCard = ({ review, onClick, isVisible = true }) => {
       other: '기타서비스',
     };
     return serviceTypes[type] || type;
+  };
+
+  // 캐시된 이미지 확인 함수
+  const getCachedImageSrc = (imageUrl) => {
+    if (imageCache && imageCache.current && imageCache.current.has(imageUrl)) {
+      const cachedImg = imageCache.current.get(imageUrl);
+      if (cacheStats && cacheStats.current) {
+        cacheStats.current.hits++;
+        if (process.env.NODE_ENV === 'development') {
+          console.log(
+            `🎯 캐시 히트: ${imageUrl.substring(0, 50)}... (히트: ${cacheStats.current.hits}, 미스: ${cacheStats.current.misses})`
+          );
+        }
+      }
+      return cachedImg.src;
+    }
+    if (cacheStats && cacheStats.current) {
+      cacheStats.current.misses++;
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          `❌ 캐시 미스: ${imageUrl.substring(0, 50)}... (히트: ${cacheStats.current.hits}, 미스: ${cacheStats.current.misses})`
+        );
+      }
+    }
+    return imageUrl;
   };
 
   // 이미지 로드 에러 처리
@@ -88,7 +119,7 @@ const ReviewCard = ({ review, onClick, isVisible = true }) => {
                   <div key={image.id || index} className="flex-shrink-0">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 relative">
                       <img
-                        src={image.url}
+                        src={getCachedImageSrc(image.url)}
                         alt={image.originalName || `이미지 ${index + 1}`}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         onError={handleImageError}
@@ -429,6 +460,11 @@ const ReviewCarousel = () => {
   const [selectedReview, setSelectedReview] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // 이미지 캐싱을 위한 메모리 저장소
+  const imageCache = useRef(new Map());
+  const preloadedImages = useRef(new Set());
+  const cacheStats = useRef({ hits: 0, misses: 0 });
+
   const handleReviewClick = (review) => {
     setSelectedReview(review);
     setIsModalOpen(true);
@@ -439,6 +475,79 @@ const ReviewCarousel = () => {
     setSelectedReview(null);
   };
 
+  // 이미지 프리로딩 함수
+  const preloadImage = useCallback((imageUrl) => {
+    if (!imageUrl || preloadedImages.current.has(imageUrl)) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        imageCache.current.set(imageUrl, img);
+        preloadedImages.current.add(imageUrl);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`📷 이미지 캐시에 저장: ${imageUrl.substring(0, 50)}...`);
+        }
+        resolve(img);
+      };
+      img.onerror = reject;
+      img.src = imageUrl;
+    });
+  }, []);
+
+  // 이전/다음 카드 인덱스 계산
+  const getPrevNextIndices = useCallback(() => {
+    if (!reviews.length) return { prevIndices: [], nextIndices: [] };
+
+    const prevIndices = [];
+    const nextIndices = [];
+
+    // 이전 카드들 계산
+    for (let i = 0; i < cardsPerView; i++) {
+      const prevIndex = currentIndex - cardsPerView + i;
+      const normalizedPrevIndex = prevIndex < 0 ? reviews.length + prevIndex : prevIndex;
+      if (normalizedPrevIndex >= 0 && normalizedPrevIndex < reviews.length) {
+        prevIndices.push(normalizedPrevIndex);
+      }
+    }
+
+    // 다음 카드들 계산
+    for (let i = 0; i < cardsPerView; i++) {
+      const nextIndex = (currentIndex + cardsPerView + i) % reviews.length;
+      nextIndices.push(nextIndex);
+    }
+
+    return { prevIndices, nextIndices };
+  }, [currentIndex, cardsPerView, reviews.length]);
+
+  // 선택적 이미지 프리로딩
+  const preloadAdjacentImages = useCallback(async () => {
+    if (!reviews.length) return;
+
+    const { prevIndices, nextIndices } = getPrevNextIndices();
+    const indicesToPreload = [...prevIndices, ...nextIndices];
+
+    const preloadPromises = [];
+
+    indicesToPreload.forEach((index) => {
+      const review = reviews[index];
+      if (review && review.images && review.images.length > 0) {
+        review.images.forEach((image) => {
+          if (image.url) {
+            preloadPromises.push(preloadImage(image.url));
+          }
+        });
+      }
+    });
+
+    try {
+      await Promise.allSettled(preloadPromises);
+    } catch (error) {
+      console.warn('일부 이미지 프리로딩에 실패했습니다:', error);
+    }
+  }, [reviews, getPrevNextIndices, preloadImage]);
+
   // 화면 크기에 따른 카드 수 계산
   const calculateCardsPerView = useCallback(() => {
     const width = window.innerWidth;
@@ -448,6 +557,18 @@ const ReviewCarousel = () => {
     if (width >= 570) return 2; // 570px 이상 - 2개 카드
     return 1; // 570px 미만 - 1개 카드
   }, []);
+
+  // 현재 보여줄 리뷰들만 계산 (가상화)
+  const getVisibleReviews = useCallback(() => {
+    if (!reviews.length) return [];
+
+    const visibleReviews = [];
+    for (let i = 0; i < cardsPerView; i++) {
+      const index = (currentIndex + i) % reviews.length;
+      visibleReviews.push(reviews[index]);
+    }
+    return visibleReviews;
+  }, [reviews, currentIndex, cardsPerView]);
 
   // 화면 크기 변경 감지
   useEffect(() => {
@@ -464,6 +585,33 @@ const ReviewCarousel = () => {
   useEffect(() => {
     fetchReviews();
   }, [fetchReviews]);
+
+  // 현재 보이는 카드의 이미지 즉시 로딩 및 인접 카드 프리로딩
+  useEffect(() => {
+    if (!reviews.length) return;
+
+    // 현재 보이는 카드의 이미지 즉시 로딩
+    const currentReviews = getVisibleReviews();
+    const currentImagePromises = [];
+
+    currentReviews.forEach((review) => {
+      if (review && review.images && review.images.length > 0) {
+        review.images.forEach((image) => {
+          if (image.url) {
+            currentImagePromises.push(preloadImage(image.url));
+          }
+        });
+      }
+    });
+
+    // 현재 이미지 로딩 후 인접 카드 프리로딩
+    Promise.allSettled(currentImagePromises).then(() => {
+      // 약간의 지연 후 인접 이미지 프리로딩 (현재 이미지 우선)
+      setTimeout(() => {
+        preloadAdjacentImages();
+      }, 100);
+    });
+  }, [currentIndex, reviews, cardsPerView, preloadImage, preloadAdjacentImages, getVisibleReviews]);
 
   // 수동 네비게이션
   const goToPrevious = () => {
@@ -489,18 +637,6 @@ const ReviewCarousel = () => {
       });
       setTimeout(() => setIsAnimating(false), 150);
     }, 150);
-  };
-
-  // 현재 보여줄 리뷰들만 계산 (가상화)
-  const getVisibleReviews = () => {
-    if (!reviews.length) return [];
-
-    const visibleReviews = [];
-    for (let i = 0; i < cardsPerView; i++) {
-      const index = (currentIndex + i) % reviews.length;
-      visibleReviews.push(reviews[index]);
-    }
-    return visibleReviews;
   };
 
   const visibleReviews = getVisibleReviews();
@@ -597,7 +733,13 @@ const ReviewCarousel = () => {
                   key={`${review._id}-${currentIndex}`}
                   className="h-auto min-h-[180px] sm:min-h-[200px]"
                 >
-                  <ReviewCard review={review} onClick={handleReviewClick} isVisible={true} />
+                  <ReviewCard
+                    review={review}
+                    onClick={handleReviewClick}
+                    isVisible={true}
+                    imageCache={imageCache}
+                    cacheStats={cacheStats}
+                  />
                 </div>
               ))}
             </div>
