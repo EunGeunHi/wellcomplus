@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Star, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormat';
 import useReviewsStore from '@/app/components/hooks/useReviewsStore';
 
-const ReviewCard = ({ review, onClick }) => {
+const ReviewCard = ({ review, onClick, isVisible = true }) => {
   const renderStars = (rating) => {
     const stars = [];
     for (let i = 0; i < 5; i++) {
@@ -93,7 +93,8 @@ const ReviewCard = ({ review, onClick }) => {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         onError={handleImageError}
                         onLoad={handleImageLoad}
-                        loading="lazy"
+                        loading={isVisible ? 'eager' : 'lazy'}
+                        decoding={isVisible ? 'sync' : 'async'}
                       />
                       {/* 이미지 로드 실패 시 플레이스홀더 */}
                       <div
@@ -427,7 +428,6 @@ const ReviewCarousel = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const intervalRef = useRef(null);
 
   const handleReviewClick = (review) => {
     setSelectedReview(review);
@@ -438,36 +438,6 @@ const ReviewCarousel = () => {
     setIsModalOpen(false);
     setSelectedReview(null);
   };
-
-  // 자동 슬라이드 시작 함수
-  const startAutoSlide = useCallback(() => {
-    if (reviews.length <= cardsPerView) return;
-
-    // 기존 interval 제거
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-
-    // 새 interval 시작
-    intervalRef.current = setInterval(() => {
-      setIsAnimating(true);
-
-      setTimeout(() => {
-        setCurrentIndex((prevIndex) => {
-          return (prevIndex + cardsPerView) % reviews.length;
-        });
-        setTimeout(() => setIsAnimating(false), 150);
-      }, 150);
-    }, 10000);
-  }, [reviews.length, cardsPerView]);
-
-  // 자동 슬라이드 정리 함수
-  const stopAutoSlide = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-  }, []);
 
   // 화면 크기에 따른 카드 수 계산
   const calculateCardsPerView = useCallback(() => {
@@ -495,14 +465,10 @@ const ReviewCarousel = () => {
     fetchReviews();
   }, [fetchReviews]);
 
-  // 자동 슬라이드 기능
-  useEffect(() => {
-    startAutoSlide();
-    return () => stopAutoSlide();
-  }, [startAutoSlide, stopAutoSlide]);
-
   // 수동 네비게이션
   const goToPrevious = () => {
+    if (isAnimating) return;
+
     setIsAnimating(true);
     setTimeout(() => {
       setCurrentIndex((prevIndex) => {
@@ -511,12 +477,11 @@ const ReviewCarousel = () => {
       });
       setTimeout(() => setIsAnimating(false), 150);
     }, 150);
-
-    // 수동 네비게이션 후 자동 슬라이드 타이머 리셋
-    startAutoSlide();
   };
 
   const goToNext = () => {
+    if (isAnimating) return;
+
     setIsAnimating(true);
     setTimeout(() => {
       setCurrentIndex((prevIndex) => {
@@ -524,13 +489,12 @@ const ReviewCarousel = () => {
       });
       setTimeout(() => setIsAnimating(false), 150);
     }, 150);
-
-    // 수동 네비게이션 후 자동 슬라이드 타이머 리셋
-    startAutoSlide();
   };
 
-  // 현재 보여줄 리뷰들 - 순환 배열로 처리
+  // 현재 보여줄 리뷰들만 계산 (가상화)
   const getVisibleReviews = () => {
+    if (!reviews.length) return [];
+
     const visibleReviews = [];
     for (let i = 0; i < cardsPerView; i++) {
       const index = (currentIndex + i) % reviews.length;
@@ -633,7 +597,7 @@ const ReviewCarousel = () => {
                   key={`${review._id}-${currentIndex}`}
                   className="h-auto min-h-[180px] sm:min-h-[200px]"
                 >
-                  <ReviewCard review={review} onClick={handleReviewClick} />
+                  <ReviewCard review={review} onClick={handleReviewClick} isVisible={true} />
                 </div>
               ))}
             </div>
