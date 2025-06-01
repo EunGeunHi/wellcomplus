@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
-import { Computer } from 'lucide-react';
+import { Computer, X } from 'lucide-react';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { usePreloader } from '../hooks/usePreloader';
 
@@ -18,6 +18,10 @@ export default function AssemblyShowcaseOptimized() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
   const [isRotationActive, setIsRotationActive] = useState(false);
+
+  // 모달 상태 관리
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalImageData, setModalImageData] = useState(null);
 
   const videoRefDesktop = useRef(null);
   const videoRefMobile = useRef(null);
@@ -433,6 +437,76 @@ export default function AssemblyShowcaseOptimized() {
     return () => clearInterval(cleanupInterval);
   }, [cleanupOldCache]);
 
+  // 이미지 클릭 핸들러
+  const handleImageClick = useCallback(
+    (imageData, imageSrc) => {
+      // 캐싱된 이미지인지 확인
+      if (isImagePreloaded(imageSrc)) {
+        setModalImageData({
+          ...imageData,
+          src: imageSrc,
+        });
+        setIsModalOpen(true);
+        // 모달 열릴 때 자동 순환 일시 정지
+        setIsRotationActive(false);
+      } else {
+        // 캐시되지 않은 경우 프리로드 후 모달 열기
+        smartPreload(0, [imageData], 'image', 0)
+          .then(() => {
+            setModalImageData({
+              ...imageData,
+              src: imageSrc,
+            });
+            setIsModalOpen(true);
+            setIsRotationActive(false);
+          })
+          .catch((error) => {
+            console.error('이미지 로딩 실패:', error);
+            // 실패해도 모달은 열기 (브라우저가 직접 로딩 시도)
+            setModalImageData({
+              ...imageData,
+              src: imageSrc,
+            });
+            setIsModalOpen(true);
+            setIsRotationActive(false);
+          });
+      }
+    },
+    [isImagePreloaded, smartPreload]
+  );
+
+  // 모달 닫기 핸들러
+  const handleCloseModal = useCallback(() => {
+    setIsModalOpen(false);
+    setModalImageData(null);
+    // 모달 닫힐 때 자동 순환 재개
+    setTimeout(() => {
+      setIsRotationActive(true);
+    }, 500);
+  }, []);
+
+  // ESC 키로 모달 닫기
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape' && isModalOpen) {
+        handleCloseModal();
+      }
+    };
+
+    if (isModalOpen) {
+      document.addEventListener('keydown', handleEscKey);
+      // 모달 열릴 때 스크롤 방지
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isModalOpen, handleCloseModal]);
+
   if (images.length === 0 && videos.length === 0) {
     return (
       <section className="py-20 bg-gradient-to-b from-white to-gray-50">
@@ -541,7 +615,8 @@ export default function AssemblyShowcaseOptimized() {
                   return (
                     <div
                       key={`desktop-grid-${gridIndex}`}
-                      className="relative group overflow-hidden bg-gray-100"
+                      className="relative group overflow-hidden bg-gray-100 cursor-pointer"
+                      onClick={() => handleImageClick(displayImage, imageSrc)}
                     >
                       {/* 로딩 상태 표시 */}
                       {isLoading && (
@@ -663,7 +738,8 @@ export default function AssemblyShowcaseOptimized() {
                   return (
                     <div
                       key={`mobile-grid-${gridIndex}`}
-                      className="relative group overflow-hidden bg-gray-100"
+                      className="relative group overflow-hidden bg-gray-100 cursor-pointer"
+                      onClick={() => handleImageClick(displayImage, imageSrc)}
                     >
                       {/* 로딩 상태 표시 */}
                       {isLoading && (
@@ -726,6 +802,61 @@ export default function AssemblyShowcaseOptimized() {
           )}
         </div>
       </div>
+
+      {/* 이미지 모달 */}
+      {isModalOpen && modalImageData && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[9998] p-4"
+          style={{ zIndex: 9998 }}
+        >
+          <div className="relative max-w-[90vw] max-h-[90vh] w-full h-full flex items-center justify-center">
+            {/* 닫기 버튼 */}
+            <button
+              onClick={handleCloseModal}
+              className="absolute top-4 right-4 z-[9999] bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-white rounded-full p-3 transition-all duration-200 hover:scale-110 shadow-lg pointer-events-auto"
+              aria-label="모달 닫기"
+              style={{ zIndex: 9999 }}
+            >
+              <X className="w-5 h-5 pointer-events-none" />
+            </button>
+
+            {/* 이미지 컨테이너 */}
+            <div className="relative w-full h-full flex items-center justify-center">
+              <Image
+                src={modalImageData.src}
+                alt={modalImageData.alt}
+                fill
+                className="object-contain"
+                sizes="90vw"
+                priority
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAAAAAAAAAAAAAAAAAAAACv/EAB8QAAEEAwEBAQEAAAAAAAAAAAABAgMEBQYHCBESE//EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+SlPoABYxSM0GYAW7qNR7LWNR8YGNsaLvE4sFllYPWvEZGWvqXZjUyNOYO4VJlKhKB1WGKJK4IjDFxwqFGgMAB7jTcCRpGMFQQKZGOsrCgBTrWVu3G+nqUFdJyKNdI="
+              />
+            </div>
+
+            {/* 이미지 정보 */}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-3">
+              <div className="text-center text-white">
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  <div className="w-1.5 h-1.5 bg-[#3661EB] rounded-full"></div>
+                  <span className="text-xs font-medium uppercase tracking-wide text-white/80">
+                    {modalImageData.category}
+                  </span>
+                  <div className="w-px h-3 bg-white/30 flex-shrink-0"></div>
+                  <h3 className="text-lg font-bold mb-1">{modalImageData.title}</h3>
+                </div>
+
+                {modalImageData.description && (
+                  <p className="text-xs text-white/85 max-w-xl mx-auto leading-relaxed mb-2">
+                    {modalImageData.description}
+                  </p>
+                )}
+                <div className="text-xs text-white/50">X 버튼 또는 ESC 키로 닫기</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

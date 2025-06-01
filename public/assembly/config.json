@@ -1,70 +1,40 @@
 {
   "images": [
     {
-      "filename": "photo-1.webp",
-      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 쿨링 시스템 수정함",
-      "title": "고성능 게이밍 PC 수정함",
-      "category": "gaming"
-    },
-    {
-      "filename": "photo-10.webp",
-      "alt": "부산 웰컴시스템 울트라 게이밍 PC 조립 - 최고사양 컴퓨터 완성품",
-      "title": "울트라 게이밍 PC",
-      "category": "gaming"
-    },
-    {
-      "filename": "photo-2.webp",
-      "alt": "부산 컴퓨터 조립 전문점 웰컴시스템 사무용 PC 완성품",
-      "title": "사무용 PC",
-      "category": "office"
-    },
-    {
-      "filename": "photo-3.webp",
-      "alt": "웰컴시스템 워크스테이션 PC 조립 - 전문 작업용 고사양 컴퓨터",
-      "title": "워크스테이션 PC",
-      "category": "workstation"
-    },
-    {
-      "filename": "photo-4.webp",
-      "alt": "부산 PC 조립 맞춤 제작 - 웰컴시스템 미니 ITX 소형 컴퓨터",
-      "title": "미니 ITX PC",
-      "category": "mini"
-    },
-    {
-      "filename": "photo-5.webp",
-      "alt": "웰컴시스템 RGB 게이밍 PC 조립 완성품 - 부산 컴퓨터 전문점",
-      "title": "RGB 게이밍 PC",
-      "category": "gaming"
-    },
-    {
-      "filename": "photo-6.webp",
-      "alt": "부산 웰컴시스템 고급형 사무용 PC 조립 - 업무용 컴퓨터 맞춤 제작",
-      "title": "고급형 사무용 PC",
-      "category": "office"
-    },
-    {
-      "filename": "photo-7.webp",
-      "alt": "웰컴시스템 크리에이터 PC 조립 - 영상편집 그래픽 작업용 고사양",
-      "title": "크리에이터 PC",
-      "category": "creator"
-    },
-    {
-      "filename": "photo-8.webp",
-      "alt": "부산 컴퓨터 조립 전문 웰컴시스템 - 화이트 테마 게이밍 PC",
-      "title": "화이트 게이밍 PC",
-      "category": "gaming"
-    },
-    {
-      "filename": "photo-9.webp",
-      "alt": "웰컴시스템 서버용 PC 조립 - 부산 기업용 컴퓨터 맞춤 제작",
-      "title": "서버용 PC",
-      "category": "server"
-    },
-    {
-      "filename": "한글명이미지.webp",
-      "title": "빌드로 추가해봄",
+      "filename": "테스트1.webp",
+      "title": "흰색 본채1",
       "category": "gaming",
-      "alt": "웰컴-타닥타닥"
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 수냉 쿨링 시스템"
+    },
+    {
+      "filename": "테스트2.webp",
+      "title": "선정리1",
+      "category": "gaming",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 깔끔한 선정리"
+    },
+    {
+      "filename": "테스트3.webp",
+      "title": "rgb게이밍피시",
+      "category": "gaming",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 화려한 RGB 시스템"
+    },
+    {
+      "filename": "테스트4.webp",
+      "title": "흰색본체2",
+      "category": "gaming",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 쿨링 시스템"
+    },
+    {
+      "filename": "테스트5.webp",
+      "title": "흰색 본체3",
+      "category": "gaming",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 빅타워형 유리 케이스"
+    },
+    {
+      "filename": "테스트6.webp",
+      "title": "선정리2",
+      "category": "gaming",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 깔끔한 선정리"
     }
   ],
   "videos": [
