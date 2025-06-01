@@ -527,27 +527,17 @@ export default function AssemblyShowcaseOptimized() {
     <section className="py-6 sm:py-10 bg-gradient-to-b from-white to-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 font-['NanumGothic']">
         {/* 섹션 제목 */}
-        <div className="text-center mb-3 sm:mb-4">
+        <div className="text-center mb-2 sm:mb-1">
           <h2 className="text-2xl sm:text-4xl font-bold mb-1 bg-clip-text text-transparent bg-gradient-to-r from-[#3661EB] to-[#87CEEB]">
             웰컴시스템 조립PC
           </h2>
 
-          <p className="text-gray-600 text-sm sm:text-lg max-w-2xl mx-auto px-4 sm:px-0">
-            35년 노하우!! 화려한RGB!! 깔끔한 선정리!! 깔끔하고 멋진 디자인!!
-            <br className="hidden sm:block" />
-            <span className="sm:hidden"> </span>
-            현재 이미지는 아무거나 넣은 테스트 이미지, 영상입니다.
-          </p>
-
-          {/* 개발 모드에서만 상태 표시 */}
-          {/* {process.env.NODE_ENV === 'development' && (
-            <div className="text-xs text-gray-500 mt-1 space-x-2">
-              {!isInitialLoadComplete && <span>📦 초기 로딩 중...</span>}
-              {isPreloading && <span>🔄 프리로딩 중...</span>}
-              {isTransitioning && <span>✨ 전환 중...</span>}
-              {isRotationActive && <span>🎯 순환 활성</span>}
+          <div className="text-gray-600 text-sm sm:text-lg max-w-2xl mx-auto px-4 sm:px-0">
+            <div>35년 장인의 손끝에서 완성된 PC, 그 정점이 여기에 있습니다!</div>
+            <div className="-mt-1">
+              RGB로 빛나고, 성능으로 압도하는 웰컴시스템에서 조립PC를 경험하세요!
             </div>
-          )} */}
+          </div>
         </div>
 
         {/* 갤러리 컨테이너 */}

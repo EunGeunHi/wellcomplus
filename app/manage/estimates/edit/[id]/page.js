@@ -2812,7 +2812,7 @@ export default function EstimateEditPage() {
                   onClick={toggleNotesModal}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
                 >
-                  저장
+                  닫기
                 </button>
               </div>
             </div>
