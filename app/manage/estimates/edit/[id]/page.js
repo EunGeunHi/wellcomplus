@@ -2772,7 +2772,7 @@ export default function EstimateEditPage() {
 
           {/* 메모 팝오버 */}
           {showNotesModal && (
-            <div className="fixed bottom-10 right-20 bg-white rounded-lg p-4 w-80 shadow-xl z-50 border border-gray-200">
+            <div className="fixed bottom-10 right-20 bg-white rounded-lg p-4 w-[600px] shadow-xl z-50 border border-gray-200">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-sm font-semibold">관리자용 메모</h3>
                 <button
@@ -2802,7 +2802,7 @@ export default function EstimateEditPage() {
                   estimate?.notes !== null && estimate?.notes !== undefined ? estimate.notes : ''
                 }
                 onChange={handleNotesChange}
-                rows={6}
+                rows={10}
                 className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="견적서에 표시되지 않는 메모를 작성하세요."
               ></textarea>
