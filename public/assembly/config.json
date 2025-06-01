@@ -1,60 +1,150 @@
 {
   "images": [
     {
-      "filename": "테스트1.webp",
-      "title": "흰색 본채1",
+      "filename": "1-화이트 수냉.webp",
+      "title": "화이트 수냉 게이밍PC",
       "category": "gaming",
-      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 수냉 쿨링 시스템"
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 화이트 수냉 시스템 PC"
     },
     {
-      "filename": "테스트2.webp",
-      "title": "선정리1",
+      "filename": "10-화이트rgb게이밍.webp",
+      "title": "화이트RGB 수냉 게이밍PC",
+      "category": "gaming",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 수냉 쿨링 시스템"
+    },
+    {
+      "filename": "11-화이트게이밍rgb.webp",
+      "title": "화이트&블랙 수냉 게이밍PC",
+      "category": "gaming",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 수냉 쿨링 시스템"
+    },
+    {
+      "filename": "12-블랙게이밍.webp",
+      "title": "블랙 게이밍PC",
+      "category": "gaming",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 게이밍 수냉 PC"
+    },
+    {
+      "filename": "13-블랙 선정리.webp",
+      "title": "깔끔한 선정리",
       "category": "gaming",
       "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 깔끔한 선정리"
     },
     {
-      "filename": "테스트3.webp",
-      "title": "rgb게이밍피시",
+      "filename": "14-화이트게이밍rgb.webp",
+      "title": "화이트 게이밍PC",
       "category": "gaming",
-      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 화려한 RGB 시스템"
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 수냉 쿨링 시스템"
     },
     {
-      "filename": "테스트4.webp",
-      "title": "흰색본체2",
+      "filename": "15-화이트선정리.webp",
+      "title": "깔끔한 선정리",
       "category": "gaming",
-      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 쿨링 시스템"
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 깔끔한 선정리"
     },
     {
-      "filename": "테스트5.webp",
-      "title": "흰색 본체3",
+      "filename": "16-블랙 게이밍rgb.webp",
+      "title": "블랙 게이밍PC",
       "category": "gaming",
-      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 빅타워형 유리 케이스"
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 블랙 게이밍 수냉 RGB "
     },
     {
-      "filename": "테스트6.webp",
-      "title": "선정리2",
+      "filename": "17-화이트게이밍rgb.webp",
+      "title": "화이트 게이밍PC",
+      "category": "gaming",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 수냉 빅타워케이스"
+    },
+    {
+      "filename": "18-화이트 선정리.webp",
+      "title": "깔끔한 선정리",
+      "category": "gaming",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 깔끔한 선정리"
+    },
+    {
+      "filename": "2-화이트선정리.webp",
+      "title": "깔끔한 선정리",
+      "category": "gaming",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 깔끔한 선정리"
+    },
+    {
+      "filename": "3-화이트RGB게이밍.webp",
+      "title": "화이트 게이밍PC",
+      "category": "gaming",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 수냉 쿨링 시스템"
+    },
+    {
+      "filename": "4-화이트RGB게이밍.webp",
+      "title": "화이트 게이밍PC",
+      "category": "gaming",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 공냉 쿨링 시스템"
+    },
+    {
+      "filename": "5-게이밍RGB.webp",
+      "title": "화이트 RGB 게이밍PC",
+      "category": "gaming",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 수냉 쿨링 시스템"
+    },
+    {
+      "filename": "6-화이트선정리.webp",
+      "title": "깔끔한 선정리",
+      "category": "gaming",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 깔끔한 선정리"
+    },
+    {
+      "filename": "7-화이트게이밍.webp",
+      "title": "화이트 게이밍PC",
+      "category": "gaming",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 수냉 쿨링 시스템"
+    },
+    {
+      "filename": "8-블랙 게이밍rgb.webp",
+      "title": "블랙 게이밍PC",
+      "category": "gaming",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 수냉 쿨링 시스템"
+    },
+    {
+      "filename": "9-블랙 선정리.webp",
+      "title": "깔끔한 선정리",
       "category": "gaming",
       "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 깔끔한 선정리"
     }
   ],
   "videos": [
     {
-      "filename": "video-1.mp4",
-      "title": "동영상 첫번쨰 수정함",
-      "description": "전문가의 PC 조립 과정을 보여주는 영상!",
-      "alt": "타가"
+      "filename": "0-advertisement.mp4",
+      "title": "",
+      "description": "",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 환영!"
     },
     {
-      "filename": "video-2.mp4",
-      "alt": "부산 웰컴시스템 게이밍 PC 성능 테스트 영상 - 조립 완성품 시연",
-      "title": "게이밍 PC 성능 테스트",
-      "description": "조립된 게이밍 PC의 성능을 테스트하는 영상"
+      "filename": "1-화이트.mp4",
+      "title": "화이트 공냉 게이밍PC",
+      "description": "공냉 시스템을 장착한 게이밍PC입니다.",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 공냉"
     },
     {
-      "filename": "video-3.mp4",
-      "alt": "웰컴시스템 컴퓨터 조립 완성품 소개 영상 - 부산 PC 전문점",
-      "title": "조립 완성품 소개",
-      "description": "다양한 조립 완성품들을 소개하는 영상"
+      "filename": "2-화려한rgb.mp4",
+      "title": "수냉 게이밍PC RGB",
+      "description": "수냉 시스템과 화려한 RGB가 장착된 게이밍PC입니다.",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 수냉 화이트"
+    },
+    {
+      "filename": "3-화이트.mp4",
+      "title": "화이트 수냉 빅타워 게이밍PC",
+      "description": "빅타워 케이스에 작창된 RGB게이밍PC입니다.",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 수냉 빅타워"
+    },
+    {
+      "filename": "4-검.mp4",
+      "title": "블랙 수냉 RGB 게이밍PC",
+      "description": "심플깔끔 스타일의 블랙 수냉 게이밍PC입니다.",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 수냉 블랙"
+    },
+    {
+      "filename": "5-화이트.mp4",
+      "title": "화이트 수냉 게이밍PC",
+      "description": "여러 RGB색상변경이가능한 수냉 게이밍PC입니다.",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 수냉 화이트"
     }
   ],
   "settings": {
