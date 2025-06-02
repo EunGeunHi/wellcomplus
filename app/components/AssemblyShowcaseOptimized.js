@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { Computer, X } from 'lucide-react';
 import { useMediaQuery } from '../hooks/useMediaQuery';
-import { usePreloader } from '../hooks/usePreloader';
 
 // 설정 파일을 import (빌드 시 정적으로 로드됨)
 import assemblyConfig from '../../public/assembly/config.json';
@@ -15,9 +14,9 @@ export default function AssemblyShowcaseOptimized() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [settings, setSettings] = useState({ muted: true, autoplay: true });
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
-  const [isRotationActive, setIsRotationActive] = useState(false);
+
+  // HeroSlider처럼 단순한 에러 상태만 관리
+  const [imageLoadErrors, setImageLoadErrors] = useState(new Set());
 
   // 모달 상태 관리
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,176 +29,39 @@ export default function AssemblyShowcaseOptimized() {
   // 화면 크기 감지 (768px 이상 = 데스크탑)
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
-  // 개선된 프리로딩 훅
-  const {
-    smartPreload,
-    predictivePreload,
-    cleanupOldCache,
-    getPreloadedVideo,
-    isImagePreloaded,
-    isVideoPreloaded,
-    isResourceLoading,
-    isPreloading,
-  } = usePreloader();
-
   const { images: configImages, videos: configVideos, settings: configSettings } = assemblyConfig;
 
-  // 초기 이미지들 완전 프리로딩 함수
-  const preloadInitialImages = useCallback(async () => {
-    if (configImages.length === 0) return;
-
-    try {
-      // 첫 8개 이미지를 완전히 프리로딩 (2바퀴 분량)
-      const initialLoadCount = Math.min(8, configImages.length);
-
-      await smartPreload(0, configImages, 'image', initialLoadCount - 1);
-
-      // 모든 초기 이미지가 프리로딩될 때까지 대기
-      let allLoaded = false;
-      let attempts = 0;
-      const maxAttempts = 50; // 5초 타임아웃
-
-      while (!allLoaded && attempts < maxAttempts) {
-        allLoaded = true;
-
-        for (let i = 0; i < initialLoadCount; i++) {
-          const imageSrc = `/assembly/photos/${configImages[i].filename}`;
-          if (!isImagePreloaded(imageSrc)) {
-            allLoaded = false;
-            break;
-          }
-        }
-
-        if (!allLoaded) {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-          attempts++;
-        }
-      }
-
-      setIsInitialLoadComplete(true);
-
-      // 프리로딩 완료 후 0.5초 뒤에 자동 순환 시작
-      setTimeout(() => {
-        setIsRotationActive(true);
-      }, 500);
-    } catch (error) {
-      console.error('초기 프리로딩 실패:', error);
-      // 실패해도 3초 후 자동 순환 시작
-      setTimeout(() => {
-        setIsInitialLoadComplete(true);
-        setIsRotationActive(true);
-      }, 3000);
-    }
-  }, [configImages, smartPreload, isImagePreloaded]);
-
-  // 적극적 초기 프리로딩 실행
+  // 초기 설정만 단순하게 처리
   useEffect(() => {
     setImages(configImages);
     setVideos(configVideos);
     setSettings(configSettings);
+  }, [configImages, configVideos, configSettings]);
 
-    if (configImages.length > 0) {
-      // 초기 이미지 완전 프리로딩
-      preloadInitialImages();
+  // 이미지 자동 순환을 HeroSlider 방식으로 단순화
+  const nextSlide = useCallback(() => {
+    setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  }, [images.length]);
 
-      // 백그라운드에서 나머지 이미지들도 예측 프리로딩
-      setTimeout(() => {
-        predictivePreload(0, configImages, 'image');
-      }, 2000);
-    }
-
-    if (configVideos.length > 0) {
-      smartPreload(0, configVideos, 'video', 2); // 처음 3개 비디오 프리로딩
-      // 백그라운드에서 다음 비디오들 예측 프리로딩
-      setTimeout(() => {
-        predictivePreload(0, configVideos, 'video');
-      }, 3000);
-    }
-  }, [
-    configImages,
-    configVideos,
-    configSettings,
-    preloadInitialImages,
-    smartPreload,
-    predictivePreload,
-  ]);
-
-  // 다음 이미지 준비 상태 확인 함수
-  const isNextImageReady = useCallback(
-    (nextIndex) => {
-      if (images.length === 0) return false;
-
-      // 다음 4개 이미지가 모두 프리로딩되었는지 확인
-      for (let i = 0; i < 4; i++) {
-        const checkIndex = (nextIndex + i) % images.length;
-        const imageSrc = `/assembly/photos/${images[checkIndex].filename}`;
-        if (!isImagePreloaded(imageSrc)) {
-          return false;
-        }
-      }
-      return true;
-    },
-    [images, isImagePreloaded]
-  );
-
-  // 사전 예측 프리로딩 (이미지 변경 전에 미리 준비)
-  const preloadNextResources = useCallback(
-    async (currentImgIndex, currentVidIndex) => {
-      // 다음 이미지들 적극적 프리로딩 (현재 + 다음 5개)
-      await smartPreload(currentImgIndex, images, 'image', 5);
-
-      // 다음 비디오 프리로딩 (현재 + 다음 1개)
-      smartPreload(currentVidIndex, videos, 'video', 1);
-
-      // 백그라운드 예측 프리로딩
-      setTimeout(() => {
-        predictivePreload(currentImgIndex, images, 'image');
-      }, 100);
-    },
-    [images, videos, smartPreload, predictivePreload]
-  );
-
-  // 개선된 이미지 자동 순환 (프리로딩 완료 확인 후 변경)
+  // HeroSlider와 동일한 단순한 자동 슬라이드 기능
   useEffect(() => {
-    if (images.length === 0 || !isRotationActive) return;
+    if (images.length === 0) return;
 
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => {
-        const nextIndex = (prev + 1) % images.length;
+    // 기존 인터벌 정리
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
 
-        // 다음 이미지가 준비되었는지 확인
-        if (!isNextImageReady(nextIndex)) {
-          // 준비되지 않았으면 강제로 프리로딩하고 잠시 대기
-          preloadNextResources(nextIndex, currentVideoIndex);
-          return prev; // 이번 변경은 건너뛰기
-        }
+    // 새 인터벌 설정
+    intervalRef.current = setInterval(nextSlide, settings.imageRotationInterval || 3000);
 
-        setIsTransitioning(true);
-
-        // 이미지 변경 후 다음 리소스들 미리 프리로딩
-        preloadNextResources(nextIndex, currentVideoIndex);
-
-        // 전환 애니메이션 완료 후 상태 초기화
-        setTimeout(() => setIsTransitioning(false), 150);
-
-        return nextIndex;
-      });
-    }, settings.imageRotationInterval);
-
-    intervalRef.current = interval;
+    // 컴포넌트 언마운트 시 인터벌 정리
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     };
-  }, [
-    images.length,
-    settings.imageRotationInterval,
-    isRotationActive,
-    isNextImageReady,
-    preloadNextResources,
-    currentVideoIndex,
-  ]);
+  }, [nextSlide, images.length, settings.imageRotationInterval]);
 
   // 향상된 동영상 처리 함수
   const playVideoSmoothly = useCallback(
@@ -222,131 +84,59 @@ export default function AssemblyShowcaseOptimized() {
           videoElement.pause();
         }
 
-        // 프리로딩된 비디오가 있는지 확인
-        const preloadedVideo = getPreloadedVideo(videoSrc);
+        // 기존 방식으로 단순화
+        const source = videoElement.querySelector('source');
+        if (source) {
+          source.src = videoSrc;
+          videoElement.load();
 
-        if (preloadedVideo) {
-          // 프리로딩된 비디오 사용 (끊김 없는 전환)
-          const source = videoElement.querySelector('source');
-          if (source && source.src !== videoSrc) {
-            source.src = videoSrc;
+          // canplay 이벤트 대기 후 재생
+          await new Promise((resolve, reject) => {
+            let resolved = false;
 
-            // load() 후 충분한 대기 시간
-            videoElement.load();
+            const handleCanPlay = () => {
+              if (resolved) return;
+              resolved = true;
+              cleanup();
+              resolve();
+            };
 
-            // loadstart 이벤트를 기다려서 안전하게 재생
-            await new Promise((resolve, reject) => {
-              let resolved = false;
+            const handleError = (e) => {
+              if (resolved) return;
+              resolved = true;
+              cleanup();
+              reject(new Error(`Video load failed: ${e.message || 'Unknown error'}`));
+            };
 
-              const handleLoadStart = () => {
-                if (resolved) return;
-                resolved = true;
-                videoElement.removeEventListener('loadstart', handleLoadStart);
-                videoElement.removeEventListener('error', handleError);
-                resolve();
-              };
+            const cleanup = () => {
+              videoElement.removeEventListener('canplay', handleCanPlay);
+              videoElement.removeEventListener('loadeddata', handleCanPlay);
+              videoElement.removeEventListener('error', handleError);
+            };
 
-              const handleError = (e) => {
-                if (resolved) return;
-                resolved = true;
-                videoElement.removeEventListener('loadstart', handleLoadStart);
-                videoElement.removeEventListener('error', handleError);
-                reject(e);
-              };
+            videoElement.addEventListener('canplay', handleCanPlay);
+            videoElement.addEventListener('loadeddata', handleCanPlay);
+            videoElement.addEventListener('error', handleError);
 
-              videoElement.addEventListener('loadstart', handleLoadStart);
-              videoElement.addEventListener('error', handleError);
-
-              // 1초 타임아웃 (충분한 시간)
-              setTimeout(() => {
-                if (!resolved) {
-                  resolved = true;
-                  videoElement.removeEventListener('loadstart', handleLoadStart);
-                  videoElement.removeEventListener('error', handleError);
-                  resolve(); // 타임아웃이어도 계속 진행
-                }
-              }, 1000);
-            });
-          }
-
-          // 재생 전 상태 재확인
-          if (videoElement.readyState >= 3) {
-            // 재생 시도 (AbortError 방지)
-            try {
-              await videoElement.play();
-            } catch (playError) {
-              // AbortError는 무시 (정상적인 전환 과정)
-              if (playError.name === 'AbortError') {
-                // console.log('이전 재생이 중단됨 (정상)');
-                return;
-              }
-              // 다른 에러는 재시도
-              setTimeout(async () => {
-                try {
-                  await videoElement.play();
-                } catch (retryError) {
-                  if (retryError.name !== 'AbortError') {
-                    console.warn('비디오 재생 재시도 실패:', retryError.message);
-                  }
-                }
-              }, 100);
-            }
-          }
-        } else {
-          // 프리로딩되지 않은 경우 기존 방식 (개선됨)
-          const source = videoElement.querySelector('source');
-          if (source) {
-            source.src = videoSrc;
-            videoElement.load();
-
-            // canplay 이벤트 대기 후 재생
-            await new Promise((resolve, reject) => {
-              let resolved = false;
-
-              const handleCanPlay = () => {
-                if (resolved) return;
+            // 3초 타임아웃
+            setTimeout(() => {
+              if (!resolved) {
                 resolved = true;
                 cleanup();
-                resolve();
-              };
-
-              const handleError = (e) => {
-                if (resolved) return;
-                resolved = true;
-                cleanup();
-                reject(new Error(`Video load failed: ${e.message || 'Unknown error'}`));
-              };
-
-              const cleanup = () => {
-                videoElement.removeEventListener('canplay', handleCanPlay);
-                videoElement.removeEventListener('loadeddata', handleCanPlay);
-                videoElement.removeEventListener('error', handleError);
-              };
-
-              videoElement.addEventListener('canplay', handleCanPlay);
-              videoElement.addEventListener('loadeddata', handleCanPlay);
-              videoElement.addEventListener('error', handleError);
-
-              // 3초 타임아웃 (더 짧게)
-              setTimeout(() => {
-                if (!resolved) {
-                  resolved = true;
-                  cleanup();
-                  reject(new Error('Video load timeout'));
-                }
-              }, 3000);
-            });
-
-            // 안전한 재생 시도
-            try {
-              await videoElement.play();
-            } catch (playError) {
-              if (playError.name === 'AbortError') {
-                // AbortError는 정상적인 전환 과정
-                return;
+                reject(new Error('Video load timeout'));
               }
-              throw playError;
+            }, 3000);
+          });
+
+          // 안전한 재생 시도
+          try {
+            await videoElement.play();
+          } catch (playError) {
+            if (playError.name === 'AbortError') {
+              // AbortError는 정상적인 전환 과정
+              return;
             }
+            throw playError;
           }
         }
       } catch (error) {
@@ -361,20 +151,16 @@ export default function AssemblyShowcaseOptimized() {
         }
       }
     },
-    [getPreloadedVideo]
+    [] // getPreloadedVideo 제거
   );
 
   // 개선된 동영상 자동 순환
   const handleVideoEnded = useCallback(() => {
     setCurrentVideoIndex((prev) => {
       const nextIndex = (prev + 1) % videos.length;
-
-      // 비디오 변경 전에 다음 리소스들 미리 프리로딩
-      preloadNextResources(currentImageIndex, nextIndex);
-
       return nextIndex;
     });
-  }, [videos.length, preloadNextResources, currentImageIndex]);
+  }, [videos.length]);
 
   // 동영상 인덱스 변경 시 스무스한 로드 및 재생
   useEffect(() => {
@@ -388,9 +174,6 @@ export default function AssemblyShowcaseOptimized() {
 
       try {
         await playVideoSmoothly(video, videoSrc);
-
-        // 재생 완료 후 다음 비디오 프리로딩
-        smartPreload(currentVideoIndex, videos, 'video', 2);
       } catch (error) {
         console.error('비디오 업데이트 실패:', error);
       }
@@ -402,7 +185,7 @@ export default function AssemblyShowcaseOptimized() {
     } else {
       updateVideo(videoRefMobile);
     }
-  }, [currentVideoIndex, videos, isDesktop, playVideoSmoothly, smartPreload]);
+  }, [currentVideoIndex, videos, isDesktop, playVideoSmoothly]);
 
   // 화면 크기 변경 시 비디오 동기화 (개선된 버전)
   useEffect(() => {
@@ -428,61 +211,23 @@ export default function AssemblyShowcaseOptimized() {
     }
   }, [isDesktop, currentVideoIndex, videos, playVideoSmoothly]);
 
-  // 주기적 메모리 정리 (성능 최적화)
-  useEffect(() => {
-    const cleanupInterval = setInterval(() => {
-      cleanupOldCache(20); // 더욱 관대한 캐시 정책 (첫 로딩 성능 우선)
-    }, 90000); // 1.5분마다 정리
-
-    return () => clearInterval(cleanupInterval);
-  }, [cleanupOldCache]);
-
-  // 이미지 클릭 핸들러
+  // 이미지 클릭 핸들러 - 단순화
   const handleImageClick = useCallback(
     (imageData, imageSrc) => {
-      // 캐싱된 이미지인지 확인
-      if (isImagePreloaded(imageSrc)) {
-        setModalImageData({
-          ...imageData,
-          src: imageSrc,
-        });
-        setIsModalOpen(true);
-        // 모달 열릴 때 자동 순환 일시 정지
-        setIsRotationActive(false);
-      } else {
-        // 캐시되지 않은 경우 프리로드 후 모달 열기
-        smartPreload(0, [imageData], 'image', 0)
-          .then(() => {
-            setModalImageData({
-              ...imageData,
-              src: imageSrc,
-            });
-            setIsModalOpen(true);
-            setIsRotationActive(false);
-          })
-          .catch((error) => {
-            console.error('이미지 로딩 실패:', error);
-            // 실패해도 모달은 열기 (브라우저가 직접 로딩 시도)
-            setModalImageData({
-              ...imageData,
-              src: imageSrc,
-            });
-            setIsModalOpen(true);
-            setIsRotationActive(false);
-          });
-      }
+      // 복잡한 캐시 확인 로직 제거
+      setModalImageData({
+        ...imageData,
+        src: imageSrc,
+      });
+      setIsModalOpen(true);
     },
-    [isImagePreloaded, smartPreload]
+    [] // isImagePreloaded, smartPreload 제거
   );
 
   // 모달 닫기 핸들러
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
     setModalImageData(null);
-    // 모달 닫힐 때 자동 순환 재개
-    setTimeout(() => {
-      setIsRotationActive(true);
-    }, 500);
   }, []);
 
   // ESC 키로 모달 닫기
@@ -561,11 +306,6 @@ export default function AssemblyShowcaseOptimized() {
                       preload="auto"
                       onEnded={handleVideoEnded}
                       onError={(e) => console.error('데스크톱 동영상 오류:', e)}
-                      onLoadStart={() => {
-                        // 로드 시작 시 다음 비디오 프리로딩
-                        const nextIndex = (currentVideoIndex + 1) % videos.length;
-                        smartPreload(nextIndex, videos, 'video', 1);
-                      }}
                     >
                       <source
                         src={`/assembly/videos/${videos[currentVideoIndex].filename}`}
@@ -599,8 +339,9 @@ export default function AssemblyShowcaseOptimized() {
                   const displayIndex = (currentImageIndex + gridIndex) % images.length;
                   const displayImage = images[displayIndex];
                   const imageSrc = `/assembly/photos/${displayImage.filename}`;
-                  const isPreloaded = isImagePreloaded(imageSrc);
-                  const isLoading = isResourceLoading(imageSrc);
+                  // usePreloader 관련 로직 제거
+                  // const isPreloaded = isImagePreloaded(imageSrc);
+                  // const isLoading = isResourceLoading(imageSrc);
 
                   return (
                     <div
@@ -608,44 +349,61 @@ export default function AssemblyShowcaseOptimized() {
                       className="relative group overflow-hidden bg-gray-100 cursor-pointer"
                       onClick={() => handleImageClick(displayImage, imageSrc)}
                     >
-                      {/* 로딩 상태 표시 */}
-                      {isLoading && (
+                      {/* 로딩 상태 표시 제거 */}
+                      {/* {isLoading && (
                         <div className="absolute inset-0 bg-gray-200 animate-pulse z-5 flex items-center justify-center">
                           <div className="text-gray-400 text-xs">로딩 중...</div>
                         </div>
-                      )}
+                      )} */}
 
                       {/* 이미지 */}
-                      <div
-                        className={`absolute inset-0 transition-all duration-300 ease-in-out ${
-                          isTransitioning ? 'opacity-95' : 'opacity-100'
-                        }`}
-                      >
-                        <Image
-                          src={imageSrc}
-                          alt={displayImage.alt}
-                          fill
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          sizes="25vw"
-                          priority={gridIndex < 2}
-                          placeholder="blur"
-                          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAAAAAAAAAAAAAAAAAAAACv/EAB8QAAEEAwEBAQEAAAAAAAAAAAABAgMEBQYHCBESE//EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+SlPoABYxSM0GYAW7qNR7LWNR8YGNsaLvE4sFllYPWvEZGWvqXZjUyNOYO4VJlKhKB1WGKJK4IjDFxwqFGgMAB7jTcCRpGMFQQKZGOsrCgBTrWVu3G+nqUFdJyKNdI="
-                          onLoad={() => {
-                            // 이미지 로드 완료 시 다음 이미지들 적극적 프리로딩
-                            if (gridIndex === 0) {
-                              const nextIndex = (currentImageIndex + 4) % images.length;
-                              smartPreload(nextIndex, images, 'image', 4);
-                            }
-                          }}
-                        />
+                      <div className="absolute inset-0 transition-all duration-300 ease-in-out">
+                        {/* HeroSlider처럼 에러 처리만 추가 */}
+                        {!imageLoadErrors.has(imageSrc) ? (
+                          <Image
+                            src={imageSrc}
+                            alt={displayImage.alt}
+                            fill
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            sizes="25vw"
+                            priority={gridIndex < 2}
+                            placeholder="blur"
+                            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAAAAAAAAAAAAAAAAAAAACv/EAB8QAAEEAwEBAQEAAAAAAAAAAAABAgMEBQYHCBESE//EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+SlPoABYxSM0GYAW7qNR7LWNR8YGNsaLvE4sFllYPWvEZGWvqXZjUyNOYO4VJlKhKB1WGKJK4IjDFxwqFGgMAB7jTcCRpGMFQQKZGOsrCgBTrWVu3G+nqUFdJyKNdI="
+                            onError={() => {
+                              console.error(`이미지 로드 실패: ${imageSrc}`);
+                              setImageLoadErrors((prev) => new Set([...prev, imageSrc]));
+                            }}
+                            // 복잡한 프리로딩 로직 제거
+                            // onLoad={() => {
+                            //   // 이미지 로드 완료 시 다음 이미지들 적극적 프리로딩
+                            //   if (gridIndex === 0) {
+                            //     const nextIndex = (currentImageIndex + 4) % images.length;
+                            //     smartPreload(nextIndex, images, 'image', 4);
+                            //   }
+                            // }}
+                          />
+                        ) : (
+                          // 이미지 로드 실패 시 플레이스홀더 (HeroSlider와 동일)
+                          <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                            <div className="text-center text-gray-500">
+                              <svg
+                                className="w-8 h-8 mx-auto mb-1"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                />
+                              </svg>
+                              <p className="text-xs">로드 실패</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
-
-                      {/* 프리로딩 상태 표시 (개발 모드) */}
-                      {/* {process.env.NODE_ENV === 'development' && isPreloaded && (
-                        <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-1 py-0.5 rounded z-10">
-                          ✓
-                        </div>
-                      )} */}
 
                       {/* 이미지 정보 오버레이 */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/0 via-black/0 to-black/0 group-hover:from-black/70 group-hover:via-black/20 group-hover:to-transparent transition-all duration-500 z-10">
@@ -684,11 +442,6 @@ export default function AssemblyShowcaseOptimized() {
                       preload="auto"
                       onEnded={handleVideoEnded}
                       onError={(e) => console.error('모바일 동영상 오류:', e)}
-                      onLoadStart={() => {
-                        // 로드 시작 시 다음 비디오 프리로딩
-                        const nextIndex = (currentVideoIndex + 1) % videos.length;
-                        smartPreload(nextIndex, videos, 'video', 1);
-                      }}
                     >
                       <source
                         src={`/assembly/videos/${videos[currentVideoIndex].filename}`}
@@ -722,8 +475,9 @@ export default function AssemblyShowcaseOptimized() {
                   const displayIndex = (currentImageIndex + gridIndex) % images.length;
                   const displayImage = images[displayIndex];
                   const imageSrc = `/assembly/photos/${displayImage.filename}`;
-                  const isPreloaded = isImagePreloaded(imageSrc);
-                  const isLoading = isResourceLoading(imageSrc);
+                  // usePreloader 관련 로직 제거
+                  // const isPreloaded = isImagePreloaded(imageSrc);
+                  // const isLoading = isResourceLoading(imageSrc);
 
                   return (
                     <div
@@ -731,44 +485,61 @@ export default function AssemblyShowcaseOptimized() {
                       className="relative group overflow-hidden bg-gray-100 cursor-pointer"
                       onClick={() => handleImageClick(displayImage, imageSrc)}
                     >
-                      {/* 로딩 상태 표시 */}
-                      {isLoading && (
+                      {/* 로딩 상태 표시 제거 */}
+                      {/* {isLoading && (
                         <div className="absolute inset-0 bg-gray-200 animate-pulse z-5 flex items-center justify-center">
                           <div className="text-gray-400 text-xs">로딩 중...</div>
                         </div>
-                      )}
+                      )} */}
 
                       {/* 이미지 */}
-                      <div
-                        className={`absolute inset-0 transition-all duration-300 ease-in-out ${
-                          isTransitioning ? 'opacity-95' : 'opacity-100'
-                        }`}
-                      >
-                        <Image
-                          src={imageSrc}
-                          alt={displayImage.alt}
-                          fill
-                          className="object-cover transition-transform duration-300 group-active:scale-105"
-                          sizes="50vw"
-                          priority={gridIndex < 2}
-                          placeholder="blur"
-                          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAAAAAAAAAAAAAAAAAAAACv/EAB8QAAEEAwEBAQEAAAAAAAAAAAABAgMEBQYHCBESE//EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+SlPoABYxSM0GYAW7qNR7LWNR8YGNsaLvE4sFllYPWvEZGWvqXZjUyNOYO4VJlKhKB1WGKJK4IjDFxwqFGgMAB7jTcCRpGMFQQKZGOsrCgBTrWVu3G+nqUFdJyKNdI="
-                          onLoad={() => {
-                            // 이미지 로드 완료 시 다음 이미지들 적극적 프리로딩
-                            if (gridIndex === 0) {
-                              const nextIndex = (currentImageIndex + 4) % images.length;
-                              smartPreload(nextIndex, images, 'image', 4);
-                            }
-                          }}
-                        />
+                      <div className="absolute inset-0 transition-all duration-300 ease-in-out">
+                        {/* HeroSlider처럼 에러 처리만 추가 */}
+                        {!imageLoadErrors.has(imageSrc) ? (
+                          <Image
+                            src={imageSrc}
+                            alt={displayImage.alt}
+                            fill
+                            className="object-cover transition-transform duration-300 group-active:scale-105"
+                            sizes="50vw"
+                            priority={gridIndex < 2}
+                            placeholder="blur"
+                            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAAAAAAAAAAAAAAAAAAAACv/EAB8QAAEEAwEBAQEAAAAAAAAAAAABAgMEBQYHCBESE//EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+SlPoABYxSM0GYAW7qNR7LWNR8YGNsaLvE4sFllYPWvEZGWvqXZjUyNOYO4VJlKhKB1WGKJK4IjDFxwqFGgMAB7jTcCRpGMFQQKZGOsrCgBTrWVu3G+nqUFdJyKNdI="
+                            onError={() => {
+                              console.error(`이미지 로드 실패: ${imageSrc}`);
+                              setImageLoadErrors((prev) => new Set([...prev, imageSrc]));
+                            }}
+                            // 복잡한 프리로딩 로직 제거
+                            // onLoad={() => {
+                            //   // 이미지 로드 완료 시 다음 이미지들 적극적 프리로딩
+                            //   if (gridIndex === 0) {
+                            //     const nextIndex = (currentImageIndex + 4) % images.length;
+                            //     smartPreload(nextIndex, images, 'image', 4);
+                            //   }
+                            // }}
+                          />
+                        ) : (
+                          // 이미지 로드 실패 시 플레이스홀더 (HeroSlider와 동일)
+                          <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                            <div className="text-center text-gray-500">
+                              <svg
+                                className="w-8 h-8 mx-auto mb-1"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                />
+                              </svg>
+                              <p className="text-xs">로드 실패</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
-
-                      {/* 프리로딩 상태 표시 (개발 모드) */}
-                      {/* {process.env.NODE_ENV === 'development' && isPreloaded && (
-                        <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-1 py-0.5 rounded z-10">
-                          ✓
-                        </div>
-                      )} */}
 
                       {/* 이미지 정보 오버레이 */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/0 via-black/0 to-black/0 group-active:from-black/70 group-active:via-black/20 group-active:to-transparent transition-all duration-300 z-10">
