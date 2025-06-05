@@ -63,8 +63,8 @@ export const metadata = {
     images: ['/og-image.jpg'],
   },
   verification: {
-    google: 'your-google-verification-code', // Google Search Console 인증 코드
-    naver: 'your-naver-verification-code', // 네이버 웹마스터 도구 인증 코드
+    google: 'google3092aeac45bedd63', // Google Search Console 인증 코드
+    naver: 'naver095b3eb8ab67922ccc4d8eb89d689d95', // 네이버 웹마스터 도구 인증 코드
   },
   alternates: {
     canonical: 'https://www.okwellcom.com',
