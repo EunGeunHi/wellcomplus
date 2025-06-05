@@ -247,7 +247,7 @@ export default function ManagePage() {
           </a>
 
           <a
-            href="/chrome-expansion-program.zip"
+            href="/chrome-extension-real.zip"
             download
             className="bg-white hover:bg-blue-50 border border-gray-200 p-6 rounded-lg shadow-sm transition-all duration-300 hover:shadow-md flex items-start gap-4"
           >

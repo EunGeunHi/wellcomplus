@@ -63,8 +63,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // URL이 견적 생성 또는 견적 편집 페이지인지 확인
       if (
-        currentUrl.includes('www.wellcomsystam.com/manage/estimates/create') ||
-        currentUrl.includes('www.wellcomsystam.com/manage/estimates/edit/')
+        currentUrl.includes('www.okwellcom.com/manage/estimates/create') ||
+        currentUrl.includes('www.okwellcom.com/manage/estimates/edit/')
       ) {
         // 현재 탭이 웰컴플러스 견적 페이지인 경우
         try {
@@ -85,11 +85,11 @@ document.addEventListener('DOMContentLoaded', function () {
           handleContentScriptError(tabs[0].id);
         }
       } else {
-        // 웰컴플러스 페이지로 이동
+        // 웰컴 페이지로 이동
         chrome.tabs.create(
-          { url: 'https://www.wellcomsystam.com/manage/estimates/create?autoInsert=true' },
+          { url: 'https://www.okwellcom.com/manage/estimates/create?autoInsert=true' },
           function (tab) {
-            status.textContent = '웰컴플러스 페이지로 이동했습니다. 자동으로 입력을 시도합니다.';
+            status.textContent = '웰컴 페이지로 이동했습니다. 자동으로 입력을 시도합니다.';
           }
         );
       }

@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "다나와 견적 추출기 real-program",
+  "name": "다나와 견적 추출기 25.6.5-real",
   "description": "다나와 견적을 웰컴플러스 견적 시스템에 자동으로 붙여넣기",
   "version": "1.0",
   "icons": {
@@ -17,7 +17,7 @@
     }
   },
   "permissions": ["activeTab", "scripting", "storage", "tabs"],
-  "host_permissions": ["https://shop.danawa.com/*", "https://www.wellcomsystam.com/*"],
+  "host_permissions": ["https://shop.danawa.com/*", "https://www.okwellcom.com/*"],
   "background": {
     "service_worker": "background.js"
   },
@@ -28,8 +28,8 @@
     },
     {
       "matches": [
-        "https://www.wellcomsystam.com/manage/estimates/create*",
-        "https://www.wellcomsystam.com/manage/estimates/edit/*"
+        "https://www.okwellcom.com/manage/estimates/create*",
+        "https://www.okwellcom.com/manage/estimates/edit/*"
       ],
       "js": ["content-wellcomplus.js"]
     }

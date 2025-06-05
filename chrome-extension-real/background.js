@@ -17,7 +17,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     // 웰컴플러스 페이지로 이동 요청 처리
     chrome.tabs.create(
       {
-        url: 'https://www.wellcomsystam.com/manage/estimates/create?autoInsert=true',
+        url: 'https://www.okwellcom.com/manage/estimates/create?autoInsert=true',
       },
       function (tab) {
         sendResponse({ success: true });
