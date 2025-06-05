@@ -9,8 +9,65 @@ import { Analytics } from '@vercel/analytics/react';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'WellcomPlus',
-  description: '웰컴플러스 홈페이지',
+  title: 'WellCom - 웰컴 컴퓨터 전문점',
+  description:
+    '웰컴 컴퓨터 전문점 - 컴퓨터, 노트북, 프린터 견적 및 A/S 서비스. 믿을 수 있는 컴퓨터 전문가와 함께하세요.',
+  keywords: [
+    '웰컴',
+    '웰컴컴퓨터',
+    'WellCom',
+    '컴퓨터',
+    '노트북',
+    '프린터',
+    'A/S',
+    '견적',
+    '컴퓨터전문점',
+    '컴퓨터수리',
+  ],
+  authors: [{ name: 'WellCom' }],
+  creator: 'WellCom',
+  publisher: 'WellCom',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'ko_KR',
+    url: 'https://www.okwellcom.com',
+    siteName: 'WellCom - 웰컴 컴퓨터 전문점',
+    title: 'WellCom - 웰컴 컴퓨터 전문점',
+    description:
+      '웰컴 컴퓨터 전문점 - 컴퓨터, 노트북, 프린터 견적 및 A/S 서비스. 믿을 수 있는 컴퓨터 전문가와 함께하세요.',
+    images: [
+      {
+        url: '/og-image.jpg', // 대표 이미지 (1200x630 권장)
+        width: 1200,
+        height: 630,
+        alt: 'WellCom 웰컴 컴퓨터 전문점',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'WellCom - 웰컴 컴퓨터 전문점',
+    description: '웰컴 컴퓨터 전문점 - 컴퓨터, 노트북, 프린터 견적 및 A/S 서비스',
+    images: ['/og-image.jpg'],
+  },
+  verification: {
+    google: 'your-google-verification-code', // Google Search Console 인증 코드
+    naver: 'your-naver-verification-code', // 네이버 웹마스터 도구 인증 코드
+  },
+  alternates: {
+    canonical: 'https://www.okwellcom.com',
+  },
 };
 
 /**

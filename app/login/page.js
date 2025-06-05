@@ -239,6 +239,21 @@ function LoginContent() {
           </button>
         </div>
 
+        {/* 네이버 로그인 버튼 */}
+        <div className="mt-2">
+          <button
+            type="button"
+            onClick={handleNaverSignIn}
+            disabled={loading}
+            className={`w-full flex justify-center items-center py-2 sm:py-2.5 px-3 sm:px-4 bg-[#03C75A] rounded-lg hover:bg-[#02B350] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#03C75A] transition-all duration-300 ${
+              loading ? 'opacity-70 cursor-not-allowed' : ''
+            }`}
+          >
+            <SiNaver className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-white" />
+            <span className="text-white font-medium text-sm sm:text-base">네이버로 계속하기</span>
+          </button>
+        </div>
+
         {/* 회원가입 페이지 링크 */}
         <div className="mt-4 sm:mt-6 text-center">
           <p className="text-xs sm:text-sm text-gray-600">

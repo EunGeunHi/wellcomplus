@@ -7,8 +7,93 @@ import ReviewCarousel from './components/ReviewCarousel';
 import AssemblyShowcaseOptimized from './components/AssemblyShowcaseOptimized';
 
 export default function Home() {
+  // 구조화된 데이터 (JSON-LD)
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: '웰컴 컴퓨터 전문점',
+    alternateName: 'WellCom',
+    description: '35년 전통의 컴퓨터, 노트북, 프린터 전문점. 맞춤형 견적 및 평생 A/S 서비스 제공',
+    url: 'https://www.okwellcom.com',
+    telephone: '010-8781-8871',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: '온천장로 20 부산컴퓨터도매상가 2층 209호',
+      addressLocality: '동래구',
+      addressRegion: '부산시',
+      postalCode: '47764',
+      addressCountry: 'KR',
+    },
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: 35.21399045790162,
+      longitude: 129.0796384915669,
+    },
+    openingHours: 'Mo-Sa 09:00-18:00',
+    founder: '김선식',
+    foundingDate: '1989',
+    areaServed: '부산광역시',
+    serviceType: [
+      '컴퓨터 판매',
+      '노트북 판매',
+      '프린터 판매',
+      '컴퓨터 수리',
+      'A/S 서비스',
+      '맞춤형 견적',
+    ],
+    priceRange: '$$',
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: '컴퓨터 및 IT 서비스',
+      itemListElement: [
+        {
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Product',
+            name: '맞춤형 컴퓨터 조립',
+          },
+        },
+        {
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Product',
+            name: '노트북 판매 및 상담',
+          },
+        },
+        {
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Product',
+            name: '프린터 판매 및 설치',
+          },
+        },
+        {
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Service',
+            name: '컴퓨터 A/S 서비스',
+          },
+        },
+      ],
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.8',
+      reviewCount: '1000',
+      bestRating: '5',
+      worstRating: '1',
+    },
+    sameAs: ['https://www.okwellcom.com'],
+  };
+
   return (
     <>
+      {/* 구조화된 데이터 */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+
       <TestAlert />
       {/* Hero Section */}
       <div className="w-full bg-gradient-to-r from-blue-50 to-sky-50 py-6 sm:py-10">
