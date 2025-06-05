@@ -9,6 +9,7 @@ import { Analytics } from '@vercel/analytics/react';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
+  metadataBase: new URL('https://www.okwellcom.com'),
   title: 'WellCom - 웰컴 컴퓨터 전문점',
   description:
     '웰컴 컴퓨터 전문점 - 컴퓨터, 노트북, 프린터 견적 및 A/S 서비스. 믿을 수 있는 컴퓨터 전문가와 함께하세요.',
