@@ -92,32 +92,58 @@ export default function ASApplicationPage() {
                       onToggle={() => toggleSection('additionalInfo')}
                     >
                       <div className="mt-1.5 sm:mt-3 space-y-1.5 sm:space-y-4">
+                        {/* 컴퓨터/노트북 이미지 및 안내 문구 */}
                         {(formData.asCategory === '컴퓨터' || formData.asCategory === '노트북') && (
                           <>
-                            <InputField
-                              id="userName"
-                              name="userName"
-                              label="구매 당시 사용자 이름"
-                              placeholder="구매 시 등록된 이름을 입력해주세요"
-                              value={formData.userName}
-                              onChange={handleChange}
-                              onKeyDown={handleKeyDown}
-                            />
+                            <div className="flex flex-col items-center mb-4 p-4 bg-blue-50 rounded-lg">
+                              <img
+                                src="/as/pc.webp"
+                                alt="PC/노트북 번호 위치 안내"
+                                className="w-full max-w-48 sm:max-w-xs h-auto mb-3 rounded-lg shadow-sm"
+                              />
+                              <p className="text-sm text-blue-700 font-medium text-center">
+                                PC/노트북에 붙어있는 번호를 확인해주세요.
+                              </p>
+                            </div>
 
                             <InputField
                               id="pcNumber"
                               name="pcNumber"
-                              label="PC 번호"
-                              placeholder="PC에 부착된 번호를 입력해주세요 (예: PC-001)"
+                              label="해당 PC/노트북 번호"
+                              placeholder="PC/노트북에 부착된 번호를 입력해주세요."
                               value={formData.pcNumber}
                               onChange={handleChange}
                               onKeyDown={handleKeyDown}
+                              required
                             />
                           </>
                         )}
 
+                        {/* 프린터 이미지 및 안내 문구 */}
                         {formData.asCategory === '프린터' && (
                           <>
+                            <div className="flex flex-col items-center mb-4 p-4 bg-blue-50 rounded-lg">
+                              <img
+                                src="/as/printer.webp"
+                                alt="프린터 번호 위치 안내"
+                                className="w-full max-w-48 sm:max-w-xs h-auto mb-3 rounded-lg shadow-sm"
+                              />
+                              <p className="text-sm text-blue-700 font-medium text-center">
+                                프린터에서 붙어있는 번호를 확인해주세요.
+                              </p>
+                            </div>
+
+                            <InputField
+                              id="printerNumber"
+                              name="printerNumber"
+                              label="해당 프린터 번호"
+                              placeholder="프린터에 부착된 번호를 입력해주세요."
+                              value={formData.printerNumber}
+                              onChange={handleChange}
+                              onKeyDown={handleKeyDown}
+                              required
+                            />
+
                             <RadioGroup
                               name="printerType"
                               label="프린터 종류"

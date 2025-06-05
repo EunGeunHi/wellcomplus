@@ -41,9 +41,9 @@ export const useASApplicationForm = (session) => {
     if (name === 'asCategory') {
       setFormData((prev) => ({
         ...prev,
-        userName: '',
         pcNumber: '',
         printerType: '',
+        printerNumber: '',
         infiniteInk: '',
       }));
     }

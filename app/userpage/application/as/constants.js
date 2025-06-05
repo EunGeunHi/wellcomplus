@@ -19,9 +19,9 @@ export const REQUIRED_FIELDS = ['asCategory', 'description', 'phoneNumber', 'del
 // 기본 폼 데이터
 export const INITIAL_FORM_DATA = {
   asCategory: '',
-  userName: '', // 컴퓨터/노트북/프린터용 사용자 이름
   pcNumber: '', // 컴퓨터/노트북용 PC번호
   printerType: '', // 프린터용 프린터 종류
+  printerNumber: '', // 프린터용 프린터 번호
   infiniteInk: '', // 프린터용 무한 잉크젯
   description: '', // 문제 설명
   phoneNumber: '', // 연락처

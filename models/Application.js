@@ -112,9 +112,9 @@ const applicationSchema = new mongoose.Schema({
   // === A/S 신청 정보 ===
   as_information: {
     asCategory: String, // A/S 제품 분류 (컴퓨터/노트북/프린터)
-    userName: String, // 구매 당시 사용자 이름
     pcNumber: String, // PC 번호 (있는 경우)
     printerType: String, // 프린터 종류 (프린터 A/S시)
+    printerNumber: String, // 프린터 번호 (프린터 A/S시)
     infiniteInk: String, // 무한잉크젯 여부 (프린터 A/S시)
     description: String, // 문제 상황 설명
     phoneNumber: String, // 연락처

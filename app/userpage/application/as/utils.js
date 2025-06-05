@@ -17,6 +17,19 @@ export const validateForm = (formData) => {
     errors.push('A/S분류, 문제설명, 연락처, 수령방법은 필수로 작성해야 합니다.');
   }
 
+  // A/S 분류별 조건부 필수 검증
+  if (formData.asCategory === '컴퓨터' || formData.asCategory === '노트북') {
+    if (!formData.pcNumber?.trim()) {
+      errors.push('PC 번호는 필수로 입력해야 합니다.');
+    }
+  }
+
+  if (formData.asCategory === '프린터') {
+    if (!formData.printerNumber?.trim()) {
+      errors.push('프린터 번호는 필수로 입력해야 합니다.');
+    }
+  }
+
   // 택배 선택시 주소 필수 검증
   if (formData.deliveryMethod === '택배' && !formData.address?.trim()) {
     errors.push('택배 수령을 선택하신 경우 주소를 입력해주세요.');
@@ -31,13 +44,12 @@ export const logFormData = (formData, selectedFiles, formatFileSize) => {
   console.log('A/S분류:', formData.asCategory);
 
   if (formData.asCategory === '컴퓨터' || formData.asCategory === '노트북') {
-    console.log('구매 당시 사용자 이름 :', formData.userName || '없음');
-    console.log('구매 당시  PC번호:', formData.pcNumber || '없음');
+    console.log('PC번호:', formData.pcNumber || '없음');
   }
 
   if (formData.asCategory === '프린터') {
-    console.log('구매 당시 사용자 이름:', formData.userName || '없음');
     console.log('프린터 종류:', formData.printerType || '선택안함');
+    console.log('프린터 번호:', formData.printerNumber || '없음');
     console.log('무한 잉크젯:', formData.infiniteInk || '선택안함');
   }
 

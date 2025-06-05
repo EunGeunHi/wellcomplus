@@ -20,9 +20,9 @@ async function handler(req, { session }) {
     const {
       files = [], // 클라이언트에서 이미 업로드된 파일 정보
       asCategory,
-      userName,
       pcNumber,
       printerType,
+      printerNumber,
       infiniteInk,
       description,
       phoneNumber,
@@ -36,6 +36,15 @@ async function handler(req, { session }) {
         { error: 'A/S 분류, 문제 설명, 연락처는 필수로 입력해야 합니다.' },
         { status: 400 }
       );
+    }
+
+    // A/S 분류별 조건부 필수 검증
+    if ((asCategory === '컴퓨터' || asCategory === '노트북') && !pcNumber?.trim()) {
+      return NextResponse.json({ error: 'PC 번호는 필수로 입력해야 합니다.' }, { status: 400 });
+    }
+
+    if (asCategory === '프린터' && !printerNumber?.trim()) {
+      return NextResponse.json({ error: '프린터 번호는 필수로 입력해야 합니다.' }, { status: 400 });
     }
 
     // 파일 개수 검증 (클라이언트에서 업로드된 파일)
@@ -62,9 +71,9 @@ async function handler(req, { session }) {
       files: files || [], // 클라이언트에서 업로드된 파일 정보
       as_information: {
         asCategory,
-        userName: userName || '',
         pcNumber: pcNumber || '',
         printerType: printerType || '',
+        printerNumber: printerNumber || '',
         infiniteInk: infiniteInk || '',
         description,
         phoneNumber: finalPhoneNumber,
