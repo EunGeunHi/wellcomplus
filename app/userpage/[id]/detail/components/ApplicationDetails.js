@@ -149,16 +149,16 @@ const AsDetails = memo(({ information }) => (
   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-2">
     <InfoCard icon={MdClass} title="A/S 분류" value={information.asCategory} />
 
-    {information.userName && (
-      <InfoCard icon={FaUserPen} title="사용자 이름" value={information.userName} />
-    )}
-
     {information.pcNumber && (
       <InfoCard icon={FiInfo} title="PC 번호" value={information.pcNumber} />
     )}
 
     {information.printerType && (
       <InfoCard icon={AiFillPrinter} title="프린터 종류" value={information.printerType} />
+    )}
+
+    {information.printerNumber && (
+      <InfoCard icon={FiInfo} title="프린터 번호" value={information.printerNumber} />
     )}
 
     {information.infiniteInk && (
