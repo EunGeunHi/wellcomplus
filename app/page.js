@@ -62,6 +62,11 @@ export default function Home() {
             '@type': 'Product',
             name: '맞춤형 컴퓨터 조립',
             description: '고객 맞춤형 컴퓨터 조립 서비스 (견적 상담 후 가격 결정)',
+            image: [
+              'https://www.okwellcom.com/assembly/photos/3-화이트RGB게이밍.webp',
+              'https://www.okwellcom.com/assembly/photos/5-게이밍RGB.webp',
+              'https://www.okwellcom.com/assembly/photos/17-화이트게이밍rgb.webp',
+            ],
             brand: {
               '@type': 'Brand',
               name: '웰컴시스템',
@@ -101,6 +106,7 @@ export default function Home() {
             '@type': 'Product',
             name: '노트북 판매 및 상담',
             description: '다양한 브랜드 노트북 판매 및 전문 상담 (견적 상담 후 가격 결정)',
+            image: ['https://www.okwellcom.com/products/notebook-generic.svg'],
             brand: {
               '@type': 'Brand',
               name: '웰컴시스템',
@@ -140,6 +146,7 @@ export default function Home() {
             '@type': 'Product',
             name: '프린터 판매 및 설치',
             description: '프린터 판매 및 설치 서비스 (견적 상담 후 가격 결정)',
+            image: ['https://www.okwellcom.com/products/printer-generic.svg'],
             brand: {
               '@type': 'Brand',
               name: '웰컴시스템',

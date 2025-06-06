@@ -1,0 +1,50 @@
+<svg width="400" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- 노트북 베이스 -->
+  <rect x="50" y="180" width="300" height="100" rx="15" fill="#2d3748" stroke="#4a5568" stroke-width="2"/>
+  
+  <!-- 노트북 화면 -->
+  <rect x="60" y="80" width="280" height="180" rx="10" fill="#1a202c" stroke="#4a5568" stroke-width="2"/>
+  
+  <!-- 화면 -->
+  <rect x="75" y="95" width="250" height="150" rx="5" fill="#2b6cb0"/>
+  
+  <!-- 키보드 영역 -->
+  <rect x="70" y="200" width="260" height="60" rx="5" fill="#4a5568"/>
+  
+  <!-- 키보드 키들 -->
+  <g fill="#718096">
+    <rect x="80" y="210" width="15" height="8" rx="2"/>
+    <rect x="100" y="210" width="15" height="8" rx="2"/>
+    <rect x="120" y="210" width="15" height="8" rx="2"/>
+    <rect x="140" y="210" width="15" height="8" rx="2"/>
+    <rect x="160" y="210" width="15" height="8" rx="2"/>
+    <rect x="180" y="210" width="15" height="8" rx="2"/>
+    <rect x="200" y="210" width="15" height="8" rx="2"/>
+    <rect x="220" y="210" width="15" height="8" rx="2"/>
+    <rect x="240" y="210" width="15" height="8" rx="2"/>
+    <rect x="260" y="210" width="15" height="8" rx="2"/>
+    <rect x="280" y="210" width="15" height="8" rx="2"/>
+    <rect x="300" y="210" width="15" height="8" rx="2"/>
+    
+    <rect x="80" y="225" width="15" height="8" rx="2"/>
+    <rect x="100" y="225" width="15" height="8" rx="2"/>
+    <rect x="120" y="225" width="15" height="8" rx="2"/>
+    <rect x="140" y="225" width="15" height="8" rx="2"/>
+    <rect x="160" y="225" width="15" height="8" rx="2"/>
+    <rect x="180" y="225" width="15" height="8" rx="2"/>
+    <rect x="200" y="225" width="15" height="8" rx="2"/>
+    <rect x="220" y="225" width="15" height="8" rx="2"/>
+    <rect x="240" y="225" width="15" height="8" rx="2"/>
+    <rect x="260" y="225" width="15" height="8" rx="2"/>
+    <rect x="280" y="225" width="15" height="8" rx="2"/>
+    
+    <rect x="90" y="240" width="220" height="8" rx="2"/>
+  </g>
+  
+  <!-- 트랙패드 -->
+  <rect x="160" y="245" width="80" height="20" rx="5" fill="#718096"/>
+  
+  <!-- 웰컴 로고 텍스트 -->
+  <text x="200" y="170" text-anchor="middle" fill="#e2e8f0" font-family="Arial, sans-serif" font-size="18" font-weight="bold">WellCom</text>
+  <text x="200" y="190" text-anchor="middle" fill="#cbd5e0" font-family="Arial, sans-serif" font-size="12">Notebook</text>
+</svg> 

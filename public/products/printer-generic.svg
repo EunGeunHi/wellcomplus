@@ -1,0 +1,42 @@
+<svg width="400" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- 프린터 베이스 -->
+  <rect x="50" y="120" width="300" height="120" rx="10" fill="#4a5568" stroke="#2d3748" stroke-width="2"/>
+  
+  <!-- 프린터 상단 -->
+  <rect x="70" y="80" width="260" height="60" rx="8" fill="#2d3748" stroke="#1a202c" stroke-width="2"/>
+  
+  <!-- 용지함 -->
+  <rect x="80" y="90" width="240" height="40" rx="5" fill="#e2e8f0" stroke="#cbd5e0" stroke-width="1"/>
+  
+  <!-- 프린터 전면 패널 -->
+  <rect x="60" y="140" width="280" height="80" rx="5" fill="#718096"/>
+  
+  <!-- 버튼들 -->
+  <circle cx="100" cy="160" r="8" fill="#2b6cb0"/>
+  <circle cx="130" cy="160" r="8" fill="#38a169"/>
+  <circle cx="160" cy="160" r="8" fill="#e53e3e"/>
+  
+  <!-- LCD 화면 -->
+  <rect x="200" y="150" width="120" height="30" rx="3" fill="#1a202c" stroke="#4a5568" stroke-width="1"/>
+  <rect x="205" y="155" width="110" height="20" rx="2" fill="#2b6cb0"/>
+  <text x="260" y="167" text-anchor="middle" fill="#e2e8f0" font-family="Arial, sans-serif" font-size="8">WellCom</text>
+  
+  <!-- 출력함 -->
+  <rect x="70" y="200" width="260" height="20" rx="3" fill="#e2e8f0" stroke="#cbd5e0" stroke-width="1"/>
+  
+  <!-- 프린터 하단 -->
+  <rect x="60" y="240" width="280" height="40" rx="8" fill="#2d3748"/>
+  
+  <!-- 다리 -->
+  <rect x="80" y="280" width="30" height="10" rx="5" fill="#4a5568"/>
+  <rect x="290" y="280" width="30" height="10" rx="5" fill="#4a5568"/>
+  
+  <!-- 브랜드 로고 -->
+  <text x="200" y="110" text-anchor="middle" fill="#e2e8f0" font-family="Arial, sans-serif" font-size="16" font-weight="bold">WellCom</text>
+  <text x="200" y="125" text-anchor="middle" fill="#cbd5e0" font-family="Arial, sans-serif" font-size="10">Printer</text>
+  
+  <!-- 용지 -->
+  <rect x="85" y="95" width="20" height="30" rx="2" fill="white" stroke="#cbd5e0" stroke-width="1"/>
+  <rect x="110" y="95" width="20" height="30" rx="2" fill="white" stroke="#cbd5e0" stroke-width="1"/>
+  <rect x="135" y="95" width="20" height="30" rx="2" fill="white" stroke="#cbd5e0" stroke-width="1"/>
+</svg> 
