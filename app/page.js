@@ -48,22 +48,36 @@ export default function Home() {
       itemListElement: [
         {
           '@type': 'Offer',
-          price: '상담 후 결정',
+          price: '0',
           priceCurrency: 'KRW',
           availability: 'https://schema.org/InStock',
+          priceSpecification: {
+            '@type': 'PriceSpecification',
+            price: '0',
+            priceCurrency: 'KRW',
+            valueAddedTaxIncluded: false,
+            description: '견적 상담 후 가격 결정',
+          },
           itemOffered: {
             '@type': 'Product',
             name: '맞춤형 컴퓨터 조립',
-            description: '고객 맞춤형 컴퓨터 조립 서비스',
+            description: '고객 맞춤형 컴퓨터 조립 서비스 (견적 상담 후 가격 결정)',
             brand: {
               '@type': 'Brand',
               name: '웰컴시스템',
             },
             offers: {
               '@type': 'Offer',
-              price: '상담 후 결정',
+              price: '0',
               priceCurrency: 'KRW',
               availability: 'https://schema.org/InStock',
+              priceSpecification: {
+                '@type': 'PriceSpecification',
+                price: '0',
+                priceCurrency: 'KRW',
+                valueAddedTaxIncluded: false,
+                description: '견적 상담 후 가격 결정',
+              },
               seller: {
                 '@type': 'Organization',
                 name: '웰컴시스템',
@@ -73,22 +87,36 @@ export default function Home() {
         },
         {
           '@type': 'Offer',
-          price: '상담 후 결정',
+          price: '0',
           priceCurrency: 'KRW',
           availability: 'https://schema.org/InStock',
+          priceSpecification: {
+            '@type': 'PriceSpecification',
+            price: '0',
+            priceCurrency: 'KRW',
+            valueAddedTaxIncluded: false,
+            description: '견적 상담 후 가격 결정',
+          },
           itemOffered: {
             '@type': 'Product',
             name: '노트북 판매 및 상담',
-            description: '다양한 브랜드 노트북 판매 및 전문 상담',
+            description: '다양한 브랜드 노트북 판매 및 전문 상담 (견적 상담 후 가격 결정)',
             brand: {
               '@type': 'Brand',
               name: '웰컴시스템',
             },
             offers: {
               '@type': 'Offer',
-              price: '상담 후 결정',
+              price: '0',
               priceCurrency: 'KRW',
               availability: 'https://schema.org/InStock',
+              priceSpecification: {
+                '@type': 'PriceSpecification',
+                price: '0',
+                priceCurrency: 'KRW',
+                valueAddedTaxIncluded: false,
+                description: '견적 상담 후 가격 결정',
+              },
               seller: {
                 '@type': 'Organization',
                 name: '웰컴시스템',
@@ -98,22 +126,36 @@ export default function Home() {
         },
         {
           '@type': 'Offer',
-          price: '상담 후 결정',
+          price: '0',
           priceCurrency: 'KRW',
           availability: 'https://schema.org/InStock',
+          priceSpecification: {
+            '@type': 'PriceSpecification',
+            price: '0',
+            priceCurrency: 'KRW',
+            valueAddedTaxIncluded: false,
+            description: '견적 상담 후 가격 결정',
+          },
           itemOffered: {
             '@type': 'Product',
             name: '프린터 판매 및 설치',
-            description: '프린터 판매 및 설치 서비스',
+            description: '프린터 판매 및 설치 서비스 (견적 상담 후 가격 결정)',
             brand: {
               '@type': 'Brand',
               name: '웰컴시스템',
             },
             offers: {
               '@type': 'Offer',
-              price: '상담 후 결정',
+              price: '0',
               priceCurrency: 'KRW',
               availability: 'https://schema.org/InStock',
+              priceSpecification: {
+                '@type': 'PriceSpecification',
+                price: '0',
+                priceCurrency: 'KRW',
+                valueAddedTaxIncluded: false,
+                description: '견적 상담 후 가격 결정',
+              },
               seller: {
                 '@type': 'Organization',
                 name: '웰컴시스템',
