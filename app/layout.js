@@ -16,6 +16,7 @@ export const metadata = {
   keywords: [
     '웰컴',
     '웰컴컴퓨터',
+    '웰컴시스템',
     'WellCom',
     '컴퓨터',
     '노트북',
