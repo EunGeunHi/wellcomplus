@@ -235,7 +235,7 @@ export default function Home() {
               </h3>
               <div className="flex-grow h-[250px] sm:h-[320px] rounded-xl overflow-hidden">
                 <iframe
-                  src={`https://www.google.com/maps/embed/v1/place?key=${process.env.GOOGLE_MAPS_API_KEY}&q=부산컴퓨터도매상가&center=35.21399045790162,129.0796384915669&zoom=16`}
+                  src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=부산컴퓨터도매상가&center=35.21399045790162,129.0796384915669&zoom=16`}
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
