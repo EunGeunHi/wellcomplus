@@ -3,7 +3,15 @@ export default function robots() {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/api/', '/userpage/*/detail*', '/admin*', '/_next/', '/static/'],
+      disallow: [
+        '/api/',
+        '/userpage/*/detail*',
+        '/admin*',
+        '/_next/',
+        '/static/',
+        '/test*',
+        '/manage*',
+      ],
     },
     sitemap: 'https://www.okwellcom.com/sitemap.xml',
   };
