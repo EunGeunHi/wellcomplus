@@ -148,7 +148,7 @@
     }
   ],
   "settings": {
-    "imageRotationInterval": 3000,
+    "imageRotationInterval": 3500,
     "autoplay": true,
     "muted": true,
     "loop": true

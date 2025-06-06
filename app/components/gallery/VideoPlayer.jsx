@@ -31,9 +31,22 @@ export default function VideoPlayer({
           muted={settings.muted}
           loop={false}
           playsInline
-          preload="auto"
+          preload="metadata"
+          loading="lazy"
           onEnded={onVideoEnded}
           onError={onVideoError}
+          onLoadStart={() => {
+            // 로딩 시작 시 처리
+            if (videoRef.current) {
+              videoRef.current.style.opacity = '0.7';
+            }
+          }}
+          onCanPlay={() => {
+            // 재생 가능할 때 처리
+            if (videoRef.current) {
+              videoRef.current.style.opacity = '1';
+            }
+          }}
         >
           <source src={`/assembly/videos/${currentVideo.filename}`} type="video/mp4" />
           동영상을 지원하지 않는 브라우저입니다.
