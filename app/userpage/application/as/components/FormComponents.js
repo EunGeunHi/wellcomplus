@@ -295,6 +295,14 @@ export const FileUpload = ({
   </div>
 );
 
+// 로딩 스피너 컴포넌트
+const LoadingSpinner = () => (
+  <div className="relative w-10 h-10 mx-auto mb-4">
+    <div className="absolute inset-0 border-4 border-blue-200 rounded-full"></div>
+    <div className="absolute inset-0 border-4 border-transparent border-t-blue-500 rounded-full animate-spin"></div>
+  </div>
+);
+
 // 업로드 진행률 컴포넌트
 export const UploadProgress = ({ progress }) => {
   if (!progress) return null;
@@ -304,8 +312,11 @@ export const UploadProgress = ({ progress }) => {
       <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
         <div className="text-center">
           <div className="mb-4">
-            <FiUpload className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-            <h3 className="text-lg font-[BMJUA] text-gray-900">파일 업로드 중</h3>
+            <LoadingSpinner />
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <FiUpload className="w-6 h-6 text-blue-500" />
+              <h3 className="text-lg font-[BMJUA] text-gray-900">파일 업로드 중</h3>
+            </div>
           </div>
 
           <div className="mb-4">
@@ -386,11 +397,6 @@ export const SubmitButton = ({ isSubmitting, onSubmit }) => (
       )}
       {isSubmitting ? '신청 중...' : 'A/S 신청하기'}
     </button>
-    {isSubmitting && (
-      <p className="text-center text-xs sm:text-sm text-gray-600 mt-2 sm:mt-3">
-        📱 모바일에서는 화면을 끄지 마시고 잠시만 기다려주세요.
-      </p>
-    )}
   </div>
 );
 
