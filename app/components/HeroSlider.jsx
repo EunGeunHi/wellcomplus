@@ -7,6 +7,7 @@ import Image from 'next/image';
 export default function HeroSlider() {
   const [currentImage, setCurrentImage] = useState(0);
   const [imageLoadErrors, setImageLoadErrors] = useState(new Set());
+  const [isLoaded, setIsLoaded] = useState(false);
   const intervalRef = useRef(null);
 
   const images = [
@@ -30,6 +31,9 @@ export default function HeroSlider() {
 
   // 자동 슬라이드 기능
   useEffect(() => {
+    // 첫 번째 이미지 로드 후에만 자동 슬라이드 시작
+    if (!isLoaded) return;
+
     // 기존 인터벌 정리
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -44,7 +48,7 @@ export default function HeroSlider() {
         clearInterval(intervalRef.current);
       }
     };
-  }, [nextSlide, totalImages]);
+  }, [nextSlide, totalImages, isLoaded]);
 
   // 이미지 슬라이드 비율 계산
   const progressWidth = totalImages > 0 ? ((currentImage + 1) / totalImages) * 100 : 0;
@@ -71,9 +75,18 @@ export default function HeroSlider() {
                       alt={`컴퓨터 시스템 이미지 ${index + 1}`}
                       fill
                       className="object-cover"
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      priority={index === 0 && index === currentImage} // 현재 보이는 첫 번째 이미지만 우선 로드
-                      loading={index === 0 ? 'eager' : 'lazy'} // 첫 번째는 즉시, 나머지는 지연 로딩
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
+                      // 첫 번째 이미지만 priority, 나머지는 lazy loading
+                      priority={index === 0}
+                      loading={index === 0 ? 'eager' : 'lazy'}
+                      // 이미지 preload를 위한 placeholder 설정
+                      placeholder="blur"
+                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAAAAAAAAAAAAAAAAAAAACv/EAB8QAAEEAwEBAQEAAAAAAAAAAAABAgMEBQYHCBESE//EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6b+h0R+SlPoABYxSM0GYAW7qNR7LWNR8YGNsaLvE4sFllYPWvEZGWvqXZjUyNOYO4VJlKhKB1WGKJK4IjDFxwqFGgMAB7jTcCRpGMFQQKZGOsrCgBTrWVu3G+nqUFdJyKNdI="
+                      onLoad={() => {
+                        if (index === 0 && !isLoaded) {
+                          setIsLoaded(true);
+                        }
+                      }}
                       onError={() => {
                         console.error(`이미지 로드 실패: ${image}`);
                         setImageLoadErrors((prev) => new Set([...prev, image]));
