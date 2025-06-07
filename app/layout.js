@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
   metadataBase: new URL('https://www.okwellcom.com'),
-  title: 'WellCom - 웰컴 컴퓨터 전문점',
+  title: 'WellComSystem - 웰컴시스템 컴퓨터 전문점',
   description:
     '웰컴 컴퓨터 전문점 - 컴퓨터, 노트북, 프린터 견적 및 A/S 서비스. 믿을 수 있는 컴퓨터 전문가와 함께하세요.',
   keywords: [
@@ -18,6 +18,7 @@ export const metadata = {
     '웰컴컴퓨터',
     '웰컴시스템',
     'WellCom',
+    'WellComSystem',
     '컴퓨터',
     '노트북',
     '프린터',
@@ -26,9 +27,9 @@ export const metadata = {
     '컴퓨터전문점',
     '컴퓨터수리',
   ],
-  authors: [{ name: 'WellCom' }],
-  creator: 'WellCom',
-  publisher: 'WellCom',
+  authors: [{ name: 'WellComSystem' }],
+  creator: 'WellComSystem',
+  publisher: 'WellComSystem',
   robots: {
     index: true,
     follow: true,
@@ -44,8 +45,8 @@ export const metadata = {
     type: 'website',
     locale: 'ko_KR',
     url: 'https://www.okwellcom.com',
-    siteName: 'WellCom - 웰컴 컴퓨터 전문점',
-    title: 'WellCom - 웰컴 컴퓨터 전문점',
+    siteName: 'WellComSystem - 웰컴시스템 컴퓨터 전문점',
+    title: 'WellComSystem - 웰컴시스템 컴퓨터 전문점',
     description:
       '웰컴 컴퓨터 전문점 - 컴퓨터, 노트북, 프린터 견적 및 A/S 서비스. 믿을 수 있는 컴퓨터 전문가와 함께하세요.',
     images: [
@@ -53,14 +54,14 @@ export const metadata = {
         url: '/og-image.jpg', // 대표 이미지 (1200x630 권장)
         width: 1200,
         height: 630,
-        alt: 'WellCom 웰컴 컴퓨터 전문점',
+        alt: 'WellComSystem 웰컴시스템 컴퓨터 전문점',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'WellCom - 웰컴 컴퓨터 전문점',
-    description: '웰컴 컴퓨터 전문점 - 컴퓨터, 노트북, 프린터 견적 및 A/S 서비스',
+    title: 'WellComSystem - 웰컴시스템 컴퓨터 전문점',
+    description: '웰컴시스템 컴퓨터 전문점 - 컴퓨터, 노트북, 프린터 견적 및 A/S 서비스',
     images: ['/og-image.jpg'],
   },
   verification: {

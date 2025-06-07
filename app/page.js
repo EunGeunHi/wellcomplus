@@ -11,8 +11,8 @@ export default function Home() {
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
-    name: '웰컴 컴퓨터 전문점',
-    alternateName: 'WellCom',
+    name: '웰컴시스템 컴퓨터 전문점',
+    alternateName: 'WellComSystem',
     description: '35년 전통의 컴퓨터, 노트북, 프린터 전문점. 맞춤형 견적 및 평생 A/S 서비스 제공',
     url: 'https://www.okwellcom.com',
     telephone: '010-8781-8871',
