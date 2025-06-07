@@ -89,10 +89,6 @@ const nextConfig = {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
           },
-          {
-            key: 'Link',
-            value: '</mainpageimg/1.webp>; rel=preload; as=image; type=image/webp',
-          },
         ],
       },
     ];
