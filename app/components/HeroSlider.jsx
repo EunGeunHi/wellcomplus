@@ -72,7 +72,8 @@ export default function HeroSlider() {
                       fill
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, 50vw"
-                      priority={index === 0} // 첫 번째 이미지만 우선 로드
+                      priority={index === 0 && index === currentImage} // 현재 보이는 첫 번째 이미지만 우선 로드
+                      loading={index === 0 ? 'eager' : 'lazy'} // 첫 번째는 즉시, 나머지는 지연 로딩
                       onError={() => {
                         console.error(`이미지 로드 실패: ${image}`);
                         setImageLoadErrors((prev) => new Set([...prev, image]));
