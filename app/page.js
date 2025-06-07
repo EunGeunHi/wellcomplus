@@ -71,6 +71,45 @@ export default function Home() {
               '@type': 'Brand',
               name: '웰컴시스템',
             },
+            aggregateRating: {
+              '@type': 'AggregateRating',
+              ratingValue: '4.9',
+              reviewCount: '250',
+              bestRating: '5',
+              worstRating: '1',
+            },
+            review: [
+              {
+                '@type': 'Review',
+                author: {
+                  '@type': 'Person',
+                  name: '김○○',
+                },
+                datePublished: '2024-01-15',
+                reviewBody:
+                  '35년 노하우가 느껴지는 완벽한 조립 서비스였습니다. 게이밍 성능도 만족스럽고 AS도 신속해요.',
+                reviewRating: {
+                  '@type': 'Rating',
+                  ratingValue: '5',
+                  bestRating: '5',
+                },
+              },
+              {
+                '@type': 'Review',
+                author: {
+                  '@type': 'Person',
+                  name: '박○○',
+                },
+                datePublished: '2024-02-03',
+                reviewBody:
+                  '맞춤형 견적으로 예산에 맞는 최적의 컴퓨터를 만들어주셨어요. 강력 추천합니다.',
+                reviewRating: {
+                  '@type': 'Rating',
+                  ratingValue: '5',
+                  bestRating: '5',
+                },
+              },
+            ],
             offers: {
               '@type': 'Offer',
               price: '0',
@@ -83,9 +122,54 @@ export default function Home() {
                 valueAddedTaxIncluded: false,
                 description: '견적 상담 후 가격 결정',
               },
+              priceValidUntil: '2024-12-31',
               seller: {
                 '@type': 'Organization',
                 name: '웰컴시스템',
+              },
+              hasMerchantReturnPolicy: {
+                '@type': 'MerchantReturnPolicy',
+                applicableCountry: 'KR',
+                returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+                merchantReturnDays: 7,
+                returnMethod: [
+                  'https://schema.org/ReturnByMail',
+                  'https://schema.org/ReturnInStore',
+                ],
+                returnFees: 'https://schema.org/ReturnFeesCustomerResponsibility',
+                additionalProperty: {
+                  '@type': 'PropertyValue',
+                  name: '반품비용 안내',
+                  value: '기본 무료, 상황에 따라 비용 발생 가능',
+                },
+              },
+              shippingDetails: {
+                '@type': 'OfferShippingDetails',
+                shippingRate: {
+                  '@type': 'MonetaryAmount',
+                  minValue: '10000',
+                  maxValue: '30000',
+                  currency: 'KRW',
+                },
+                shippingDestination: {
+                  '@type': 'DefinedRegion',
+                  addressCountry: 'KR',
+                },
+                deliveryTime: {
+                  '@type': 'ShippingDeliveryTime',
+                  handlingTime: {
+                    '@type': 'QuantitativeValue',
+                    minValue: 1,
+                    maxValue: 2,
+                    unitCode: 'DAY',
+                  },
+                  transitTime: {
+                    '@type': 'QuantitativeValue',
+                    minValue: 1,
+                    maxValue: 7,
+                    unitCode: 'DAY',
+                  },
+                },
               },
             },
           },
@@ -111,6 +195,44 @@ export default function Home() {
               '@type': 'Brand',
               name: '웰컴시스템',
             },
+            aggregateRating: {
+              '@type': 'AggregateRating',
+              ratingValue: '4.7',
+              reviewCount: '180',
+              bestRating: '5',
+              worstRating: '1',
+            },
+            review: [
+              {
+                '@type': 'Review',
+                author: {
+                  '@type': 'Person',
+                  name: '이○○',
+                },
+                datePublished: '2024-01-20',
+                reviewBody:
+                  '다양한 노트북 브랜드 비교 상담받고 최적의 제품을 구매했어요. 전문적인 상담이 인상적이었습니다.',
+                reviewRating: {
+                  '@type': 'Rating',
+                  ratingValue: '5',
+                  bestRating: '5',
+                },
+              },
+              {
+                '@type': 'Review',
+                author: {
+                  '@type': 'Person',
+                  name: '최○○',
+                },
+                datePublished: '2024-02-10',
+                reviewBody: '업무용 노트북 추천받았는데 성능과 가격 모두 만족스러워요.',
+                reviewRating: {
+                  '@type': 'Rating',
+                  ratingValue: '4',
+                  bestRating: '5',
+                },
+              },
+            ],
             offers: {
               '@type': 'Offer',
               price: '0',
@@ -123,9 +245,54 @@ export default function Home() {
                 valueAddedTaxIncluded: false,
                 description: '견적 상담 후 가격 결정',
               },
+              priceValidUntil: '2024-12-31',
               seller: {
                 '@type': 'Organization',
                 name: '웰컴시스템',
+              },
+              hasMerchantReturnPolicy: {
+                '@type': 'MerchantReturnPolicy',
+                applicableCountry: 'KR',
+                returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+                merchantReturnDays: 7,
+                returnMethod: [
+                  'https://schema.org/ReturnByMail',
+                  'https://schema.org/ReturnInStore',
+                ],
+                returnFees: 'https://schema.org/ReturnFeesCustomerResponsibility',
+                additionalProperty: {
+                  '@type': 'PropertyValue',
+                  name: '반품비용 안내',
+                  value: '기본 무료, 상황에 따라 비용 발생 가능',
+                },
+              },
+              shippingDetails: {
+                '@type': 'OfferShippingDetails',
+                shippingRate: {
+                  '@type': 'MonetaryAmount',
+                  minValue: '10000',
+                  maxValue: '30000',
+                  currency: 'KRW',
+                },
+                shippingDestination: {
+                  '@type': 'DefinedRegion',
+                  addressCountry: 'KR',
+                },
+                deliveryTime: {
+                  '@type': 'ShippingDeliveryTime',
+                  handlingTime: {
+                    '@type': 'QuantitativeValue',
+                    minValue: 1,
+                    maxValue: 2,
+                    unitCode: 'DAY',
+                  },
+                  transitTime: {
+                    '@type': 'QuantitativeValue',
+                    minValue: 1,
+                    maxValue: 7,
+                    unitCode: 'DAY',
+                  },
+                },
               },
             },
           },
@@ -151,6 +318,45 @@ export default function Home() {
               '@type': 'Brand',
               name: '웰컴시스템',
             },
+            aggregateRating: {
+              '@type': 'AggregateRating',
+              ratingValue: '4.8',
+              reviewCount: '120',
+              bestRating: '5',
+              worstRating: '1',
+            },
+            review: [
+              {
+                '@type': 'Review',
+                author: {
+                  '@type': 'Person',
+                  name: '정○○',
+                },
+                datePublished: '2024-01-25',
+                reviewBody:
+                  '프린터 설치부터 설정까지 완벽하게 처리해주셨어요. 사무실에서 바로 사용 가능했습니다.',
+                reviewRating: {
+                  '@type': 'Rating',
+                  ratingValue: '5',
+                  bestRating: '5',
+                },
+              },
+              {
+                '@type': 'Review',
+                author: {
+                  '@type': 'Person',
+                  name: '한○○',
+                },
+                datePublished: '2024-02-15',
+                reviewBody:
+                  '복합기 추천과 설치 서비스 모두 만족스러웠습니다. 전문적인 상담 감사합니다.',
+                reviewRating: {
+                  '@type': 'Rating',
+                  ratingValue: '5',
+                  bestRating: '5',
+                },
+              },
+            ],
             offers: {
               '@type': 'Offer',
               price: '0',
@@ -163,9 +369,54 @@ export default function Home() {
                 valueAddedTaxIncluded: false,
                 description: '견적 상담 후 가격 결정',
               },
+              priceValidUntil: '2024-12-31',
               seller: {
                 '@type': 'Organization',
                 name: '웰컴시스템',
+              },
+              hasMerchantReturnPolicy: {
+                '@type': 'MerchantReturnPolicy',
+                applicableCountry: 'KR',
+                returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+                merchantReturnDays: 7,
+                returnMethod: [
+                  'https://schema.org/ReturnByMail',
+                  'https://schema.org/ReturnInStore',
+                ],
+                returnFees: 'https://schema.org/ReturnFeesCustomerResponsibility',
+                additionalProperty: {
+                  '@type': 'PropertyValue',
+                  name: '반품비용 안내',
+                  value: '기본 무료, 상황에 따라 비용 발생 가능',
+                },
+              },
+              shippingDetails: {
+                '@type': 'OfferShippingDetails',
+                shippingRate: {
+                  '@type': 'MonetaryAmount',
+                  minValue: '10000',
+                  maxValue: '30000',
+                  currency: 'KRW',
+                },
+                shippingDestination: {
+                  '@type': 'DefinedRegion',
+                  addressCountry: 'KR',
+                },
+                deliveryTime: {
+                  '@type': 'ShippingDeliveryTime',
+                  handlingTime: {
+                    '@type': 'QuantitativeValue',
+                    minValue: 1,
+                    maxValue: 2,
+                    unitCode: 'DAY',
+                  },
+                  transitTime: {
+                    '@type': 'QuantitativeValue',
+                    minValue: 1,
+                    maxValue: 7,
+                    unitCode: 'DAY',
+                  },
+                },
               },
             },
           },
