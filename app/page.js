@@ -795,6 +795,33 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* 폰트 크레딧 섹션 */}
+      <section className="py-3 sm:py-4 bg-gray-50 border-t border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center">
+            <h3 className="text-sm sm:text-lg font-semibold text-gray-700 mb-1 sm:mb-2 font-['NanumGothic']">
+              폰트 출처
+            </h3>
+            <div className="text-xs sm:text-sm text-gray-600 font-['NanumGothic']">
+              {/* 모바일: 세로 배열, 데스크톱: 가로 배열 */}
+              <div className="flex flex-col sm:flex-row sm:justify-center sm:items-center space-y-1 sm:space-y-0">
+                <span className="block sm:inline">
+                  <span className="font-semibold">실라문화체</span> - 경주시 제공
+                </span>
+                <span className="hidden sm:inline text-gray-500 mx-2">|</span>
+                <span className="block sm:inline">
+                  <span className="font-semibold">배민 주아체</span> - ㈜우아한형제들 제공
+                </span>
+                <span className="hidden sm:inline text-gray-500 mx-2">|</span>
+                <span className="block sm:inline">
+                  <span className="font-semibold">나눔고딕</span> - 네이버 및 네이버문화재단 제공
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </>
   );
 }
