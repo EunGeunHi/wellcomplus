@@ -14,6 +14,7 @@ import {
   FiTrash2,
   FiCoffee,
   FiDownload,
+  FiUsers,
 } from 'react-icons/fi';
 
 export default function ManagePage() {
@@ -215,6 +216,18 @@ export default function ManagePage() {
                 <span className="text-gray-500 text-sm">(사용권장X, 로직 비효율ㅠㅠ)</span>
               </h2>
               <p className="text-gray-600">자료와 기록 데이터를 관리하고 조회합니다.</p>
+            </div>
+          </Link>
+          <Link
+            href="/manage/users"
+            className="bg-white hover:bg-blue-50 border border-gray-200 p-6 rounded-lg shadow-sm transition-all duration-300 hover:shadow-md flex items-start gap-4"
+          >
+            <div className="p-3 rounded-lg bg-blue-100 text-blue-600">
+              <FiUsers size={24} />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold mb-2">사용자 관리</h2>
+              <p className="text-gray-600">사용자 정보를 확인하고 관리합니다.</p>
             </div>
           </Link>
 
