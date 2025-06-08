@@ -23,37 +23,37 @@ export default function sitemap() {
     {
       url: `${baseUrl}/userpage/application`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
       url: `${baseUrl}/userpage/application/computer`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
       url: `${baseUrl}/userpage/application/notebook`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
       url: `${baseUrl}/userpage/application/printer`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
       url: `${baseUrl}/userpage/application/as`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
       url: `${baseUrl}/userpage/application/inquiry`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: 'weekly',
       priority: 0.9,
     },
   ];

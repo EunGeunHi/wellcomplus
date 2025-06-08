@@ -57,17 +57,41 @@ export default function ApplicationPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 via-sky-100/30 to-white font-[NanumGothic]">
-      <LoggedInOnlySection fallback={<LoginFallback />}>
-        <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12 lg:py-16 sm:px-6 lg:px-8">
-          <div className="text-center font-[BMJUA] mb-8 sm:mb-12 lg:mb-16">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl text-gray-900 mb-2 sm:mb-3">
-              서비스 신청
-            </h1>
-            <p className="text-base sm:text-lg lg:text-xl text-gray-600">
-              원하시는 서비스를 선택해주세요
+      {/* SEO를 위한 정적 콘텐츠 */}
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12 lg:py-16 sm:px-6 lg:px-8">
+        <div className="text-center font-[BMJUA] mb-1 sm:mb-3 lg:mb-6">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl text-gray-900 mb-2 sm:mb-3">
+            웰컴시스템 서비스 신청
+          </h1>
+          <p className="text-base sm:text-lg lg:text-xl text-gray-600">
+            PC, 노트북, 프린터 견적부터 A/S까지 모든 컴퓨터 서비스를 한 곳에서
+          </p>
+
+          {/* SEO용 서비스 설명 - 사용자에게는 보이지 않음 */}
+          <div className="sr-only">
+            <p>
+              웰컴시스템은 35년 전통의 컴퓨터 전문점으로 PC 견적, 노트북 견적, 프린터 견적 신청
+              서비스와 전문적인 A/S 서비스를 제공합니다. 게임용 PC부터 사무용 컴퓨터까지 고객 맞춤형
+              견적을 받아보세요.
             </p>
           </div>
+        </div>
 
+        {/* 서비스 목록 - 정적 버전 (검색엔진용) */}
+        <div className="sr-only">
+          <h2>제공 서비스</h2>
+          <ul>
+            <li>PC 견적 신청 - 맞춤형 컴퓨터 견적 서비스</li>
+            <li>프린터 견적 신청 - 다양한 프린터 모델 견적</li>
+            <li>노트북 견적 신청 - 용도별 노트북 추천</li>
+            <li>AS 신청 - 컴퓨터 수리 및 유지보수</li>
+            <li>기타 문의 - 컴퓨터 관련 상담</li>
+          </ul>
+        </div>
+      </div>
+
+      <LoggedInOnlySection fallback={<LoginFallback />}>
+        <div className="max-w-7xl mx-auto px-4 pb-8 sm:pb-12 lg:pb-16 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {services.map((service) => (
               <motion.div

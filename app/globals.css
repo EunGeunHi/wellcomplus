@@ -24,6 +24,37 @@
   .tracking-tighter2 {
     letter-spacing: -0.1em; /* 원하는 값으로 조정 */
   }
+
+  /* SEO 전용 숨김 스타일들 */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* 방법 2: SEO 전용 (더 강력한 숨김) */
+  .seo-only {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  /* 방법 3: 투명 처리 */
+  .seo-transparent {
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+    font-size: 0;
+    line-height: 0;
+  }
 }
 
 /* 붓글씨 폰트 (실라문화체)*/

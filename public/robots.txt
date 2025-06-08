@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://www.okwellcom.com/sitemap.xml
+
+# Allow all pages
+Allow: /login
+Allow: /signup
+Allow: /userpage/application
+Allow: /userpage/application/computer
+Allow: /userpage/application/notebook
+Allow: /userpage/application/printer
+Allow: /userpage/application/as
+Allow: /userpage/application/inquiry 
