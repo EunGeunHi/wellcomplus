@@ -47,12 +47,17 @@ export const authOptions = {
         // MongoDB 연결
         await connectDB();
 
-        // 이메일로 사용자 검색
-        const user = await User.findOne({ email: credentials.email, isDeleted: false });
+        // 이메일로 사용자 검색 (탈퇴 여부 상관없이)
+        const user = await User.findOne({ email: credentials.email });
 
         // 사용자가 없으면 null 반환 (인증 실패)
         if (!user) {
           return null;
+        }
+
+        // 탈퇴한 사용자인지 확인
+        if (user.isDeleted) {
+          throw new Error('DeletedAccount');
         }
 
         // 비밀번호 확인 (bcrypt로 해시된 비밀번호 비교)
@@ -212,6 +217,13 @@ export const authOptions = {
           await connectDB();
           const latestUser = await User.findById(token.id);
 
+          // 사용자가 탈퇴했는지 확인
+          if (!latestUser || latestUser.isDeleted) {
+            // 탈퇴한 사용자는 세션을 무효화
+            console.log('탈퇴한 사용자 세션 무효화:', token.email);
+            return null; // 세션을 null로 반환하여 로그아웃 처리
+          }
+
           if (latestUser) {
             // DB의 최신 정보를 토큰에 업데이트
             token.name = latestUser.name;
@@ -241,7 +253,13 @@ export const authOptions = {
         try {
           await connectDB();
 
-          // 이메일로 기존 사용자 찾기
+          // 탈퇴한 계정인지 먼저 확인
+          const deletedUser = await User.findOne({ email: profile.email, isDeleted: true });
+          if (deletedUser) {
+            throw new Error('DeletedAccount');
+          }
+
+          // 이메일로 기존 사용자 찾기 (탈퇴하지 않은 사용자만)
           const existingUser = await User.findOne({ email: profile.email, isDeleted: false });
 
           // 사용자가 없으면 새로 생성
@@ -278,6 +296,9 @@ export const authOptions = {
           return true;
         } catch (error) {
           console.error('Error during Google sign in:', error);
+          if (error.message === 'DeletedAccount') {
+            throw new Error('DeletedAccount');
+          }
           return false;
         }
       }
@@ -291,14 +312,27 @@ export const authOptions = {
           // 카카오 고유 ID를 활용하여 사용자 구분
           const kakaoId = profile.id?.toString();
 
-          // 카카오 ID로 우선 사용자 조회
+          // 탈퇴한 계정인지 먼저 확인
+          const deletedUserByKakaoId = await User.findOne({
+            provider: 'kakao',
+            providerId: kakaoId,
+            isDeleted: true,
+          });
+
+          const deletedUserByEmail = email ? await User.findOne({ email, isDeleted: true }) : null;
+
+          if (deletedUserByKakaoId || deletedUserByEmail) {
+            throw new Error('DeletedAccount');
+          }
+
+          // 카카오 ID로 우선 사용자 조회 (탈퇴하지 않은 사용자만)
           let existingUser = await User.findOne({
             provider: 'kakao',
             providerId: kakaoId,
             isDeleted: false,
           });
 
-          // 이메일이 있는 경우, 이메일로도 검색
+          // 이메일이 있는 경우, 이메일로도 검색 (탈퇴하지 않은 사용자만)
           if (email && !existingUser) {
             existingUser = await User.findOne({ email, isDeleted: false });
           }
@@ -342,6 +376,9 @@ export const authOptions = {
           return true;
         } catch (error) {
           console.error('Error during Kakao sign in:', error);
+          if (error.message === 'DeletedAccount') {
+            throw new Error('DeletedAccount');
+          }
           return false;
         }
       }
@@ -357,14 +394,27 @@ export const authOptions = {
           const image = profile.response?.profile_image;
           const mobile = profile.response?.mobile;
 
-          // 네이버 ID로 사용자 조회
+          // 탈퇴한 계정인지 먼저 확인
+          const deletedUserByNaverId = await User.findOne({
+            provider: 'naver',
+            providerId: naverId,
+            isDeleted: true,
+          });
+
+          const deletedUserByEmail = email ? await User.findOne({ email, isDeleted: true }) : null;
+
+          if (deletedUserByNaverId || deletedUserByEmail) {
+            throw new Error('DeletedAccount');
+          }
+
+          // 네이버 ID로 사용자 조회 (탈퇴하지 않은 사용자만)
           let existingUser = await User.findOne({
             provider: 'naver',
             providerId: naverId,
             isDeleted: false,
           });
 
-          // 이메일이 있는 경우, 이메일로도 검색
+          // 이메일이 있는 경우, 이메일로도 검색 (탈퇴하지 않은 사용자만)
           if (email && !existingUser) {
             existingUser = await User.findOne({ email, isDeleted: false });
           }
@@ -419,6 +469,9 @@ export const authOptions = {
           return true;
         } catch (error) {
           console.error('Error during Naver sign in:', error);
+          if (error.message === 'DeletedAccount') {
+            throw new Error('DeletedAccount');
+          }
           return false;
         }
       }

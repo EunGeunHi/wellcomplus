@@ -52,6 +52,12 @@ export async function POST(req) {
     // 이름 중복 확인
     const existingNameUser = await User.findOne({ name: name.trim() });
     if (existingNameUser) {
+      if (existingNameUser.isDeleted) {
+        return NextResponse.json(
+          { success: false, message: '탈퇴한 계정이 사용 중인 이름입니다.' },
+          { status: 409 }
+        );
+      }
       return NextResponse.json(
         { success: false, message: '이미 사용 중인 이름입니다.' },
         { status: 409 } // 충돌 상태 코드
@@ -61,6 +67,12 @@ export async function POST(req) {
     // 이메일 중복 확인
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      if (existingUser.isDeleted) {
+        return NextResponse.json(
+          { success: false, message: '탈퇴한 계정입니다.' },
+          { status: 409 }
+        );
+      }
       return NextResponse.json(
         { success: false, message: '이미 사용 중인 이메일입니다.' },
         { status: 409 } // 충돌 상태 코드
@@ -70,6 +82,12 @@ export async function POST(req) {
     // 전화번호 중복 확인
     const existingPhoneUser = await User.findOne({ phoneNumber });
     if (existingPhoneUser) {
+      if (existingPhoneUser.isDeleted) {
+        return NextResponse.json(
+          { success: false, message: '탈퇴한 계정입니다.' },
+          { status: 409 }
+        );
+      }
       return NextResponse.json(
         { success: false, message: '이미 사용 중인 전화번호입니다.' },
         { status: 409 } // 충돌 상태 코드

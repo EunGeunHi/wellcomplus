@@ -18,6 +18,7 @@ import { LoggedInOnlySection } from '@/app/components/ProtectedContent';
 import LoginFallback from '@/app/components/LoginFallback';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
 
 // 지연 로딩할 컴포넌트들
 const EstimateContent = lazy(() => import('./components/EstimateContent'));
@@ -279,6 +280,12 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
   const [isPhoneValid, setIsPhoneValid] = useState(true);
   const [isNameValid, setIsNameValid] = useState(true);
 
+  // 탈퇴 관련 상태 추가
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteStep, setDeleteStep] = useState(1); // 1: 첫 번째 확인, 2: 두 번째 확인
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteCompleteModalOpen, setIsDeleteCompleteModalOpen] = useState(false);
+
   // userData가 변경될 때 user와 formData 업데이트
   useEffect(() => {
     if (userData?.user) {
@@ -456,6 +463,65 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
     }
   };
 
+  // 탈퇴 처리 함수
+  const handleDeleteAccount = async () => {
+    try {
+      setIsDeleting(true);
+
+      const response = await fetch(`/api/users/${user._id}/delete`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '탈퇴 처리 중 오류가 발생했습니다.');
+      }
+
+      // 성공시 확인 모달 닫고 완료 모달 열기
+      setIsDeleteModalOpen(false);
+      setDeleteStep(1);
+      setIsDeleteCompleteModalOpen(true);
+    } catch (error) {
+      console.error('탈퇴 처리 오류:', error);
+      showToast(error.message, 'error');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // 탈퇴 모달 관련 함수들
+  const openDeleteModal = () => {
+    setIsDeleteModalOpen(true);
+    setDeleteStep(1);
+  };
+
+  const closeDeleteModal = () => {
+    if (!isDeleting) {
+      setIsDeleteModalOpen(false);
+      setDeleteStep(1);
+    }
+  };
+
+  const proceedToSecondStep = () => {
+    setDeleteStep(2);
+  };
+
+  const confirmDelete = () => {
+    handleDeleteAccount();
+  };
+
+  // 탈퇴 완료 후 메인페이지로 이동
+  const handleDeleteComplete = async () => {
+    setIsDeleteCompleteModalOpen(false);
+    await signOut({
+      callbackUrl: '/',
+      redirect: true,
+    });
+  };
+
   if (!user) return <div>로딩중...</div>;
 
   return (
@@ -543,6 +609,27 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
                 {formatDate(user.createdAt)}
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* 탈퇴하기 버튼 섹션 */}
+        <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+            <div>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-0.5 sm:mb-1">
+                계정 관리
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-600">
+                계정을 탈퇴하시려면 아래 버튼을 클릭해주세요.
+              </p>
+            </div>
+            <button
+              onClick={openDeleteModal}
+              className="flex items-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 px-3 sm:px-4 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-xs sm:text-sm font-medium border border-red-200"
+            >
+              <FiX size={14} className="sm:w-4 sm:h-4" />
+              탈퇴하기
+            </button>
           </div>
         </div>
       </section>
@@ -683,6 +770,178 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* 탈퇴 확인 모달 */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-3 sm:px-4 pb-20 md:pb-4">
+          <div className="absolute inset-0 bg-black bg-opacity-50" onClick={closeDeleteModal}></div>
+
+          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 w-full max-w-sm sm:max-w-md z-10 relative">
+            {/* 로딩 오버레이 */}
+            {isDeleting && (
+              <div className="absolute inset-0 bg-white bg-opacity-90 rounded-xl sm:rounded-2xl flex items-center justify-center z-20">
+                <div className="text-center">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mx-auto mb-2 sm:mb-3"></div>
+                  <p className="text-red-600 font-medium text-sm sm:text-base">탈퇴 처리 중...</p>
+                  <p className="text-xs sm:text-sm text-gray-500 mt-1">잠시만 기다려주세요</p>
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={closeDeleteModal}
+              disabled={isDeleting}
+              className="absolute top-3 sm:top-4 right-3 sm:right-4 p-1 sm:p-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="닫기"
+            >
+              <FiX size={16} className="sm:w-5 sm:h-5" />
+            </button>
+
+            {deleteStep === 1 ? (
+              // 첫 번째 확인 단계
+              <>
+                <div className="text-center mb-4 sm:mb-6">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <FiX className="w-6 h-6 sm:w-8 sm:h-8 text-red-600" />
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1 sm:mb-2">
+                    정말로 탈퇴하시겠습니까?
+                  </h3>
+                </div>
+
+                <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4">
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 mt-0.5 text-sm sm:text-base">
+                        ⚠️
+                      </div>
+                      <div>
+                        <p className="font-semibold text-red-800 mb-0.5 sm:mb-1 text-sm sm:text-base">
+                          경고
+                        </p>
+                        <p className="text-red-700 text-xs sm:text-sm">
+                          탈퇴하시면 리뷰데이터를 제외한 모든 데이터가 삭제됩니다
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 sm:gap-3">
+                  <button
+                    type="button"
+                    onClick={closeDeleteModal}
+                    disabled={isDeleting}
+                    className="flex-1 py-2 sm:py-2.5 px-3 sm:px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    취소
+                  </button>
+                  <button
+                    type="button"
+                    onClick={proceedToSecondStep}
+                    disabled={isDeleting}
+                    className="flex-1 py-2 sm:py-2.5 px-3 sm:px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    탈퇴하기
+                  </button>
+                </div>
+              </>
+            ) : (
+              // 두 번째 확인 단계
+              <>
+                <div className="text-center mb-4 sm:mb-6">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <FiX className="w-6 h-6 sm:w-8 sm:h-8 text-red-600" />
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1 sm:mb-2">
+                    정말로 탈퇴하시겠습니까?
+                  </h3>
+                  <p className="text-gray-600 text-xs sm:text-sm">이 작업은 되돌릴 수 없습니다.</p>
+                </div>
+
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+                  <p className="text-red-800 font-semibold text-center text-sm sm:text-base">
+                    마지막 확인입니다.
+                  </p>
+                  <p className="text-red-700 text-xs sm:text-sm text-center mt-1">
+                    탈퇴 후에는 계정을 복구할 수 없습니다.
+                  </p>
+                </div>
+
+                <div className="flex gap-2 sm:gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setDeleteStep(1)}
+                    disabled={isDeleting}
+                    className="flex-1 py-2 sm:py-2.5 px-3 sm:px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    이전
+                  </button>
+                  <button
+                    type="button"
+                    onClick={confirmDelete}
+                    disabled={isDeleting}
+                    className="flex-1 py-2 sm:py-2.5 px-3 sm:px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isDeleting ? (
+                      <>
+                        <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        처리 중...
+                      </>
+                    ) : (
+                      '탈퇴하기'
+                    )}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 탈퇴 완료 모달 */}
+      {isDeleteCompleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-3 sm:px-4 pb-20 md:pb-4">
+          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+
+          <div className="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 md:p-8 w-full max-w-xs sm:max-w-sm md:max-w-md z-10 relative">
+            <div className="text-center">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-5">
+                <svg
+                  className="w-7 h-7 sm:w-8 sm:h-8 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  ></path>
+                </svg>
+              </div>
+
+              <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-3 sm:mb-4 leading-tight">
+                탈퇴가 완료되었습니다
+              </h3>
+
+              <p className="text-gray-600 text-sm sm:text-base mb-5 sm:mb-6 leading-relaxed">
+                그동안 이용해 주셔서 감사했습니다.
+                <br />
+                안녕히 가세요.
+              </p>
+
+              <button
+                onClick={handleDeleteComplete}
+                className="w-full py-3 sm:py-3.5 px-4 sm:px-5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold text-base sm:text-lg"
+              >
+                확인
+              </button>
+            </div>
           </div>
         </div>
       )}

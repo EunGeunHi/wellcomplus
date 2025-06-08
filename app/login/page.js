@@ -37,11 +37,13 @@ function LoginContent() {
     }
     if (error) {
       // 오류 코드에 따라 다른 메시지 표시
-      setFormError(
-        error === 'CredentialsSignin'
-          ? '이메일 또는 비밀번호가 일치하지 않습니다.'
-          : '로그인 중 오류가 발생했습니다.'
-      );
+      if (error === 'DeletedAccount') {
+        setFormError('탈퇴한 계정입니다.');
+      } else if (error === 'CredentialsSignin') {
+        setFormError('이메일 또는 비밀번호가 일치하지 않습니다.');
+      } else {
+        setFormError('로그인 중 오류가 발생했습니다.');
+      }
     }
   }, [success, error]);
 
@@ -75,7 +77,11 @@ function LoginContent() {
 
       // 로그인 실패 시 오류 메시지 표시
       if (result.error) {
-        setFormError('이메일 또는 비밀번호가 일치하지 않습니다.');
+        if (result.error === 'DeletedAccount') {
+          setFormError('탈퇴한 계정입니다.');
+        } else {
+          setFormError('이메일 또는 비밀번호가 일치하지 않습니다.');
+        }
       } else {
         // 로그인 성공 시 callbackUrl로 리다이렉트
         router.push(callbackUrl);
