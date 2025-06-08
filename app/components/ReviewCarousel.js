@@ -930,7 +930,7 @@ const ReviewCarousel = () => {
             </p>
           </div>
         </div>
-        <p className="text-gray-500">아직 등록된 리뷰가 없습니다...</p>
+        <p className="text-gray-500">아직 등록된 리뷰가 없습니다.</p>
       </div>
     );
   }

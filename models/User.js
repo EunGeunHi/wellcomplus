@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true, // 필수 입력 필드
+      unique: true, // 이름 중복 방지
     },
     email: {
       type: String,

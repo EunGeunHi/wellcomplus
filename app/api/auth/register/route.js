@@ -49,6 +49,15 @@ export async function POST(req) {
     // MongoDB 연결
     await connectDB();
 
+    // 이름 중복 확인
+    const existingNameUser = await User.findOne({ name: name.trim() });
+    if (existingNameUser) {
+      return NextResponse.json(
+        { success: false, message: '이미 사용 중인 이름입니다.' },
+        { status: 409 } // 충돌 상태 코드
+      );
+    }
+
     // 이메일 중복 확인
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -72,7 +81,7 @@ export async function POST(req) {
 
     // 새 사용자 객체 생성
     const newUser = new User({
-      name,
+      name: name.trim(),
       email,
       phoneNumber,
       password: hashedPassword, // 해시된 비밀번호 저장

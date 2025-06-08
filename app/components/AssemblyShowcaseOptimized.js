@@ -47,7 +47,7 @@ export default function AssemblyShowcaseOptimized() {
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 h-96 flex items-center justify-center">
             <div className="text-center">
               <Computer className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 font-medium">표시할 콘텐츠가 없습니다.</p>
+              <p className="text-gray-500 font-medium">새로고침 한번 눌려주세요.</p>
               <p className="text-gray-400 text-sm mt-2">조립 완성품 사진과 영상을 준비 중입니다.</p>
             </div>
           </div>

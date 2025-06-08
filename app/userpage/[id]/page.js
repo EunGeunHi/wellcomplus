@@ -502,7 +502,7 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
             className="flex items-center gap-1.5 py-2 px-3 sm:py-2.5 sm:px-4 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors text-xs sm:text-sm font-medium"
           >
             <FiEdit size={14} className="sm:text-base" />
-            이름, 전화번호 수정
+            이름(닉네임), 전화번호 수정
           </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -511,7 +511,7 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
               <FiUser />
             </div>
             <div>
-              <div className="text-xs sm:text-sm text-gray-500 mb-0.5">이름</div>
+              <div className="text-xs sm:text-sm text-gray-500 mb-0.5">이름(닉네임)</div>
               <div className="text-base sm:text-lg text-gray-900 font-semibold">{user.name}</div>
             </div>
           </div>

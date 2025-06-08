@@ -51,6 +51,12 @@ export default function SignupPage() {
     e.preventDefault();
     setError('');
 
+    // 이름 유효성 검사
+    if (!formData.name || formData.name.trim().length < 2) {
+      setError('이름은 2자 이상 입력해주세요.');
+      return;
+    }
+
     // 비밀번호 일치 확인
     if (formData.password !== formData.confirmPassword) {
       setError('비밀번호가 일치하지 않습니다.');
@@ -73,7 +79,7 @@ export default function SignupPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: formData.name,
+          name: formData.name.trim(),
           email: formData.email,
           phoneNumber: formData.phoneNumber,
           password: formData.password,
@@ -157,7 +163,7 @@ export default function SignupPage() {
           {/* 이름 입력 필드 */}
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              이름
+              이름(닉네임)
             </label>
             <input
               id="name"
@@ -174,7 +180,7 @@ export default function SignupPage() {
           {/* 이메일 입력 필드 */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              이메일
+              이메일(ID)
             </label>
             <input
               id="email"
