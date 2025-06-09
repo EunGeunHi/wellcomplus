@@ -79,6 +79,7 @@
   src: url('/font/BMJUA_ttf.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 /* 나눔고딕 폰트 (나눔바른고딕)*/
@@ -112,4 +113,38 @@
   font-weight: 800;
   font-style: normal;
   font-display: swap;
+}
+
+/* 폰트 fallback 최적화 - 시스템 폰트로 빠른 표시 */
+.font-optimized {
+  font-family:
+    'NanumGothic',
+    'Malgun Gothic',
+    'Apple SD Gothic Neo',
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+}
+
+.font-heading-optimized {
+  font-family:
+    'BMJUA',
+    'Malgun Gothic',
+    'Apple SD Gothic Neo',
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+}
+
+.font-culture-optimized {
+  font-family:
+    'ShillaCulture',
+    'Malgun Gothic',
+    'Apple SD Gothic Neo',
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
 }

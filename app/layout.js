@@ -85,6 +85,30 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="kr">
+      <head>
+        {/* 중요 폰트 Preload - FCP 성능 최적화 */}
+        <link
+          rel="preload"
+          href="/font/BMJUA_ttf.ttf"
+          as="font"
+          type="font/ttf"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/font/NANUMGOTHIC.OTF"
+          as="font"
+          type="font/opentype"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/font/SHILLA_CULTURE(M).TTF"
+          as="font"
+          type="font/ttf"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className={inter.className}>
         {/* Auth.js 세션 제공자로 앱 전체 래핑 */}
         <AuthProvider>

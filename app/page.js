@@ -351,12 +351,12 @@ export default function Home() {
           <div className="grid lg:grid-cols-2 gap-4 lg:gap-16 items-center">
             {/* Content column */}
             <div className="order-1 lg:order-1">
-              <span className="inline-block px-3 py-1 text-sky-700 bg-sky-100 rounded-full text-xs sm:text-sm font-medium font-['ShillaCulture'] mb-3 sm:mb-6">
+              <span className="inline-block px-3 py-1 text-sky-700 bg-sky-100 rounded-full text-xs sm:text-sm font-medium font-culture-optimized mb-3 sm:mb-6">
                 35년 전통의 기술력
               </span>
 
               <h1 className="text-slate-800 mb-4 sm:mb-6">
-                <span className="block text-3xl sm:text-5xl md:text-7xl font-['BMJUA'] font-medium leading-tight mb-2 sm:mb-4">
+                <span className="block text-3xl sm:text-5xl md:text-7xl font-heading-optimized font-medium leading-tight mb-2 sm:mb-4">
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-sky-500">
                     웰컴
                   </span>
@@ -365,7 +365,7 @@ export default function Home() {
                   <span className="relative">맞춤형</span>
                   <span> 솔루션</span>을 경험하세요
                 </span>
-                <span className="block text-base sm:text-xl md:text-2xl text-slate-600 font-['ShillaCulture'] font-normal mt-3 sm:mt-6">
+                <span className="block text-base sm:text-xl md:text-2xl text-slate-600 font-culture-optimized font-normal mt-3 sm:mt-6">
                   35년간 쌓아온 기술 노하우로 고객님의 IT 환경을 한 단계 업그레이드해 드립니다
                 </span>
               </h1>
@@ -385,7 +385,7 @@ export default function Home() {
 
       {/* Features Section */}
       <section id="features" className="py-12 sm:py-20 bg-gradient-to-b from-gray-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 font-['NanumGothic']">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 font-optimized">
           <div className="text-center mb-4 sm:mb-8">
             <h2 className="text-2xl sm:text-4xl font-bold mb-2 sm:mb-4 bg-clip-text text-transparent bg-gradient-to-r from-[#3661EB] to-[#87CEEB]">
               웰컴시스템과 함께하는 스마트한 선택
@@ -466,7 +466,7 @@ export default function Home() {
 
       {/* Information Section */}
       <section className="py-12 sm:py-20 bg-gradient-to-b from-blue-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 font-['NanumGothic']">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 font-optimized">
           <div className="text-center mb-4 sm:mb-8">
             <h2 className="text-2xl sm:text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-[#3661EB] to-[#87CEEB]">
               찾아오시는 길
