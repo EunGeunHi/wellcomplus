@@ -29,7 +29,46 @@ const ReviewCarousel = dynamic(() => import('./components/ReviewCarousel'), {
 });
 
 export default function Home() {
-  // 구조화된 데이터 (JSON-LD)
+  // 구조화된 데이터 (JSON-LD) - 1단계 최적화: 중복 제거
+  // 공통 정책 정의
+  const commonReturnPolicy = {
+    '@type': 'MerchantReturnPolicy',
+    applicableCountry: 'KR',
+    returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+    merchantReturnDays: 7,
+    returnMethod: ['https://schema.org/ReturnByMail', 'https://schema.org/ReturnInStore'],
+    returnFees: 'https://schema.org/ReturnFeesCustomerResponsibility',
+  };
+
+  const commonShippingDetails = {
+    '@type': 'OfferShippingDetails',
+    shippingRate: {
+      '@type': 'MonetaryAmount',
+      minValue: '10000',
+      maxValue: '30000',
+      currency: 'KRW',
+    },
+    shippingDestination: {
+      '@type': 'DefinedRegion',
+      addressCountry: 'KR',
+    },
+    deliveryTime: {
+      '@type': 'ShippingDeliveryTime',
+      handlingTime: {
+        '@type': 'QuantitativeValue',
+        minValue: 1,
+        maxValue: 2,
+        unitCode: 'DAY',
+      },
+      transitTime: {
+        '@type': 'QuantitativeValue',
+        minValue: 1,
+        maxValue: 7,
+        unitCode: 'DAY',
+      },
+    },
+  };
+
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
@@ -116,21 +155,6 @@ export default function Home() {
                   bestRating: '5',
                 },
               },
-              {
-                '@type': 'Review',
-                author: {
-                  '@type': 'Person',
-                  name: '박○○',
-                },
-                datePublished: '2024-02-03',
-                reviewBody:
-                  '맞춤형 견적으로 예산에 맞는 최적의 컴퓨터를 만들어주셨어요. 강력 추천합니다.',
-                reviewRating: {
-                  '@type': 'Rating',
-                  ratingValue: '5',
-                  bestRating: '5',
-                },
-              },
             ],
             offers: {
               '@type': 'Offer',
@@ -149,50 +173,8 @@ export default function Home() {
                 '@type': 'Organization',
                 name: '웰컴시스템',
               },
-              hasMerchantReturnPolicy: {
-                '@type': 'MerchantReturnPolicy',
-                applicableCountry: 'KR',
-                returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-                merchantReturnDays: 7,
-                returnMethod: [
-                  'https://schema.org/ReturnByMail',
-                  'https://schema.org/ReturnInStore',
-                ],
-                returnFees: 'https://schema.org/ReturnFeesCustomerResponsibility',
-                additionalProperty: {
-                  '@type': 'PropertyValue',
-                  name: '반품비용 안내',
-                  value: '기본 무료, 상황에 따라 비용 발생 가능',
-                },
-              },
-              shippingDetails: {
-                '@type': 'OfferShippingDetails',
-                shippingRate: {
-                  '@type': 'MonetaryAmount',
-                  minValue: '10000',
-                  maxValue: '30000',
-                  currency: 'KRW',
-                },
-                shippingDestination: {
-                  '@type': 'DefinedRegion',
-                  addressCountry: 'KR',
-                },
-                deliveryTime: {
-                  '@type': 'ShippingDeliveryTime',
-                  handlingTime: {
-                    '@type': 'QuantitativeValue',
-                    minValue: 1,
-                    maxValue: 2,
-                    unitCode: 'DAY',
-                  },
-                  transitTime: {
-                    '@type': 'QuantitativeValue',
-                    minValue: 1,
-                    maxValue: 7,
-                    unitCode: 'DAY',
-                  },
-                },
-              },
+              hasMerchantReturnPolicy: commonReturnPolicy,
+              shippingDetails: commonShippingDetails,
             },
           },
         },
@@ -240,20 +222,6 @@ export default function Home() {
                   bestRating: '5',
                 },
               },
-              {
-                '@type': 'Review',
-                author: {
-                  '@type': 'Person',
-                  name: '최○○',
-                },
-                datePublished: '2024-02-10',
-                reviewBody: '업무용 노트북 추천받았는데 성능과 가격 모두 만족스러워요.',
-                reviewRating: {
-                  '@type': 'Rating',
-                  ratingValue: '4',
-                  bestRating: '5',
-                },
-              },
             ],
             offers: {
               '@type': 'Offer',
@@ -272,50 +240,8 @@ export default function Home() {
                 '@type': 'Organization',
                 name: '웰컴시스템',
               },
-              hasMerchantReturnPolicy: {
-                '@type': 'MerchantReturnPolicy',
-                applicableCountry: 'KR',
-                returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-                merchantReturnDays: 7,
-                returnMethod: [
-                  'https://schema.org/ReturnByMail',
-                  'https://schema.org/ReturnInStore',
-                ],
-                returnFees: 'https://schema.org/ReturnFeesCustomerResponsibility',
-                additionalProperty: {
-                  '@type': 'PropertyValue',
-                  name: '반품비용 안내',
-                  value: '기본 무료, 상황에 따라 비용 발생 가능',
-                },
-              },
-              shippingDetails: {
-                '@type': 'OfferShippingDetails',
-                shippingRate: {
-                  '@type': 'MonetaryAmount',
-                  minValue: '10000',
-                  maxValue: '30000',
-                  currency: 'KRW',
-                },
-                shippingDestination: {
-                  '@type': 'DefinedRegion',
-                  addressCountry: 'KR',
-                },
-                deliveryTime: {
-                  '@type': 'ShippingDeliveryTime',
-                  handlingTime: {
-                    '@type': 'QuantitativeValue',
-                    minValue: 1,
-                    maxValue: 2,
-                    unitCode: 'DAY',
-                  },
-                  transitTime: {
-                    '@type': 'QuantitativeValue',
-                    minValue: 1,
-                    maxValue: 7,
-                    unitCode: 'DAY',
-                  },
-                },
-              },
+              hasMerchantReturnPolicy: commonReturnPolicy,
+              shippingDetails: commonShippingDetails,
             },
           },
         },
@@ -363,21 +289,6 @@ export default function Home() {
                   bestRating: '5',
                 },
               },
-              {
-                '@type': 'Review',
-                author: {
-                  '@type': 'Person',
-                  name: '한○○',
-                },
-                datePublished: '2024-02-15',
-                reviewBody:
-                  '복합기 추천과 설치 서비스 모두 만족스러웠습니다. 전문적인 상담 감사합니다.',
-                reviewRating: {
-                  '@type': 'Rating',
-                  ratingValue: '5',
-                  bestRating: '5',
-                },
-              },
             ],
             offers: {
               '@type': 'Offer',
@@ -396,50 +307,8 @@ export default function Home() {
                 '@type': 'Organization',
                 name: '웰컴시스템',
               },
-              hasMerchantReturnPolicy: {
-                '@type': 'MerchantReturnPolicy',
-                applicableCountry: 'KR',
-                returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-                merchantReturnDays: 7,
-                returnMethod: [
-                  'https://schema.org/ReturnByMail',
-                  'https://schema.org/ReturnInStore',
-                ],
-                returnFees: 'https://schema.org/ReturnFeesCustomerResponsibility',
-                additionalProperty: {
-                  '@type': 'PropertyValue',
-                  name: '반품비용 안내',
-                  value: '기본 무료, 상황에 따라 비용 발생 가능',
-                },
-              },
-              shippingDetails: {
-                '@type': 'OfferShippingDetails',
-                shippingRate: {
-                  '@type': 'MonetaryAmount',
-                  minValue: '10000',
-                  maxValue: '30000',
-                  currency: 'KRW',
-                },
-                shippingDestination: {
-                  '@type': 'DefinedRegion',
-                  addressCountry: 'KR',
-                },
-                deliveryTime: {
-                  '@type': 'ShippingDeliveryTime',
-                  handlingTime: {
-                    '@type': 'QuantitativeValue',
-                    minValue: 1,
-                    maxValue: 2,
-                    unitCode: 'DAY',
-                  },
-                  transitTime: {
-                    '@type': 'QuantitativeValue',
-                    minValue: 1,
-                    maxValue: 7,
-                    unitCode: 'DAY',
-                  },
-                },
-              },
+              hasMerchantReturnPolicy: commonReturnPolicy,
+              shippingDetails: commonShippingDetails,
             },
           },
         },
