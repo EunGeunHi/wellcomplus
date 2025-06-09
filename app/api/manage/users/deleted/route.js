@@ -5,15 +5,15 @@ import Application from '@/models/Application';
 import Review from '@/models/review';
 import { withKingAuthAPI } from '@/app/api/middleware';
 
-// 관리자용 사용자 목록 조회 API
+// 관리자용 탈퇴 사용자 목록 조회 API
 export const GET = withKingAuthAPI(async (req, { session }) => {
   try {
     await connectDB();
 
-    // 탈퇴하지 않은 사용자만 조회 (기본 정보)
-    const users = await User.find({ isDeleted: false })
+    // 탈퇴한 사용자만 조회 (기본 정보)
+    const users = await User.find({ isDeleted: true })
       .select('name email phoneNumber authority createdAt updatedAt image provider lastLoginAt')
-      .sort({ createdAt: -1 })
+      .sort({ updatedAt: -1 }) // 탈퇴일 기준으로 정렬
       .lean();
 
     // 사용자 ID 목록 추출
@@ -31,7 +31,7 @@ export const GET = withKingAuthAPI(async (req, { session }) => {
       },
     ]);
 
-    // 각 사용자의 리뷰 수 조회
+    // 각 사용자의 리뷰 수 조회 (탈퇴 후에도 리뷰는 유지됨)
     const reviewStats = await Review.aggregate([
       {
         $match: {
@@ -89,19 +89,21 @@ export const GET = withKingAuthAPI(async (req, { session }) => {
           : 0,
         // 가입 방식 정보 (OAuth provider 정보)
         provider: user.provider || 'credentials',
+        // 탈퇴일은 updatedAt으로 추정 (실제로는 deletedAt 필드를 추가하는 것이 좋음)
+        deletedAt: user.updatedAt,
       };
     });
 
     // 전체 통계 계산
     const totalStats = {
-      totalUsers: users.length,
-      totalAdmins: users.filter((u) => u.authority === 'king').length,
-      totalRegularUsers: users.filter((u) => u.authority === 'user').length,
-      totalGuests: users.filter((u) => u.authority === 'guest').length,
-      usersWithServices: usersWithStats.filter((u) => u.serviceCount > 0).length,
-      usersWithReviews: usersWithStats.filter((u) => u.reviewCount > 0).length,
-      totalServices: serviceStats.reduce((sum, stat) => sum + stat.serviceCount, 0),
-      totalReviews: reviewStats.reduce((sum, stat) => sum + stat.reviewCount, 0),
+      totalDeletedUsers: users.length,
+      totalDeletedAdmins: users.filter((u) => u.authority === 'king').length,
+      totalDeletedRegularUsers: users.filter((u) => u.authority === 'user').length,
+      totalDeletedGuests: users.filter((u) => u.authority === 'guest').length,
+      deletedUsersWithServices: usersWithStats.filter((u) => u.serviceCount > 0).length,
+      deletedUsersWithReviews: usersWithStats.filter((u) => u.reviewCount > 0).length,
+      totalServicesFromDeleted: serviceStats.reduce((sum, stat) => sum + stat.serviceCount, 0),
+      totalReviewsFromDeleted: reviewStats.reduce((sum, stat) => sum + stat.reviewCount, 0),
     };
 
     return NextResponse.json({
@@ -110,7 +112,10 @@ export const GET = withKingAuthAPI(async (req, { session }) => {
       stats: totalStats,
     });
   } catch (error) {
-    console.error('사용자 목록 조회 중 오류:', error);
-    return NextResponse.json({ error: '사용자 목록을 불러오는데 실패했습니다.' }, { status: 500 });
+    console.error('탈퇴 사용자 목록 조회 중 오류:', error);
+    return NextResponse.json(
+      { error: '탈퇴 사용자 목록을 불러오는데 실패했습니다.' },
+      { status: 500 }
+    );
   }
 });

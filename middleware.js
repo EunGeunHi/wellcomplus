@@ -9,7 +9,7 @@ export function middleware(request) {
     return new NextResponse(
       JSON.stringify({
         error: 'Service temporarily unavailable for maintenance',
-        message: '서비스가 일시적으로 중단되었습니다. (Advanced Operations 문제 해결 중)',
+        message: '관리자에의해 서비스가 일시적으로 중단되었습니다.',
         timestamp: new Date().toISOString(),
       }),
       {

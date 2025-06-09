@@ -620,7 +620,7 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
                 계정 관리
               </h3>
               <p className="text-xs sm:text-sm text-gray-600">
-                계정을 탈퇴하시려면 아래 버튼을 클릭해주세요.
+                계정을 탈퇴하시려면 탈퇴하기 버튼을 클릭해주세요.
               </p>
             </div>
             <button

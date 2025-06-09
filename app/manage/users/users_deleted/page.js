@@ -15,13 +15,14 @@ import {
   FiRefreshCw,
   FiFileText,
   FiStar,
-  FiUsers,
   FiX,
   FiClock,
   FiTrash2,
+  FiArrowLeft,
+  FiAlertTriangle,
 } from 'react-icons/fi';
 
-export default function UsersManagePage() {
+export default function DeletedUsersManagePage() {
   const router = useRouter();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +32,9 @@ export default function UsersManagePage() {
   const [userDetails, setUserDetails] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // 필터 상태
   const [filters, setFilters] = useState({
@@ -40,41 +44,41 @@ export default function UsersManagePage() {
     hasReviews: '',
   });
 
-  // 사용자 목록 조회
-  const fetchUsers = async () => {
+  // 탈퇴 사용자 목록 조회
+  const fetchDeletedUsers = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/manage/users');
+      const response = await fetch('/api/manage/users/deleted');
       if (!response.ok) {
-        throw new Error('사용자 목록을 불러오는데 실패했습니다');
+        throw new Error('탈퇴 사용자 목록을 불러오는데 실패했습니다');
       }
 
       const data = await response.json();
       setUsers(data.users || []);
     } catch (err) {
-      console.error('사용자 목록 조회 오류:', err);
+      console.error('탈퇴 사용자 목록 조회 오류:', err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // 사용자 상세 정보 조회
+  // 탈퇴 사용자 상세 정보 조회
   const fetchUserDetails = async (userId) => {
     try {
       setDetailsLoading(true);
 
-      const response = await fetch(`/api/manage/users/${userId}`);
+      const response = await fetch(`/api/manage/users/deleted/${userId}`);
       if (!response.ok) {
-        throw new Error('사용자 상세 정보를 불러오는데 실패했습니다');
+        throw new Error('탈퇴 사용자 상세 정보를 불러오는데 실패했습니다');
       }
 
       const data = await response.json();
       setUserDetails(data);
     } catch (err) {
-      console.error('사용자 상세 정보 조회 오류:', err);
+      console.error('탈퇴 사용자 상세 정보 조회 오류:', err);
       setError(err.message);
     } finally {
       setDetailsLoading(false);
@@ -93,6 +97,54 @@ export default function UsersManagePage() {
     setShowModal(false);
     setSelectedUser(null);
     setUserDetails(null);
+  };
+
+  // 완전 삭제 모달 열기
+  const handleDeleteClick = (user) => {
+    setUserToDelete(user);
+    setShowDeleteModal(true);
+  };
+
+  // 완전 삭제 모달 닫기
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setUserToDelete(null);
+  };
+
+  // 사용자 완전 삭제 실행
+  const handlePermanentDelete = async () => {
+    if (!userToDelete) return;
+
+    try {
+      setDeleteLoading(true);
+
+      const response = await fetch(`/api/manage/users/deleted/${userToDelete._id}/permanent`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '삭제 중 오류가 발생했습니다');
+      }
+
+      const data = await response.json();
+
+      // 성공 시 목록에서 해당 사용자 제거
+      setUsers((prevUsers) => prevUsers.filter((u) => u._id !== userToDelete._id));
+
+      // 모달 닫기
+      closeDeleteModal();
+
+      // 성공 메시지 표시 (alert 대신 더 나은 방법으로 변경 가능)
+      alert(
+        `${userToDelete.name} 사용자와 관련된 모든 데이터가 완전히 삭제되었습니다.\n\n삭제된 데이터:\n- 서비스 신청: ${data.deletedData.applications}건\n- 리뷰: ${data.deletedData.reviews}건\n- 이미지: ${data.deletedData.applicationImages + data.deletedData.reviewImages}개`
+      );
+    } catch (err) {
+      console.error('사용자 완전 삭제 오류:', err);
+      setError(err.message);
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   // 필터링된 사용자 목록
@@ -171,7 +223,7 @@ export default function UsersManagePage() {
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchDeletedUsers();
   }, []);
 
   return (
@@ -182,26 +234,26 @@ export default function UsersManagePage() {
           <div className="mb-8">
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">유저 관리</h1>
-                <p className="text-gray-600">가입된 사용자들의 정보와 활동 내역을 관리합니다</p>
+                <div className="flex items-center gap-4 mb-2">
+                  <button
+                    onClick={() => router.back()}
+                    className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <FiArrowLeft />
+                    뒤로가기
+                  </button>
+                  <h1 className="text-3xl font-bold text-gray-900">탈퇴 유저 관리</h1>
+                </div>
+                <p className="text-gray-600">탈퇴한 사용자들의 정보와 활동 내역을 확인합니다</p>
               </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => router.push('/manage/users/users_deleted')}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  <FiTrash2 />
-                  탈퇴유저 관리
-                </button>
-                <button
-                  onClick={fetchUsers}
-                  disabled={loading}
-                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
-                >
-                  <FiRefreshCw className={loading ? 'animate-spin' : ''} />
-                  새로고침
-                </button>
-              </div>
+              <button
+                onClick={fetchDeletedUsers}
+                disabled={loading}
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+              >
+                <FiRefreshCw className={loading ? 'animate-spin' : ''} />
+                새로고침
+              </button>
             </div>
           </div>
 
@@ -272,18 +324,18 @@ export default function UsersManagePage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center">
-                <FiUsers className="h-8 w-8 text-indigo-600" />
+                <FiTrash2 className="h-8 w-8 text-red-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">전체 사용자</p>
+                  <p className="text-sm font-medium text-gray-600">탈퇴 사용자</p>
                   <p className="text-2xl font-bold text-gray-900">{users.length}</p>
                 </div>
               </div>
             </div>
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center">
-                <FiUser className="h-8 w-8 text-green-600" />
+                <FiUser className="h-8 w-8 text-blue-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">일반회원</p>
+                  <p className="text-sm font-medium text-gray-600">탈퇴 일반회원</p>
                   <p className="text-2xl font-bold text-gray-900">
                     {users.filter((u) => u.authority === 'user').length}
                   </p>
@@ -292,9 +344,9 @@ export default function UsersManagePage() {
             </div>
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center">
-                <FiFileText className="h-8 w-8 text-blue-600" />
+                <FiFileText className="h-8 w-8 text-purple-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">서비스 신청자</p>
+                  <p className="text-sm font-medium text-gray-600">서비스 이용자</p>
                   <p className="text-2xl font-bold text-gray-900">
                     {users.filter((u) => u.serviceCount > 0).length}
                   </p>
@@ -303,7 +355,7 @@ export default function UsersManagePage() {
             </div>
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center">
-                <FiStar className="h-8 w-8 text-yellow-600" />
+                <FiStar className="h-8 w-8 text-orange-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">리뷰 작성자</p>
                   <p className="text-2xl font-bold text-gray-900">
@@ -314,12 +366,12 @@ export default function UsersManagePage() {
             </div>
           </div>
 
-          {/* 사용자 목록 */}
+          {/* 탈퇴 사용자 목록 */}
           {loading ? (
             <div className="bg-white rounded-lg shadow p-8">
               <div className="flex justify-center items-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                <span className="ml-3 text-gray-600">사용자 목록을 불러오는 중...</span>
+                <span className="ml-3 text-gray-600">탈퇴 사용자 목록을 불러오는 중...</span>
               </div>
             </div>
           ) : error ? (
@@ -345,7 +397,7 @@ export default function UsersManagePage() {
                         가입일
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        마지막 접속
+                        탈퇴일
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         활동
@@ -358,17 +410,17 @@ export default function UsersManagePage() {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {filteredUsers.map((user) => (
                       <tr key={user._id} className="hover:bg-gray-50">
-                        <td className="px-2 py-2 whitespace-nowrap">
+                        <td className="px-2 py-1 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="flex-shrink-0 h-10 w-10">
                               {user.image ? (
                                 <img
-                                  className="h-10 w-10 rounded-full"
+                                  className="h-10 w-10 rounded-full opacity-50"
                                   src={user.image}
                                   alt={user.name}
                                 />
                               ) : (
-                                <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                                <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center opacity-50">
                                   <FiUser className="h-5 w-5 text-gray-600" />
                                 </div>
                               )}
@@ -388,25 +440,25 @@ export default function UsersManagePage() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-2 py-2 whitespace-nowrap">
+                        <td className="px-2 py-1 whitespace-nowrap">
                           <div className="space-y-1">
                             {getAuthorityBadge(user.authority)}
                             {getProviderBadge(user.provider)}
                           </div>
                         </td>
-                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-2 py-1 whitespace-nowrap text-sm text-gray-500">
                           <div className="flex items-center">
                             <FiCalendar className="h-4 w-4 mr-1" />
                             {formatDate(user.createdAt)}
                           </div>
                         </td>
-                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-2 py-1 whitespace-nowrap text-sm text-red-500">
                           <div className="flex items-center">
                             <FiClock className="h-4 w-4 mr-1" />
-                            {user.lastLoginAt ? formatDate(user.lastLoginAt) : '정보 없음'}
+                            {formatDate(user.deletedAt)}
                           </div>
                         </td>
-                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-2 py-1 whitespace-nowrap text-sm text-gray-900">
                           <div className="flex space-x-4">
                             <div className="flex items-center text-blue-600">
                               <FiFileText className="h-4 w-4 mr-1" />
@@ -418,14 +470,23 @@ export default function UsersManagePage() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-2 py-2 whitespace-nowrap text-sm font-medium">
-                          <button
-                            onClick={() => handleUserClick(user)}
-                            className="text-indigo-600 hover:text-indigo-900 flex items-center"
-                          >
-                            <FiEye className="h-4 w-4 mr-1" />
-                            상세보기
-                          </button>
+                        <td className="px-2 py-1 whitespace-nowrap text-sm font-medium">
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => handleUserClick(user)}
+                              className="text-indigo-600 hover:text-indigo-900 flex items-center"
+                            >
+                              <FiEye className="h-4 w-4 mr-1" />
+                              상세보기
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClick(user)}
+                              className="text-red-600 hover:text-red-900 flex items-center"
+                            >
+                              <FiTrash2 className="h-4 w-4 mr-1" />
+                              완전삭제
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -445,7 +506,9 @@ export default function UsersManagePage() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
               <div className="flex justify-between items-center p-6 border-b">
-                <h3 className="text-lg font-medium text-gray-900">{selectedUser.name} 상세 정보</h3>
+                <h3 className="text-lg font-medium text-gray-900">
+                  {selectedUser.name} 상세 정보 (탈퇴 계정)
+                </h3>
                 <button onClick={closeModal} className="text-gray-400 hover:text-gray-600">
                   <FiX className="h-6 w-6" />
                 </button>
@@ -462,7 +525,7 @@ export default function UsersManagePage() {
                     {/* 기본 정보 */}
                     <div>
                       <h4 className="text-lg font-medium text-gray-900 mb-4">기본 정보</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-red-50 p-4 rounded-lg border border-red-200">
                         <div>
                           <span className="text-sm font-medium text-gray-600">이름:</span>
                           <p className="text-sm text-gray-900">{selectedUser.name}</p>
@@ -493,6 +556,12 @@ export default function UsersManagePage() {
                           <span className="text-sm font-medium text-gray-600">가입일:</span>
                           <p className="text-sm text-gray-900">
                             {formatDate(selectedUser.createdAt)}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-red-600">탈퇴일:</span>
+                          <p className="text-sm text-red-600 font-medium">
+                            {formatDate(selectedUser.deletedAt)}
                           </p>
                         </div>
                       </div>
@@ -624,6 +693,67 @@ export default function UsersManagePage() {
                     상세 정보를 불러오는데 실패했습니다.
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 완전 삭제 확인 모달 */}
+        {showDeleteModal && userToDelete && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-md w-full">
+              <div className="p-6">
+                <div className="flex items-center mb-4">
+                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <FiAlertTriangle className="h-6 w-6 text-red-600" />
+                  </div>
+                </div>
+
+                <div className="text-center">
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">사용자 완전 삭제</h3>
+                  <div className="text-sm text-gray-500 mb-4 space-y-2">
+                    <p className="font-medium text-gray-900">{userToDelete.name}</p>
+                    <p>
+                      다음 데이터가 <strong className="text-red-600">완전히 삭제</strong>됩니다:
+                    </p>
+                    <ul className="text-left list-disc list-inside space-y-1 bg-red-50 p-3 rounded">
+                      <li>사용자 계정 정보</li>
+                      <li>서비스 신청 내역 ({userToDelete.serviceCount || 0}건)</li>
+                      <li>작성한 리뷰 ({userToDelete.reviewCount || 0}건)</li>
+                      <li>업로드한 모든 이미지 파일</li>
+                    </ul>
+                    <p className="text-red-600 font-medium mt-3">
+                      ⚠️ 이 작업은 되돌릴 수 없습니다!
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-3 mt-6">
+                  <button
+                    onClick={closeDeleteModal}
+                    disabled={deleteLoading}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors disabled:opacity-50"
+                  >
+                    취소
+                  </button>
+                  <button
+                    onClick={handlePermanentDelete}
+                    disabled={deleteLoading}
+                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center"
+                  >
+                    {deleteLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        삭제 중...
+                      </>
+                    ) : (
+                      <>
+                        <FiTrash2 className="h-4 w-4 mr-2" />
+                        완전 삭제
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
