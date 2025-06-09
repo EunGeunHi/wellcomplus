@@ -6,6 +6,7 @@ import {
   FiPhone,
   FiCalendar,
   FiChevronRight,
+  FiChevronDown,
   FiFileText,
   FiHelpCircle,
   FiEdit,
@@ -285,6 +286,9 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
   const [deleteStep, setDeleteStep] = useState(1); // 1: 첫 번째 확인, 2: 두 번째 확인
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeleteCompleteModalOpen, setIsDeleteCompleteModalOpen] = useState(false);
+
+  // 계정 관리 토글 상태 추가
+  const [isAccountManagementOpen, setIsAccountManagementOpen] = useState(false);
 
   // userData가 변경될 때 user와 formData 업데이트
   useEffect(() => {
@@ -612,24 +616,82 @@ const ProfileContent = ({ userData, onUserUpdate }) => {
           </div>
         </div>
 
-        {/* 탈퇴하기 버튼 섹션 */}
+        {/* 계정 관리 토글 섹션 */}
         <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
-            <div>
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-0.5 sm:mb-1">
-                계정 관리
-              </h3>
-              <p className="text-xs sm:text-sm text-gray-600">
-                계정을 탈퇴하시려면 탈퇴하기 버튼을 클릭해주세요.
-              </p>
+          {/* 토글 헤더 */}
+          <button
+            onClick={() => setIsAccountManagementOpen(!isAccountManagementOpen)}
+            className="w-full flex items-center justify-between p-3 sm:p-4 bg-gray-50 hover:bg-gray-100 rounded-lg sm:rounded-xl transition-all duration-200 group"
+          >
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 group-hover:bg-gray-300 rounded-lg transition-colors">
+                <svg
+                  className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  ></path>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  ></path>
+                </svg>
+              </div>
+              <div className="text-left">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-0.5">
+                  계정 관리
+                </h3>
+                <p className="text-xs sm:text-sm text-gray-600">계정 설정을 관리하세요</p>
+              </div>
             </div>
-            <button
-              onClick={openDeleteModal}
-              className="flex items-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 px-3 sm:px-4 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-xs sm:text-sm font-medium border border-red-200"
-            >
-              <FiX size={14} className="sm:w-4 sm:h-4" />
-              탈퇴하기
-            </button>
+            <div className="flex items-center">
+              <FiChevronDown
+                size={16}
+                className={`sm:w-5 sm:h-5 text-gray-500 transition-transform duration-200 ${
+                  isAccountManagementOpen ? 'rotate-180' : 'rotate-0'
+                }`}
+              />
+            </div>
+          </button>
+
+          {/* 토글 콘텐츠 */}
+          <div
+            className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              isAccountManagementOpen ? 'max-h-96 opacity-100 mt-3 sm:mt-4' : 'max-h-0 opacity-0'
+            }`}
+          >
+            <div className="bg-red-50 border border-red-200 rounded-lg sm:rounded-xl p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 bg-red-100 rounded-full flex items-center justify-center">
+                      <FiX size={14} className="sm:w-4 sm:h-4 text-red-600" />
+                    </div>
+                    <h4 className="text-sm sm:text-base font-semibold text-red-800">계정 탈퇴</h4>
+                  </div>
+                  <p className="text-xs sm:text-sm text-red-700 leading-relaxed">
+                    계정을 탈퇴하면 리뷰 데이터를 제외한 모든 정보가 삭제됩니다.
+                    <br className="hidden sm:block" />이 작업은 되돌릴 수 없으니 신중히 결정해
+                    주세요.
+                  </p>
+                </div>
+                <button
+                  onClick={openDeleteModal}
+                  className="flex items-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-4 sm:px-5 bg-red-600 hover:bg-red-700 text-white rounded-lg sm:rounded-xl transition-all duration-200 text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg transform hover:scale-105 whitespace-nowrap"
+                >
+                  <FiX size={14} className="sm:w-4 sm:h-4" />
+                  탈퇴하기
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
