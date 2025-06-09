@@ -26,6 +26,35 @@ export default function SignupPage() {
   });
   const [error, setError] = useState(''); // 오류 메시지 상태
   const [loading, setLoading] = useState(false); // 로딩 상태
+  const [passwordValid, setPasswordValid] = useState({
+    length: false,
+    alphabet: false,
+    number: false,
+    special: false,
+  }); // 비밀번호 유효성 상태
+
+  /**
+   * 비밀번호 유효성 검사 함수
+   * @param {string} password - 검사할 비밀번호
+   * @returns {object} 각 조건별 유효성 결과
+   */
+  const validatePassword = (password) => {
+    return {
+      length: password.length >= 10,
+      alphabet: /[a-zA-Z]/.test(password),
+      number: /[0-9]/.test(password),
+      special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+    };
+  };
+
+  /**
+   * 비밀번호가 모든 조건을 만족하는지 확인
+   * @param {object} validationResult - validatePassword 결과
+   * @returns {boolean} 모든 조건 만족 여부
+   */
+  const isPasswordValid = (validationResult) => {
+    return Object.values(validationResult).every(Boolean);
+  };
 
   /**
    * 입력 필드 변경 핸들러
@@ -41,6 +70,12 @@ export default function SignupPage() {
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
+
+    // 비밀번호인 경우 실시간 유효성 검사
+    if (name === 'password') {
+      const validation = validatePassword(value);
+      setPasswordValid(validation);
+    }
   };
 
   /**
@@ -54,6 +89,15 @@ export default function SignupPage() {
     // 이름 유효성 검사
     if (!formData.name || formData.name.trim().length < 2) {
       setError('이름은 2자 이상 입력해주세요.');
+      return;
+    }
+
+    // 비밀번호 유효성 검사
+    const passwordValidation = validatePassword(formData.password);
+    if (!isPasswordValid(passwordValidation)) {
+      setError(
+        '비밀번호는 10자 이상이며, 알파벳, 숫자, 특수문자를 각각 하나 이상 포함해야 합니다.'
+      );
       return;
     }
 
@@ -230,6 +274,55 @@ export default function SignupPage() {
               className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               placeholder="비밀번호를 입력하세요"
             />
+
+            {/* 비밀번호 규칙 안내 */}
+            {formData.password && (
+              <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                <p className="text-xs font-medium text-gray-700 mb-2">비밀번호 규칙:</p>
+                <div className="space-y-1">
+                  <div className="flex items-center text-xs">
+                    <span
+                      className={`mr-2 ${passwordValid.length ? 'text-green-600' : 'text-red-500'}`}
+                    >
+                      {passwordValid.length ? '✓' : '✗'}
+                    </span>
+                    <span className={passwordValid.length ? 'text-green-600' : 'text-gray-600'}>
+                      10자 이상
+                    </span>
+                  </div>
+                  <div className="flex items-center text-xs">
+                    <span
+                      className={`mr-2 ${passwordValid.alphabet ? 'text-green-600' : 'text-red-500'}`}
+                    >
+                      {passwordValid.alphabet ? '✓' : '✗'}
+                    </span>
+                    <span className={passwordValid.alphabet ? 'text-green-600' : 'text-gray-600'}>
+                      알파벳 포함
+                    </span>
+                  </div>
+                  <div className="flex items-center text-xs">
+                    <span
+                      className={`mr-2 ${passwordValid.number ? 'text-green-600' : 'text-red-500'}`}
+                    >
+                      {passwordValid.number ? '✓' : '✗'}
+                    </span>
+                    <span className={passwordValid.number ? 'text-green-600' : 'text-gray-600'}>
+                      숫자 포함
+                    </span>
+                  </div>
+                  <div className="flex items-center text-xs">
+                    <span
+                      className={`mr-2 ${passwordValid.special ? 'text-green-600' : 'text-red-500'}`}
+                    >
+                      {passwordValid.special ? '✓' : '✗'}
+                    </span>
+                    <span className={passwordValid.special ? 'text-green-600' : 'text-gray-600'}>
+                      특수문자 포함 (!@#$%^&* 등)
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 비밀번호 확인 입력 필드 */}

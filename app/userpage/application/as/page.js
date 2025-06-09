@@ -92,25 +92,52 @@ export default function ASApplicationPage() {
                       onToggle={() => toggleSection('additionalInfo')}
                     >
                       <div className="mt-1.5 sm:mt-3 space-y-1.5 sm:space-y-4">
-                        {/* 컴퓨터/노트북 이미지 및 안내 문구 */}
-                        {(formData.asCategory === '컴퓨터' || formData.asCategory === '노트북') && (
+                        {/* 컴퓨터 이미지 및 안내 문구 */}
+                        {formData.asCategory === '컴퓨터' && (
                           <>
                             <div className="flex flex-col items-center mb-4 p-4 bg-blue-50 rounded-lg">
                               <img
                                 src="/as/pc.webp"
-                                alt="PC/노트북 번호 위치 안내"
+                                alt="PC 번호 위치 안내"
                                 className="w-full max-w-48 sm:max-w-xs h-auto mb-3 rounded-lg shadow-sm"
                               />
                               <p className="text-sm text-blue-700 font-medium text-center">
-                                PC/노트북에 붙어있는 번호를 확인해주세요.
+                                PC에 붙어있는 번호를 확인해주세요.
                               </p>
                             </div>
 
                             <InputField
                               id="pcNumber"
                               name="pcNumber"
-                              label="해당 PC/노트북 번호"
-                              placeholder="PC/노트북에 부착된 번호를 입력해주세요."
+                              label="해당 PC 번호"
+                              placeholder="PC에 부착된 번호를 입력해주세요."
+                              value={formData.pcNumber}
+                              onChange={handleChange}
+                              onKeyDown={handleKeyDown}
+                              required
+                            />
+                          </>
+                        )}
+
+                        {/* 노트북 이미지 및 안내 문구 */}
+                        {formData.asCategory === '노트북' && (
+                          <>
+                            <div className="flex flex-col items-center mb-4 p-4 bg-blue-50 rounded-lg">
+                              <img
+                                src="/as/note.webp"
+                                alt="노트북 번호 위치 안내"
+                                className="w-full max-w-48 sm:max-w-xs h-auto mb-3 rounded-lg shadow-sm"
+                              />
+                              <p className="text-sm text-blue-700 font-medium text-center">
+                                노트북에 붙어있는 번호를 확인해주세요.
+                              </p>
+                            </div>
+
+                            <InputField
+                              id="pcNumber"
+                              name="pcNumber"
+                              label="해당 노트북 번호"
+                              placeholder="노트북에 부착된 번호를 입력해주세요."
                               value={formData.pcNumber}
                               onChange={handleChange}
                               onKeyDown={handleKeyDown}
@@ -129,7 +156,7 @@ export default function ASApplicationPage() {
                                 className="w-full max-w-48 sm:max-w-xs h-auto mb-3 rounded-lg shadow-sm"
                               />
                               <p className="text-sm text-blue-700 font-medium text-center">
-                                프린터에서 붙어있는 번호를 확인해주세요.
+                                프린터에 붙어있는 번호를 확인해주세요.
                               </p>
                             </div>
 
