@@ -66,9 +66,9 @@ export default function AssemblyShowcaseOptimized() {
           </h2>
 
           <div className="text-gray-600 text-sm sm:text-lg max-w-2xl mx-auto px-4 sm:px-0">
-            <div>35년 장인의 손끝에서 완성된 PC, 그 정점이 여기에 있습니다!</div>
+            <div>RGB로 빛나고, 성능으로 압도한다! 안 보이는 선정리도 깔끔하게!</div>
             <div className="-mt-1">
-              RGB로 빛나고, 성능으로 압도하는 웰컴시스템에서 조립PC를 경험하세요!
+              35년간 10,000대 이상의 조립 경험, 수천 고객의 선택을 받은 믿음의 조립PC!
             </div>
           </div>
         </div>

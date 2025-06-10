@@ -919,7 +919,7 @@ const ReviewCarousel = () => {
 
   if (reviews.length === 0) {
     return (
-      <div className="bg-blue-200 py-12 text-center">
+      <div className="bg-blue-200 py-12 text-center font-['NanumGothic']">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-blue-600">

@@ -90,7 +90,7 @@ export default function Home() {
       latitude: 35.21399045790162,
       longitude: 129.0796384915669,
     },
-    openingHours: 'Mo-Sa 09:00-18:00',
+    openingHours: 'Mo-Fr 10:00-19:00, Sa 10:00-17:00',
     founder: '김선식',
     foundingDate: '1989',
     areaServed: '부산광역시',
@@ -351,7 +351,7 @@ export default function Home() {
           <div className="grid lg:grid-cols-2 gap-4 lg:gap-16 items-center">
             {/* Content column */}
             <div className="order-1 lg:order-1">
-              <span className="inline-block px-3 py-1 text-sky-700 bg-sky-100 rounded-full text-xs sm:text-sm font-medium font-culture-optimized mb-3 sm:mb-6">
+              <span className="inline-block px-3 py-1 text-sky-700 bg-sky-100 rounded-full text-xs sm:text-sm font-medium font-culture-optimized mb-1 sm:mb-2">
                 35년 전통의 기술력
               </span>
 
@@ -398,14 +398,15 @@ export default function Home() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div className="bg-white p-4 sm:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col">
               <div className="bg-blue-50 p-3 sm:p-4 rounded-xl w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center mb-3 sm:mb-6">
-                <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-[#3661EB]" />
+                <Computer className="w-6 h-6 sm:w-8 sm:h-8 text-[#3661EB]" />
               </div>
-              <h3 className="text-lg sm:text-2xl font-bold mb-2 sm:mb-3">당일 컴퓨터 출고</h3>
+              <h3 className="text-lg sm:text-2xl font-bold mb-2 sm:mb-3">맞춤형 설계</h3>
               <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 flex-grow">
-                오후 1시 이전 주문 시 당일 발송! 업계 최고 속도로 고객님의 새 컴퓨터를 만나보세요.
+                게임, 그래픽 작업, 사무용 등 용도에 맞는 최적의 컴퓨터를 제안해 드립니다.
+                온/오프라인 신청 가능!
               </p>
               <p className="text-xs sm:text-sm font-semibold text-[#3661EB]">
-                평균 배송시간 24시간 이내
+                5,000+ 고객 맞춤 설계 경험
               </p>
             </div>
 
@@ -414,28 +415,14 @@ export default function Home() {
                 <ShieldCheck className="w-6 h-6 sm:w-8 sm:h-8 text-[#3661EB]" />
               </div>
               <h3 className="text-lg sm:text-2xl font-bold mb-2 sm:mb-3 tracking-tighter">
-                컴퓨터 폐기까지 AS지원
+                지속적인 AS 지원
               </h3>
               <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 flex-grow">
-                한번 고객은 영원한 고객! 구매 후에도 안심하세요. 전문 기술진의 신속한 서비스를 평생
-                보장합니다.
+                한번 고객은 영원한 고객! 꾸준하고 신속한 서비스를 제공해 언제나 믿고 안심하실 수
+                있습니다.
               </p>
               <p className="text-xs sm:text-sm font-semibold text-[#3661EB]">
                 전화 한 통으로 즉시 지원
-              </p>
-            </div>
-
-            <div className="bg-white p-4 sm:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col">
-              <div className="bg-blue-50 p-3 sm:p-4 rounded-xl w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center mb-3 sm:mb-6">
-                <Computer className="w-6 h-6 sm:w-8 sm:h-8 text-[#3661EB]" />
-              </div>
-              <h3 className="text-lg sm:text-2xl font-bold mb-2 sm:mb-3">맞춤형 설계</h3>
-              <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 flex-grow">
-                게임, 그래픽 작업, 사무용 등 용도에 맞는 최적의 컴퓨터를 제안해 드립니다.
-                온/오프라인 상담 가능!
-              </p>
-              <p className="text-xs sm:text-sm font-semibold text-[#3661EB]">
-                5,000+ 고객 맞춤 설계 경험
               </p>
             </div>
 
@@ -448,7 +435,22 @@ export default function Home() {
                 업계 최고 경력의 기술진이 최신 트렌드와 기술력으로 최상의 가성비 컴퓨터를
                 제공합니다.
               </p>
-              <p className="text-xs sm:text-sm font-semibold text-[#3661EB]">1만+ 고객 만족 구축</p>
+              <p className="text-xs sm:text-sm font-semibold text-[#3661EB]">
+                누적 1만+ 고객과 함께
+              </p>
+            </div>
+
+            <div className="bg-white p-4 sm:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col">
+              <div className="bg-blue-50 p-3 sm:p-4 rounded-xl w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center mb-3 sm:mb-6">
+                <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-[#3661EB]" />
+              </div>
+              <h3 className="text-lg sm:text-2xl font-bold mb-2 sm:mb-3">당일 컴퓨터 출고</h3>
+              <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 flex-grow">
+                오후 1시 이전 주문 시 당일 발송! 업계 최고 속도로 고객님의 새 컴퓨터를 만나보세요.
+              </p>
+              <p className="text-xs sm:text-sm font-semibold text-[#3661EB]">
+                평균 배송시간 24시간 이내
+              </p>
             </div>
           </div>
 
@@ -640,13 +642,13 @@ export default function Home() {
                           <span className="font-medium w-12 sm:w-20 text-gray-700 text-xs sm:text-sm">
                             월~금
                           </span>
-                          <span className="text-gray-600 text-xs sm:text-sm">11시 ~ 20시</span>
+                          <span className="text-gray-600 text-xs sm:text-sm">10시 ~ 19시</span>
                         </div>
                         <div className="flex items-center mb-1">
                           <span className="font-medium w-12 sm:w-20 text-gray-700 text-xs sm:text-sm">
-                            토요일
+                            토/공휴일
                           </span>
-                          <span className="text-gray-600 text-xs sm:text-sm">11시 ~ 18시</span>
+                          <span className="text-gray-600 text-xs sm:text-sm">10시 ~ 17시</span>
                         </div>
                         <div className="flex items-center">
                           <span className="font-medium w-12 sm:w-20 text-gray-700 text-xs sm:text-sm">
