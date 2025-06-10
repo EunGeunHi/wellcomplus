@@ -380,9 +380,6 @@ export default function Home() {
       {/* 조립 컴퓨터 갤러리 */}
       <AssemblyShowcaseOptimized />
 
-      {/* 리뷰 컴포넌트 부분  */}
-      <ReviewCarousel />
-
       {/* Features Section */}
       <section id="features" className="py-12 sm:py-20 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 font-optimized">
@@ -465,6 +462,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* 리뷰 컴포넌트 부분  */}
+      <ReviewCarousel />
 
       {/* Information Section */}
       <section className="py-12 sm:py-20 bg-gradient-to-b from-blue-50 to-white">

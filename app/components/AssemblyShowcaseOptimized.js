@@ -57,7 +57,7 @@ export default function AssemblyShowcaseOptimized() {
   }
 
   return (
-    <section className="py-6 sm:py-10 bg-gradient-to-b from-white to-gray-50">
+    <section className="py-6 sm:py-10 bg-gradient-to-b from-gray-50 to-sky-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 font-['NanumGothic']">
         {/* 섹션 제목 - 이전 디자인 복원 */}
         <div className="text-center mb-2 sm:mb-1">

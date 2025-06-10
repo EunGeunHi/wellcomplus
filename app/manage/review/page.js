@@ -90,10 +90,6 @@ function ImageGallery({ images, reviewId }) {
   const [loadedImages, setLoadedImages] = useState(new Set());
   const [failedImages, setFailedImages] = useState(new Set());
 
-  if (!images || images.length === 0) {
-    return null;
-  }
-
   const handleImageLoad = (imageId) => {
     setLoadedImages((prev) => new Set([...prev, imageId]));
   };
@@ -118,11 +114,14 @@ function ImageGallery({ images, reviewId }) {
     setSelectedImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
-  // 키보드 이벤트 처리
+  // 키보드 이벤트 처리 - Hook을 항상 실행
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (selectedImageIndex === null) return;
+    // 이미지가 없거나 모달이 열려있지 않으면 이벤트 리스너 등록하지 않음
+    if (!images || images.length === 0 || selectedImageIndex === null) {
+      return;
+    }
 
+    const handleKeyDown = (e) => {
       switch (e.key) {
         case 'Escape':
           closeModal();
@@ -138,16 +137,19 @@ function ImageGallery({ images, reviewId }) {
       }
     };
 
-    if (selectedImageIndex !== null) {
-      document.addEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'hidden';
-    }
+    document.addEventListener('keydown', handleKeyDown);
+    document.body.style.overflow = 'hidden';
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'unset';
     };
-  }, [selectedImageIndex]);
+  }, [selectedImageIndex, images]);
+
+  // 이미지가 없으면 null 반환 (모든 Hook 실행 후)
+  if (!images || images.length === 0) {
+    return null;
+  }
 
   return (
     <div className="mt-4">
