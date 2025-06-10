@@ -55,7 +55,7 @@ const reviewSchema = new mongoose.Schema(
         mimeType: {
           type: String,
           required: true,
-          enum: ['image/jpeg', 'image/png', 'image/jpg'], // jpg, jpeg, png 허용
+          enum: ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'], // jpg, jpeg, png, webp 허용
         },
         size: {
           type: Number,

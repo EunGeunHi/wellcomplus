@@ -20,7 +20,7 @@ export async function POST(request) {
     }
 
     // 이미지 파일 검증
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
     if (!allowedTypes.includes(image.type)) {
       return NextResponse.json(
         { error: '지원하지 않는 이미지 형식입니다. (JPG, PNG만 허용)' },

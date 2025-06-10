@@ -34,10 +34,10 @@ const ReviewContent = ({ userData, userId }) => {
 
   // 이미지 파일 검증 함수
   const validateImageFile = (file) => {
-    const allowedTypes = ['image/jpeg', 'image/png'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
 
     if (!allowedTypes.includes(file.type)) {
-      throw new Error('JPG, PNG 파일만 업로드 가능합니다.');
+      throw new Error('JPG, PNG, WEBP 파일만 업로드 가능합니다.');
     }
 
     // 파일 크기 검증 (10MB)
@@ -447,7 +447,7 @@ const ReviewContent = ({ userData, userId }) => {
                 type="file"
                 id="imageInput"
                 multiple
-                accept="image/jpeg,image/png,.jpg,.png"
+                accept="image/jpeg,image/png,image/webp,.jpg,.png,.webp"
                 onChange={handleImageSelect}
                 className="w-full p-2 md:p-3 border border-dashed border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors file:mr-2 md:file:mr-4 file:py-1 md:file:py-2 file:px-2 md:file:px-4 file:rounded-lg file:border-0 file:text-xs md:file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                 disabled={isSubmitting}
@@ -461,7 +461,7 @@ const ReviewContent = ({ userData, userId }) => {
               )}
             </div>
             <div className="mt-1 md:mt-2">
-              <p className="text-xs text-gray-500">JPG, PNG 파일만 가능합니다</p>
+              <p className="text-xs text-gray-500">JPG, PNG, WEBP 파일만 가능합니다</p>
               {selectedImages.length >= 5 && (
                 <p className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded mt-1">
                   ⚠️ 최대 5장까지만 업로드할 수 있습니다.
