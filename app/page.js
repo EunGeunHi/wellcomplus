@@ -4,29 +4,7 @@ import HeroButton from './components/HeroButton';
 import Link from 'next/link';
 import TestAlert from './components/TestAlert';
 import AssemblyShowcaseOptimized from './components/AssemblyShowcaseOptimized';
-import dynamic from 'next/dynamic';
-
-// ReviewCarousel을 Lazy Loading으로 설정(스크롤해서 화면에 보이면 렌더링 시작)
-const ReviewCarousel = dynamic(() => import('./components/ReviewCarousel'), {
-  loading: () => (
-    <div className="py-12 sm:py-20 bg-gradient-to-b from-gray-50 to-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="text-center">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded-md w-64 mx-auto mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded-md w-96 mx-auto mb-8"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="bg-gray-200 rounded-lg h-48 animate-pulse"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  ),
-  ssr: false, // 서버사이드 렌더링 비활성화
-});
+import LazyReviewSection from './components/LazyReviewSection';
 
 export default function Home() {
   // 구조화된 데이터 (JSON-LD) - 1단계 최적화: 중복 제거
@@ -463,8 +441,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 리뷰 컴포넌트 부분  */}
-      <ReviewCarousel />
+      {/* 리뷰 컴포넌트 부분 - 스크롤 기반 지연 로딩  */}
+      <LazyReviewSection />
 
       {/* Information Section */}
       <section className="py-12 sm:py-20 bg-gradient-to-b from-blue-50 to-white">

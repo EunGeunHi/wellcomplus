@@ -51,45 +51,57 @@ const useReviewsStore = () => {
     );
   }, []);
 
-  const fetchReviews = useCallback(async () => {
-    notifyAll({ loading: true, error: null });
+  const fetchReviews = useCallback(
+    async (page = 1, limit = 10) => {
+      notifyAll({ loading: true, error: null });
 
-    try {
-      const timestamp = Date.now();
-      const randomId = Math.random().toString(36).substring(7);
-      const response = await fetch(`/api/reviews/active?t=${timestamp}&r=${randomId}&nocache=1`, {
-        method: 'GET',
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          Pragma: 'no-cache',
-          Expires: '0',
-        },
-      });
+      try {
+        const timestamp = Date.now();
+        const randomId = Math.random().toString(36).substring(7);
+        const response = await fetch(
+          `/api/reviews/active?page=${page}&limit=${limit}&t=${timestamp}&r=${randomId}&nocache=1`,
+          {
+            method: 'GET',
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              Pragma: 'no-cache',
+              Expires: '0',
+            },
+          }
+        );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const activeReviews = data.reviews
+          ? data.reviews.filter((review) => review.status === 'active')
+          : data.filter((review) => review.status === 'active');
+
+        // 첫 페이지면 교체, 추가 페이지면 병합
+        const updatedReviews = page === 1 ? activeReviews : [...globalReviews, ...activeReviews];
+
+        notifyAll({
+          reviews: updatedReviews,
+          loading: false,
+          lastFetch: timestamp,
+          hasMore: data.hasMore || false,
+        });
+
+        return activeReviews;
+      } catch (error) {
+        console.error('Failed to fetch reviews:', error);
+        notifyAll({
+          error: error.message,
+          loading: false,
+        });
+        throw error;
       }
-
-      const data = await response.json();
-      const activeReviews = data.filter((review) => review.status === 'active');
-
-      notifyAll({
-        reviews: activeReviews,
-        loading: false,
-        lastFetch: timestamp,
-      });
-
-      return activeReviews;
-    } catch (error) {
-      console.error('Failed to fetch reviews:', error);
-      notifyAll({
-        error: error.message,
-        loading: false,
-      });
-      throw error;
-    }
-  }, [notifyAll]);
+    },
+    [notifyAll]
+  );
 
   const clearCache = useCallback(() => {
     notifyAll({ reviews: [], lastFetch: 0 });

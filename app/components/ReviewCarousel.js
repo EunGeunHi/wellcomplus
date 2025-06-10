@@ -5,195 +5,165 @@ import { Star, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormat';
 import useReviewsStore from '@/app/components/hooks/useReviewsStore';
 
-const ReviewCard = memo(
-  ({ review, onClick, isVisible = true, imageCache = null, cacheStats = null }) => {
-    const renderStars = (rating) => {
-      const stars = [];
-      for (let i = 0; i < 5; i++) {
-        stars.push(
-          <Star
-            key={i}
-            className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
-            fill={i < rating ? 'currentColor' : 'none'}
-          />
-        );
-      }
-      return stars;
+const ReviewCard = memo(({ review, onClick, isVisible = true, getCachedImageSrc }) => {
+  const renderStars = (rating) => {
+    const stars = [];
+    for (let i = 0; i < 5; i++) {
+      stars.push(
+        <Star
+          key={i}
+          className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+          fill={i < rating ? 'currentColor' : 'none'}
+        />
+      );
+    }
+    return stars;
+  };
+
+  const getServiceTypeInKorean = (type) => {
+    const serviceTypes = {
+      computer: '컴퓨터',
+      printer: '프린터',
+      notebook: '노트북',
+      as: 'AS서비스',
+      other: '기타서비스',
     };
+    return serviceTypes[type] || type;
+  };
 
-    const getServiceTypeInKorean = (type) => {
-      const serviceTypes = {
-        computer: '컴퓨터',
-        printer: '프린터',
-        notebook: '노트북',
-        as: 'AS서비스',
-        other: '기타서비스',
-      };
-      return serviceTypes[type] || type;
-    };
+  // 이미지 로드 에러 처리
+  const handleImageError = (e) => {
+    e.target.style.display = 'none';
+    // 플레이스홀더 표시
+    const placeholder = e.target.nextElementSibling;
+    if (placeholder) {
+      placeholder.style.display = 'flex';
+    }
+  };
 
-    // 캐시된 이미지 확인 함수
-    const getCachedImageSrc = useCallback(
-      (imageUrl) => {
-        if (imageCache && imageCache.current && imageCache.current.has(imageUrl)) {
-          const cachedImg = imageCache.current.get(imageUrl);
-          if (cacheStats && cacheStats.current) {
-            cacheStats.current.hits++;
-            if (process.env.NODE_ENV === 'development') {
-              console.log(
-                `🎯 캐시 히트: ${imageUrl.substring(0, 50)}... (히트: ${cacheStats.current.hits}, 미스: ${cacheStats.current.misses})`
-              );
-            }
-          }
-          return cachedImg.src;
-        }
-        if (cacheStats && cacheStats.current) {
-          cacheStats.current.misses++;
-          if (process.env.NODE_ENV === 'development') {
-            console.log(
-              `❌ 캐시 미스: ${imageUrl.substring(0, 50)}... (히트: ${cacheStats.current.hits}, 미스: ${cacheStats.current.misses})`
-            );
-          }
-        }
-        return imageUrl;
-      },
-      [imageCache, cacheStats]
-    );
+  // 이미지 로드 성공 처리
+  const handleImageLoad = (e) => {
+    // 플레이스홀더 숨기기
+    const placeholder = e.target.nextElementSibling;
+    if (placeholder) {
+      placeholder.style.display = 'none';
+    }
+  };
 
-    // 이미지 로드 에러 처리
-    const handleImageError = (e) => {
-      e.target.style.display = 'none';
-      // 플레이스홀더 표시
-      const placeholder = e.target.nextElementSibling;
-      if (placeholder) {
-        placeholder.style.display = 'flex';
-      }
-    };
+  return (
+    <div
+      className="group relative bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden border border-gray-100 w-full h-full min-h-[220px] sm:min-h-[260px] cursor-pointer"
+      onClick={() => onClick(review)}
+    >
+      {/* 카드 상단 테두리 라인 */}
+      <div className="h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
 
-    // 이미지 로드 성공 처리
-    const handleImageLoad = (e) => {
-      // 플레이스홀더 숨기기
-      const placeholder = e.target.nextElementSibling;
-      if (placeholder) {
-        placeholder.style.display = 'none';
-      }
-    };
+      <div className="p-3 sm:p-4 flex flex-col h-full">
+        {/* 사용자 이름 */}
+        <div className="mb-1">
+          <p className="font-bold text-gray-800 text-sm sm:text-base leading-tight">
+            {review.userId && review.userId.name ? review.userId.name : '익명'} 님
+          </p>
+        </div>
 
-    return (
-      <div
-        className="group relative bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden border border-gray-100 w-full h-full min-h-[220px] sm:min-h-[260px] cursor-pointer"
-        onClick={() => onClick(review)}
-      >
-        {/* 카드 상단 테두리 라인 */}
-        <div className="h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
-
-        <div className="p-3 sm:p-4 flex flex-col h-full">
-          {/* 사용자 이름 */}
-          <div className="mb-1">
-            <p className="font-bold text-gray-800 text-sm sm:text-base leading-tight">
-              {review.userId && review.userId.name ? review.userId.name : '익명'} 님
-            </p>
-          </div>
-
-          {/* 서비스 타입과 별점 */}
-          <div className="flex items-center justify-between mb-1">
-            <span className="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-              {getServiceTypeInKorean(review.serviceType)}
+        {/* 서비스 타입과 별점 */}
+        <div className="flex items-center justify-between mb-1">
+          <span className="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+            {getServiceTypeInKorean(review.serviceType)}
+          </span>
+          <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-0.5">{renderStars(review.rating)}</div>
+            <span className="ml-1 sm:ml-1.5 text-xs font-semibold text-gray-700">
+              {review.rating}점
             </span>
-            <div className="flex items-center space-x-1">
-              <div className="flex items-center space-x-0.5">{renderStars(review.rating)}</div>
-              <span className="ml-1 sm:ml-1.5 text-xs font-semibold text-gray-700">
-                {review.rating}점
-              </span>
-            </div>
-          </div>
-
-          {/* 이미지 섹션 */}
-          {review.images && review.images.length > 0 && (
-            <div className="mb-1">
-              <div className="flex space-x-1 sm:space-x-1.5 overflow-x-auto scrollbar-hide pb-1">
-                {review.images.map((image, index) => {
-                  return (
-                    <div key={image.id || index} className="flex-shrink-0">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 relative">
-                        <img
-                          src={getCachedImageSrc(image.url)}
-                          alt={image.originalName || `이미지 ${index + 1}`}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          onError={handleImageError}
-                          onLoad={handleImageLoad}
-                          loading={isVisible ? 'eager' : 'lazy'}
-                          decoding={isVisible ? 'sync' : 'async'}
-                        />
-                        {/* 이미지 로드 실패 시 플레이스홀더 */}
-                        <div
-                          className="absolute inset-0 bg-gray-200 flex items-center justify-center text-gray-400 text-xs"
-                          style={{ display: 'none' }}
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* 리뷰 내용 */}
-          <div className="flex-1 mb-1">
-            <div className="bg-gray-50/80 text-gray-700 text-xs sm:text-sm leading-snug p-2 sm:p-3 rounded-lg border border-gray-100 backdrop-blur-sm">
-              <p
-                className={`font-['NanumGothic'] overflow-hidden whitespace-pre-line ${
-                  review.images && review.images.length > 0
-                    ? 'line-clamp-4 sm:line-clamp-5'
-                    : 'line-clamp-6 sm:line-clamp-8'
-                }`}
-              >
-                {review.content}
-              </p>
-            </div>
-          </div>
-
-          {/* 작성 날짜 - 하단 고정 */}
-          <div className="flex justify-end mt-auto pt-1.5 sm:pt-2 border-t border-gray-100">
-            <div className="flex items-center space-x-1 text-xs text-gray-500">
-              <svg
-                className="w-2.5 h-2.5 sm:w-3 sm:h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-              <span className="text-xs">{formatDate(review.createdAt)}</span>
-            </div>
           </div>
         </div>
 
-        {/* 호버 시 미묘한 오버레이 */}
-        <div className="absolute inset-0 bg-gradient-to-t from-transparent to-blue-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl"></div>
+        {/* 이미지 섹션 */}
+        {review.images && review.images.length > 0 && (
+          <div className="mb-1">
+            <div className="flex space-x-1 sm:space-x-1.5 overflow-x-auto scrollbar-hide pb-1">
+              {review.images.map((image, index) => {
+                return (
+                  <div key={image.id || index} className="flex-shrink-0">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 relative">
+                      <img
+                        src={getCachedImageSrc(image.url)}
+                        alt={image.originalName || `이미지 ${index + 1}`}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={handleImageError}
+                        onLoad={handleImageLoad}
+                        loading={isVisible ? 'eager' : 'lazy'}
+                        decoding={isVisible ? 'sync' : 'async'}
+                      />
+                      {/* 이미지 로드 실패 시 플레이스홀더 */}
+                      <div
+                        className="absolute inset-0 bg-gray-200 flex items-center justify-center text-gray-400 text-xs"
+                        style={{ display: 'none' }}
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* 리뷰 내용 */}
+        <div className="flex-1 mb-1">
+          <div className="bg-gray-50/80 text-gray-700 text-xs sm:text-sm leading-snug p-2 sm:p-3 rounded-lg border border-gray-100 backdrop-blur-sm">
+            <p
+              className={`font-['NanumGothic'] overflow-hidden whitespace-pre-line ${
+                review.images && review.images.length > 0
+                  ? 'line-clamp-4 sm:line-clamp-5'
+                  : 'line-clamp-6 sm:line-clamp-8'
+              }`}
+            >
+              {review.content}
+            </p>
+          </div>
+        </div>
+
+        {/* 작성 날짜 - 하단 고정 */}
+        <div className="flex justify-end mt-auto pt-1.5 sm:pt-2 border-t border-gray-100">
+          <div className="flex items-center space-x-1 text-xs text-gray-500">
+            <svg
+              className="w-2.5 h-2.5 sm:w-3 sm:h-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            <span className="text-xs">{formatDate(review.createdAt)}</span>
+          </div>
+        </div>
       </div>
-    );
-  }
-);
+
+      {/* 호버 시 미묘한 오버레이 */}
+      <div className="absolute inset-0 bg-gradient-to-t from-transparent to-blue-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl"></div>
+    </div>
+  );
+});
 
 // ReviewCard memo 비교 함수
 ReviewCard.displayName = 'ReviewCard';
@@ -202,8 +172,7 @@ const areEqual = (prevProps, nextProps) => {
   return (
     prevProps.review._id === nextProps.review._id &&
     prevProps.isVisible === nextProps.isVisible &&
-    prevProps.imageCache === nextProps.imageCache &&
-    prevProps.cacheStats === nextProps.cacheStats
+    prevProps.getCachedImageSrc === nextProps.getCachedImageSrc
   );
 };
 
@@ -473,16 +442,76 @@ const ReviewCarousel = () => {
   const [selectedReview, setSelectedReview] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // 이미지 캐싱을 위한 메모리 저장소
+  // 이미지 캐싱을 위한 메모리 저장소 (LRU 캐시로 개선)
   const imageCache = useRef(new Map());
   const preloadedImages = useRef(new Set());
   const cacheStats = useRef({ hits: 0, misses: 0 });
   const loadingImages = useRef(new Set()); // 로딩 중인 이미지 추적
   const hasInitialized = useRef(false); // 초기화 플래그
 
+  // LRU 캐시 관리 (최대 50개 이미지로 제한)
+  const MAX_CACHE_SIZE = 50;
+  const cacheAccessTime = useRef(new Map()); // 각 이미지의 마지막 접근 시간
+
   // 데이터 동기화를 위한 저장소
   const previousReviews = useRef(new Map()); // reviewId -> { lastModified, imageUrls }
   const reviewDataHash = useRef(new Map()); // reviewId -> hash값
+
+  // LRU 캐시 관리 함수
+  const evictLRUCache = useCallback(() => {
+    if (imageCache.current.size <= MAX_CACHE_SIZE) return;
+
+    // 가장 오래된 항목 찾기
+    let oldestUrl = null;
+    let oldestTime = Date.now();
+
+    for (const [url, time] of cacheAccessTime.current) {
+      if (time < oldestTime) {
+        oldestTime = time;
+        oldestUrl = url;
+      }
+    }
+
+    // 오래된 항목 제거
+    if (oldestUrl) {
+      imageCache.current.delete(oldestUrl);
+      preloadedImages.current.delete(oldestUrl);
+      cacheAccessTime.current.delete(oldestUrl);
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🗑️ LRU 캐시 제거: ${oldestUrl.substring(0, 50)}...`);
+      }
+    }
+  }, []);
+
+  // 캐시된 이미지 확인 함수 (LRU 업데이트 포함)
+  const getCachedImageSrc = useCallback((imageUrl) => {
+    if (imageCache.current.has(imageUrl)) {
+      const cachedImg = imageCache.current.get(imageUrl);
+
+      // LRU 업데이트
+      cacheAccessTime.current.set(imageUrl, Date.now());
+
+      if (cacheStats.current) {
+        cacheStats.current.hits++;
+        if (process.env.NODE_ENV === 'development') {
+          console.log(
+            `🎯 캐시 히트: ${imageUrl.substring(0, 50)}... (히트: ${cacheStats.current.hits}, 미스: ${cacheStats.current.misses})`
+          );
+        }
+      }
+      return cachedImg.src;
+    }
+    if (cacheStats.current) {
+      cacheStats.current.misses++;
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          `❌ 캐시 미스: ${imageUrl.substring(0, 50)}... (히트: ${cacheStats.current.hits}, 미스: ${cacheStats.current.misses})`
+        );
+      }
+    }
+    return imageUrl;
+  }, []);
 
   const handleReviewClick = (review) => {
     setSelectedReview(review);
@@ -597,47 +626,58 @@ const ReviewCarousel = () => {
   }, []);
 
   // 이미지 프리로딩 함수 (HTTP 캐시 감지 포함)
-  const preloadImage = useCallback((imageUrl) => {
-    if (!imageUrl || preloadedImages.current.has(imageUrl) || loadingImages.current.has(imageUrl)) {
-      return Promise.resolve();
-    }
+  const preloadImage = useCallback(
+    (imageUrl) => {
+      if (
+        !imageUrl ||
+        preloadedImages.current.has(imageUrl) ||
+        loadingImages.current.has(imageUrl)
+      ) {
+        return Promise.resolve();
+      }
 
-    // 로딩 시작 표시
-    loadingImages.current.add(imageUrl);
+      // 로딩 시작 표시
+      loadingImages.current.add(imageUrl);
 
-    return new Promise((resolve, reject) => {
-      const img = new Image();
+      return new Promise((resolve, reject) => {
+        const img = new Image();
 
-      // 캐시 상태 감지를 위한 시작 시간 기록
-      const startTime = performance.now();
+        // 캐시 상태 감지를 위한 시작 시간 기록
+        const startTime = performance.now();
 
-      img.onload = () => {
-        const loadTime = performance.now() - startTime;
-        imageCache.current.set(imageUrl, img);
-        preloadedImages.current.add(imageUrl);
-        loadingImages.current.delete(imageUrl); // 로딩 완료
+        img.onload = () => {
+          const loadTime = performance.now() - startTime;
+          imageCache.current.set(imageUrl, img);
+          preloadedImages.current.add(imageUrl);
+          cacheAccessTime.current.set(imageUrl, Date.now()); // LRU 시간 설정
+          loadingImages.current.delete(imageUrl); // 로딩 완료
 
-        if (process.env.NODE_ENV === 'development') {
-          // 로딩 시간으로 캐시 상태 추정
-          const cacheStatus = loadTime < 50 ? '(HTTP 캐시)' : '(네트워크)';
-          console.log(
-            `📷 이미지 로드 완료: ${imageUrl.substring(0, 50)}... ${cacheStatus} ${Math.round(loadTime)}ms`
-          );
-        }
-        resolve(img);
-      };
+          // LRU 캐시 크기 관리
+          evictLRUCache();
 
-      img.onerror = (error) => {
-        loadingImages.current.delete(imageUrl); // 로딩 실패
-        if (process.env.NODE_ENV === 'development') {
-          console.warn(`🚫 이미지 로드 실패: ${imageUrl.substring(0, 50)}...`);
-        }
-        reject(error);
-      };
+          if (process.env.NODE_ENV === 'development') {
+            // 로딩 시간으로 캐시 상태 추정
+            const cacheStatus = loadTime < 50 ? '(HTTP 캐시)' : '(네트워크)';
+            console.log(
+              `📷 이미지 로드 완료: ${imageUrl.substring(0, 50)}... ${cacheStatus} ${Math.round(loadTime)}ms (캐시 크기: ${imageCache.current.size})`
+            );
+          }
+          resolve(img);
+        };
 
-      img.src = imageUrl;
-    });
-  }, []);
+        img.onerror = (error) => {
+          loadingImages.current.delete(imageUrl); // 로딩 실패
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(`🚫 이미지 로드 실패: ${imageUrl.substring(0, 50)}...`);
+          }
+          reject(error);
+        };
+
+        img.src = imageUrl;
+      });
+    },
+    [evictLRUCache]
+  );
 
   // 스마트 이미지 로딩 (변경된 리뷰만 처리)
   const smartPreloadImages = useCallback(
@@ -997,8 +1037,7 @@ const ReviewCarousel = () => {
                     review={review}
                     onClick={handleReviewClick}
                     isVisible={true}
-                    imageCache={imageCache}
-                    cacheStats={cacheStats}
+                    getCachedImageSrc={getCachedImageSrc}
                   />
                 </div>
               ))}
