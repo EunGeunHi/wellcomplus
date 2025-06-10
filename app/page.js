@@ -5,10 +5,10 @@ import Link from 'next/link';
 import TestAlert from './components/TestAlert';
 import AssemblyShowcaseOptimized from './components/AssemblyShowcaseOptimized';
 import LazyReviewSection from './components/LazyReviewSection';
+import LazyGoogleMaps from './components/LazyGoogleMaps';
 
 export default function Home() {
-  // 구조화된 데이터 (JSON-LD) - 1단계 최적화: 중복 제거
-  // 공통 정책 정의
+  // 구조화된 데이터 - 1단계: 구글 SEO 필수 요소 (즉시 로드)
   const commonReturnPolicy = {
     '@type': 'MerchantReturnPolicy',
     applicableCountry: 'KR',
@@ -47,9 +47,11 @@ export default function Home() {
     },
   };
 
-  const structuredData = {
+  // 즉시 로드: 구글 SEO 필수 요소만 포함
+  const criticalStructuredData = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
+    '@id': 'https://www.okwellcom.com/#business',
     name: '웰컴시스템 컴퓨터 전문점',
     alternateName: 'WellComSystem',
     description: '35년 전통의 컴퓨터, 노트북, 프린터 전문점. 맞춤형 견적 및 평생 A/S 서비스 제공',
@@ -71,6 +73,83 @@ export default function Home() {
     openingHours: 'Mo-Fr 10:00-19:00, Sa 10:00-17:00',
     founder: '김선식',
     foundingDate: '1989',
+
+    // SEO 강화: 상세 접근성 정보
+    hasMap:
+      'https://www.google.com/maps/place/부산컴퓨터도매상가/@35.21399045790162,129.0796384915669,16z',
+    isAccessibleForFree: true,
+    publicAccess: true,
+
+    // 구글 필수 요소 1: offers (간소화된 버전)
+    offers: [
+      {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'KRW',
+        availability: 'https://schema.org/InStock',
+        priceValidUntil: '2024-12-31',
+        hasMerchantReturnPolicy: commonReturnPolicy,
+        shippingDetails: commonShippingDetails,
+        itemOffered: {
+          '@type': 'Product',
+          name: '맞춤형 컴퓨터 조립',
+          description: '고객 맞춤형 컴퓨터 조립 서비스',
+        },
+      },
+    ],
+
+    // 구글 필수 요소 2: review (샘플 2개만)
+    review: [
+      {
+        '@type': 'Review',
+        author: {
+          '@type': 'Person',
+          name: '김○○',
+        },
+        datePublished: '2024-01-15',
+        reviewBody:
+          '35년 노하우가 느껴지는 완벽한 조립 서비스였습니다. 게이밍 성능도 만족스럽고 AS도 신속해요.',
+        reviewRating: {
+          '@type': 'Rating',
+          ratingValue: '5',
+          bestRating: '5',
+        },
+      },
+      {
+        '@type': 'Review',
+        author: {
+          '@type': 'Person',
+          name: '이○○',
+        },
+        datePublished: '2024-01-20',
+        reviewBody:
+          '다양한 노트북 브랜드 비교 상담받고 최적의 제품을 구매했어요. 전문적인 상담이 인상적이었습니다.',
+        reviewRating: {
+          '@type': 'Rating',
+          ratingValue: '5',
+          bestRating: '5',
+        },
+      },
+    ],
+
+    // 구글 필수 요소 3: aggregateRating
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.8',
+      reviewCount: '1000',
+      bestRating: '5',
+      worstRating: '1',
+    },
+
+    sameAs: ['https://www.okwellcom.com'],
+  };
+
+  // 지연 로드될 상세 정보 (2초 후 로드)
+  const secondaryStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    '@id': 'https://www.okwellcom.com/#business', // 동일한 엔티티임을 명시
+
     areaServed: '부산광역시',
     serviceType: [
       '컴퓨터 판매',
@@ -81,6 +160,8 @@ export default function Home() {
       '맞춤형 견적',
     ],
     priceRange: '$$',
+
+    // 상세한 제품 카탈로그
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
       name: '컴퓨터 및 IT 서비스',
@@ -117,35 +198,11 @@ export default function Home() {
               bestRating: '5',
               worstRating: '1',
             },
-            review: [
-              {
-                '@type': 'Review',
-                author: {
-                  '@type': 'Person',
-                  name: '김○○',
-                },
-                datePublished: '2024-01-15',
-                reviewBody:
-                  '35년 노하우가 느껴지는 완벽한 조립 서비스였습니다. 게이밍 성능도 만족스럽고 AS도 신속해요.',
-                reviewRating: {
-                  '@type': 'Rating',
-                  ratingValue: '5',
-                  bestRating: '5',
-                },
-              },
-            ],
             offers: {
               '@type': 'Offer',
               price: '0',
               priceCurrency: 'KRW',
               availability: 'https://schema.org/InStock',
-              priceSpecification: {
-                '@type': 'PriceSpecification',
-                price: '0',
-                priceCurrency: 'KRW',
-                valueAddedTaxIncluded: false,
-                description: '견적 상담 후 가격 결정',
-              },
               priceValidUntil: '2024-12-31',
               seller: {
                 '@type': 'Organization',
@@ -161,13 +218,6 @@ export default function Home() {
           price: '0',
           priceCurrency: 'KRW',
           availability: 'https://schema.org/InStock',
-          priceSpecification: {
-            '@type': 'PriceSpecification',
-            price: '0',
-            priceCurrency: 'KRW',
-            valueAddedTaxIncluded: false,
-            description: '견적 상담 후 가격 결정',
-          },
           itemOffered: {
             '@type': 'Product',
             name: '노트북 판매 및 상담',
@@ -184,40 +234,12 @@ export default function Home() {
               bestRating: '5',
               worstRating: '1',
             },
-            review: [
-              {
-                '@type': 'Review',
-                author: {
-                  '@type': 'Person',
-                  name: '이○○',
-                },
-                datePublished: '2024-01-20',
-                reviewBody:
-                  '다양한 노트북 브랜드 비교 상담받고 최적의 제품을 구매했어요. 전문적인 상담이 인상적이었습니다.',
-                reviewRating: {
-                  '@type': 'Rating',
-                  ratingValue: '5',
-                  bestRating: '5',
-                },
-              },
-            ],
             offers: {
               '@type': 'Offer',
               price: '0',
               priceCurrency: 'KRW',
               availability: 'https://schema.org/InStock',
-              priceSpecification: {
-                '@type': 'PriceSpecification',
-                price: '0',
-                priceCurrency: 'KRW',
-                valueAddedTaxIncluded: false,
-                description: '견적 상담 후 가격 결정',
-              },
               priceValidUntil: '2024-12-31',
-              seller: {
-                '@type': 'Organization',
-                name: '웰컴시스템',
-              },
               hasMerchantReturnPolicy: commonReturnPolicy,
               shippingDetails: commonShippingDetails,
             },
@@ -228,13 +250,6 @@ export default function Home() {
           price: '0',
           priceCurrency: 'KRW',
           availability: 'https://schema.org/InStock',
-          priceSpecification: {
-            '@type': 'PriceSpecification',
-            price: '0',
-            priceCurrency: 'KRW',
-            valueAddedTaxIncluded: false,
-            description: '견적 상담 후 가격 결정',
-          },
           itemOffered: {
             '@type': 'Product',
             name: '프린터 판매 및 설치',
@@ -251,40 +266,12 @@ export default function Home() {
               bestRating: '5',
               worstRating: '1',
             },
-            review: [
-              {
-                '@type': 'Review',
-                author: {
-                  '@type': 'Person',
-                  name: '정○○',
-                },
-                datePublished: '2024-01-25',
-                reviewBody:
-                  '프린터 설치부터 설정까지 완벽하게 처리해주셨어요. 사무실에서 바로 사용 가능했습니다.',
-                reviewRating: {
-                  '@type': 'Rating',
-                  ratingValue: '5',
-                  bestRating: '5',
-                },
-              },
-            ],
             offers: {
               '@type': 'Offer',
               price: '0',
               priceCurrency: 'KRW',
               availability: 'https://schema.org/InStock',
-              priceSpecification: {
-                '@type': 'PriceSpecification',
-                price: '0',
-                priceCurrency: 'KRW',
-                valueAddedTaxIncluded: false,
-                description: '견적 상담 후 가격 결정',
-              },
               priceValidUntil: '2024-12-31',
-              seller: {
-                '@type': 'Organization',
-                name: '웰컴시스템',
-              },
               hasMerchantReturnPolicy: commonReturnPolicy,
               shippingDetails: commonShippingDetails,
             },
@@ -304,23 +291,49 @@ export default function Home() {
         },
       ],
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      reviewCount: '1000',
-      bestRating: '5',
-      worstRating: '1',
-    },
-    sameAs: ['https://www.okwellcom.com'],
   };
 
   return (
     <>
-      {/* 구조화된 데이터 */}
+      {/* 구조화된 데이터 - 즉시 로드 (구글 SEO 필수 요소) */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(criticalStructuredData) }}
       />
+
+      {/* 지연 로드 스크립트 */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              setTimeout(function() {
+                var script = document.createElement('script');
+                script.type = 'application/ld+json';
+                script.text = ${JSON.stringify(JSON.stringify(secondaryStructuredData))};
+                document.head.appendChild(script);
+              }, 2000);
+            })();
+          `,
+        }}
+      />
+
+      {/* SEO를 위한 추가 메타 정보 */}
+      <div className="sr-only">
+        <h2>웰컴시스템 위치 및 연락처</h2>
+        <address itemScope itemType="https://schema.org/LocalBusiness">
+          <span itemProp="name">웰컴시스템 컴퓨터 전문점</span>
+          <div itemProp="address" itemScope itemType="https://schema.org/PostalAddress">
+            <span itemProp="addressRegion">부산시</span>
+            <span itemProp="addressLocality">동래구</span>
+            <span itemProp="streetAddress">온천장로 20 부산컴퓨터도매상가 2층 209호</span>
+            <span itemProp="postalCode">47764</span>
+          </div>
+          <span itemProp="telephone">010-8781-8871</span>
+          <span itemProp="alternateName">WellComSystem</span>
+          <span itemProp="foundingDate">1989</span>
+          <span itemProp="founder">김선식</span>
+        </address>
+      </div>
 
       <TestAlert />
       {/* Hero Section */}
@@ -463,17 +476,7 @@ export default function Home() {
               <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 px-2 text-[#3661EB]">
                 위치 안내
               </h3>
-              <div className="flex-grow h-[250px] sm:h-[320px] rounded-xl overflow-hidden">
-                <iframe
-                  src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=부산컴퓨터도매상가&center=35.21399045790162,129.0796384915669&zoom=16`}
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                ></iframe>
-              </div>
+              <LazyGoogleMaps />
               <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-blue-50 rounded-lg">
                 <p className="text-gray-700 flex items-center text-sm sm:text-base">
                   <span className="inline-block w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#3661EB] text-white flex items-center justify-center mr-2">
