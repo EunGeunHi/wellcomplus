@@ -335,7 +335,6 @@ export default function Home() {
         </address>
       </div>
 
-      <TestAlert />
       {/* Hero Section */}
       <div className="w-full bg-gradient-to-r from-blue-50 to-sky-50 py-6 sm:py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
