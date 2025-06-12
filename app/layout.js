@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
   metadataBase: new URL('https://www.okwellcom.com'),
-  title: '웰컴시스템-35년 기술과 노하우를 더하다',
+  title: '웰컴시스템 - 35년 기술과 노하우를 더하다',
   description:
     '웰컴시스템 컴퓨터 전문점 - 컴퓨터, 프린터 개조 및 수리, 노트북, A/S 서비스. 믿을 수 있는 컴퓨터 전문가와 함께하세요.',
   keywords: [
