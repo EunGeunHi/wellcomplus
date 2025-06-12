@@ -10,9 +10,9 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
   metadataBase: new URL('https://www.okwellcom.com'),
-  title: 'WellComSystem - 웰컴시스템 컴퓨터 전문점',
+  title: '웰컴시스템-35년 기술과 노하우를 더하다',
   description:
-    '웰컴 컴퓨터 전문점 - 컴퓨터, 노트북, 프린터 견적 및 A/S 서비스. 믿을 수 있는 컴퓨터 전문가와 함께하세요.',
+    '웰컴시스템 컴퓨터 전문점 - 컴퓨터, 프린터 개조 및 수리, 노트북, A/S 서비스. 믿을 수 있는 컴퓨터 전문가와 함께하세요.',
   keywords: [
     '웰컴',
     '웰컴컴퓨터',
@@ -45,10 +45,10 @@ export const metadata = {
     type: 'website',
     locale: 'ko_KR',
     url: 'https://www.okwellcom.com',
-    siteName: 'WellComSystem - 웰컴시스템 컴퓨터 전문점',
-    title: 'WellComSystem - 웰컴시스템 컴퓨터 전문점',
+    siteName: '웰컴시스템 - 35년 기술과 노하우를 더하다',
+    title: '웰컴시스템 - 35년 기술과 노하우를 더하다',
     description:
-      '웰컴 컴퓨터 전문점 - 컴퓨터, 노트북, 프린터 견적 및 A/S 서비스. 믿을 수 있는 컴퓨터 전문가와 함께하세요.',
+      '웰컴시스템 컴퓨터 전문점 - 컴퓨터, 프린터 개조 및 수리, 노트북, A/S 서비스. 믿을 수 있는 컴퓨터 전문가와 함께하세요.',
     images: [
       {
         url: '/og-image.jpg', // 대표 이미지 (1200x630 권장)
