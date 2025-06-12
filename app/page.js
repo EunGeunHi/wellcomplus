@@ -2,7 +2,6 @@ import { ArrowUpRight, Zap, Computer, BookOpenCheck, ShieldCheck, MapPin } from 
 import HeroSlider from './components/HeroSlider';
 import HeroButton from './components/HeroButton';
 import Link from 'next/link';
-import TestAlert from './components/TestAlert';
 import AssemblyShowcaseOptimized from './components/AssemblyShowcaseOptimized';
 import LazyReviewSection from './components/LazyReviewSection';
 import LazyGoogleMaps from './components/LazyGoogleMaps';
@@ -16,6 +15,7 @@ export default function Home() {
     merchantReturnDays: 7,
     returnMethod: ['https://schema.org/ReturnByMail', 'https://schema.org/ReturnInStore'],
     returnFees: 'https://schema.org/ReturnFeesCustomerResponsibility',
+    refundType: 'https://schema.org/FullRefund',
   };
 
   const commonShippingDetails = {
