@@ -7,12 +7,6 @@
       "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 화이트 수냉 시스템 PC"
     },
     {
-      "filename": "10-화이트rgb게이밍.webp",
-      "title": "화이트RGB 수냉 게이밍PC",
-      "category": "gaming",
-      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 수냉 쿨링 시스템"
-    },
-    {
       "filename": "11-화이트게이밍rgb.webp",
       "title": "화이트&블랙 수냉 게이밍PC",
       "category": "gaming",
@@ -31,16 +25,10 @@
       "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 깔끔한 선정리"
     },
     {
-      "filename": "14-화이트게이밍rgb.webp",
-      "title": "화이트 게이밍PC",
+      "filename": "15-화이트rgb게이밍.webp",
+      "title": "화이트RGB 수냉 게이밍PC",
       "category": "gaming",
       "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 수냉 쿨링 시스템"
-    },
-    {
-      "filename": "15-화이트선정리.webp",
-      "title": "깔끔한 선정리",
-      "category": "gaming",
-      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 깔끔한 선정리"
     },
     {
       "filename": "16-블랙 게이밍rgb.webp",
@@ -91,6 +79,24 @@
       "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 깔끔한 선정리"
     },
     {
+      "filename": "7-1-화이트게이밍.webp",
+      "title": "화이트RGB 게이밍PC",
+      "category": "gaming",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 화이트 RGB 공냉"
+    },
+    {
+      "filename": "7-2-블랙게이밍.webp",
+      "title": "블랙RGB 게이밍PC",
+      "category": "gaming",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 공냉 쿨링 시스템"
+    },
+    {
+      "filename": "7-3-블랙선정리.webp",
+      "title": "블랙RGB 게이밍PC",
+      "category": "gaming",
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 공냉 쿨링 시스템"
+    },
+    {
       "filename": "7-화이트게이밍.webp",
       "title": "화이트 게이밍PC",
       "category": "gaming",
@@ -101,12 +107,6 @@
       "title": "블랙 게이밍PC",
       "category": "gaming",
       "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 수냉 쿨링 시스템"
-    },
-    {
-      "filename": "9-블랙 선정리.webp",
-      "title": "깔끔한 선정리",
-      "category": "gaming",
-      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 깔끔한 선정리"
     }
   ],
   "videos": [
@@ -148,7 +148,7 @@
     }
   ],
   "settings": {
-    "imageRotationInterval": 3500,
+    "imageRotationInterval": 3100,
     "autoplay": true,
     "muted": true,
     "loop": true
