@@ -117,12 +117,8 @@ export default function RootLayout({ children }) {
         </AuthProvider>
         <Toaster position="top-center" />
         {/* Vercel Analytics - 프로덕션 환경에서만 로드 */}
-        {process.env.NODE_ENV === 'production' && (
-          <>
-            <SpeedInsights />
-            <Analytics />
-          </>
-        )}
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );
