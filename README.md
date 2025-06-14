@@ -87,27 +87,27 @@
 
 ### **프론트엔드**
 
-- **Framework**: Next.js 14.1.0 (App Router)
-- **UI Library**: React 18.3.0
-- **Styling**: Tailwind CSS 3.3.0
-- **Animation**: Framer Motion 12.6.0
-- **Icons**: Lucide React, React Icons
+- **프레임워크**: Next.js 14.1.0 (App Router)
+- **UI 라이브러리**: React 18.3.0
+- **스타일링**: Tailwind CSS 3.3.0
+- **애니메이션**: Framer Motion 12.6.0
+- **아이콘**: Lucide React, React Icons
 
 ### **백엔드**
 
-- **Runtime**: Node.js
-- **Database**: MongoDB 6.16.0 with Mongoose 8.12.2
-- **Authentication**: NextAuth.js 4.24.11
-- **File Upload**: Cloudinary
+- **서버 환경**: Node.js
+- **데이터베이스**: MongoDB 6.16.0 with Mongoose 8.12.2
+- **인증**: NextAuth.js 4.24.11
+- **파일 업로드**: Cloudinary
 - **API**: RESTful API with Next.js API Routes
 
-### **DevOps & Tools**
+### **배포 및 도구**
 
-- **Deployment**: Vercel
-- **Image CDN**: Cloudinary
-- **Analytics**: Vercel Analytics & Speed Insights
-- **Code Quality**: Prettier, ESLint
-- **Version Control**: Git, GitHub
+- **배포**: Vercel
+- **이미지 CDN**: Cloudinary
+- **분석**: Vercel Analytics & Speed Insights
+- **코드 품질**: Prettier, ESLint
+- **버전 관리**: Git, GitHub
 
 ## 🏗️ 시스템 아키텍처
 
@@ -305,7 +305,7 @@ graph TD
   - 길찾기 및 주변 정보 제공
   - 반응형 지도 인터페이스
 
-## 📁 개발 환경 & 실행 가이드
+## 📁 디렉터리 / 웹 페이지 구조
 
 ### **📂 핵심 디렉터리 구조**
 
@@ -331,14 +331,9 @@ wellcomplus/
 └── chrome-extension-real/        # 다나와 연동 확장프로그램
 ```
 
-### **🌐 배포 정보**
+### 📋 웹 페이지 구조 / 사이트맵
 
-| 환경            | URL                                                    | 설명                  |
-| --------------- | ------------------------------------------------------ | --------------------- |
-| **Production**  | [https://www.okwellcom.com](https://www.okwellcom.com) | 실제 서비스           |
-| **Development** | http://localhost:3000                                  | 로컬 개발             |
-| **Database**    | MongoDB Atlas                                          | 클라우드 데이터베이스 |
-| **CDN**         | Cloudinary                                             | 이미지 저장소         |
+**📊 인터랙티브 사이트맵**: [웹 페이지 구조 보기](https://octopus.do/rvrrdzz8t5h)
 
 ## 🖼️ 실제 구현 화면
 
@@ -534,16 +529,21 @@ wellcomplus/
 
 **🔗 Live Site**: [https://www.okwellcom.com](https://www.okwellcom.com)
 
-**배포 환경:**
+| 환경             | URL                                                    | 설명                  |
+| ---------------- | ------------------------------------------------------ | --------------------- |
+| **Production**   | [https://www.okwellcom.com](https://www.okwellcom.com) | 실제 서비스           |
+| **데이터베이스** | MongoDB Atlas                                          | 클라우드 데이터베이스 |
+| **CDN**          | Cloudinary                                             | 이미지 저장소         |
+
+**배포 내용:**
 
 - **Platform**: Vercel (자동 CI/CD)
 - **Domain**: 커스텀 도메인 연결 (가비아)
 - **TSL**: HTTPS 보안 적용
-- **CDN**: Vercel Edge Network 활용
 
 **성능 지표:**
 
-- **Lighthouse Score**: 95+ (Performance, SEO, Accessibility)
+- **Lighthouse 점수**: 95+ (성능, SEO, 접근성)
 - **Core Web Vitals**: 모든 지표 Good 달성
 - **Page Load Time**: < 2초
 
