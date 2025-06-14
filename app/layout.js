@@ -116,7 +116,6 @@ export default function RootLayout({ children }) {
           <main className="pt-20">{children}</main>
         </AuthProvider>
         <Toaster position="top-center" />
-        {/* Vercel Analytics - 프로덕션 환경에서만 로드 */}
         <SpeedInsights />
         <Analytics />
       </body>
