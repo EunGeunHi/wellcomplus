@@ -85,16 +85,15 @@
 
 ## 🛠️ 기술 스택
 
-### **Frontend**
+### **프론트엔드**
 
 - **Framework**: Next.js 14.1.0 (App Router)
 - **UI Library**: React 18.3.0
 - **Styling**: Tailwind CSS 3.3.0
 - **Animation**: Framer Motion 12.6.0
 - **Icons**: Lucide React, React Icons
-- **State Management**: SWR 2.3.3
 
-### **Backend**
+### **백엔드**
 
 - **Runtime**: Node.js
 - **Database**: MongoDB 6.16.0 with Mongoose 8.12.2
@@ -313,13 +312,13 @@ graph TD
 ```
 wellcomplus/
 ├── app/                          # Next.js 14 App Router
-│   ├── api/                      # 25+ RESTful API 엔드포인트
+│   ├── api/                      # RESTful API 엔드포인트
 │   │   ├── auth/                 # 소셜 로그인 (Google, Kakao, Naver)
 │   │   ├── reviews/              # 리뷰 CRUD + 이미지 업로드
 │   │   ├── applications/         # 견적 신청 시스템
 │   │   └── manage/               # 관리자 전용 API
-│   ├── components/               # 50+ 재사용 컴포넌트
-│   ├── userpage/                 # 사용자 마이페이지
+│   ├── components/               # 재사용 컴포넌트
+│   ├── userpage/                 # 사용자 마이페이지, 신청페이지
 │   └── manage/                   # 관리자 대시보드
 ├── models/                       # MongoDB 스키마 정의
 │   ├── User.js                   # 사용자 모델
@@ -340,32 +339,6 @@ wellcomplus/
 | **Development** | http://localhost:3000                                  | 로컬 개발             |
 | **Database**    | MongoDB Atlas                                          | 클라우드 데이터베이스 |
 | **CDN**         | Cloudinary                                             | 이미지 저장소         |
-
-### **📋 주요 기능별 파일 위치**
-
-#### **🔐 인증 시스템**
-
-- `app/api/auth/[...nextauth]/route.js` - NextAuth 설정
-- `app/login/page.js` - 로그인 페이지
-- `app/signup/page.js` - 회원가입 페이지
-
-#### **💼 견적 시스템**
-
-- `app/api/applications/` - 견적 신청 API
-- `app/manage/estimate/` - 관리자 견적 작성
-- `models/Application.js` - 견적 데이터 모델
-
-#### **⭐ 리뷰 시스템**
-
-- `app/api/reviews/` - 리뷰 CRUD API
-- `app/userpage/review/` - 사용자 리뷰 작성
-- `models/Review.js` - 리뷰 데이터 모델
-
-#### **🔧 크롬 확장프로그램**
-
-- `chrome-extension-real/manifest.json` - 확장프로그램 설정
-- `chrome-extension-real/popup.js` - UI 인터페이스
-- `chrome-extension-real/content-danawa.js` - 다나와 연동 스크립트
 
 ## 🖼️ 실제 구현 화면
 
@@ -659,5 +632,3 @@ AI가 빠르게 발전하는 현 시점에서, 단순히 AI를 '사용'하는 �
 - **Email**: [kcj980@naver.com]
 
 ---
-
-_"전통적인 비즈니스와 현대적인 기술의 완벽한 융합을 통해 실질적인 가치를 창출하는 개발자"_
