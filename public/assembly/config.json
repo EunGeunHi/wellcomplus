@@ -37,22 +37,22 @@
       "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 깔끔한 선정리"
     },
     {
-      "filename": "7-1-화이트게이밍.webp",
+      "filename": "7-1-1-화이트게이밍.webp",
       "title": "화이트RGB 게이밍PC",
       "category": "gaming",
-      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 화이트 RGB 공냉"
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 화이트RGB"
     },
     {
-      "filename": "7-2-블랙게이밍.webp",
+      "filename": "7-2-1-블랙게이밍.webp",
       "title": "블랙RGB 게이밍PC",
       "category": "gaming",
-      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 공냉 쿨링 시스템"
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 블랙RGB"
     },
     {
-      "filename": "7-3-블랙선정리.webp",
+      "filename": "7-3-1-블랙게이밍측면.webp",
       "title": "블랙RGB 게이밍PC",
       "category": "gaming",
-      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - RGB 공냉 쿨링 시스템"
+      "alt": "부산 웰컴시스템 고성능 게이밍 PC 조립 완성품 - 블랙RGB"
     },
     {
       "filename": "7-화이트게이밍.webp",
@@ -148,7 +148,7 @@
     }
   ],
   "settings": {
-    "imageRotationInterval": 3100,
+    "imageRotationInterval": 3600,
     "autoplay": true,
     "muted": true,
     "loop": true
