@@ -28,7 +28,9 @@ function extractProductData() {
       const rows = pdItem.querySelectorAll('.pd_item_list li.row');
       rows.forEach((row) => {
         // 상품명
-        const productName = row.querySelector('.subject a')?.textContent.trim() || '';
+        let productName = row.querySelector('.subject a')?.textContent.trim() || '';
+        // '선택됨' 등 불필요한 텍스트 제거
+        productName = productName.replace(/선택됨/g, '').trim();
 
         // 가격 (숫자만 추출)
         const priceText = row.querySelector('.price')?.textContent.trim() || '0';
